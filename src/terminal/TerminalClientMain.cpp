@@ -1,5 +1,9 @@
 #include <cxxopts.hpp>
 
+#include "ControlConsole.hpp"
+#include "ControlListener.hpp"
+#include "ControlPaths.hpp"
+#include "DaemonCreator.hpp"
 #include "Headers.hpp"
 #include "HostParsing.hpp"
 #include "ParseConfigFile.hpp"
@@ -13,6 +17,17 @@
 #include "WinsockContext.hpp"
 
 using namespace et;
+
+// A short random suffix for an unnamed --ctl session's socket name.
+static string genRandomHandle() {
+  static const char* kHex = "0123456789abcdef";
+  std::random_device rd;
+  string handle;
+  for (int i = 0; i < 6; i++) {
+    handle.push_back(kHex[rd() % 16]);
+  }
+  return handle;
+}
 
 bool ping(SocketEndpoint socketEndpoint,
           shared_ptr<SocketHandler> clientSocketHandler) {
@@ -172,6 +187,17 @@ int main(int argc, char** argv) {
         ("logtostdout", "Write log to stdout")                  //
         ("silent", "Disable logging")                           //
         ("N,no-terminal", "Do not create a terminal")           //
+        ("ctl",
+         "Run as a background control session driven by etctl (no local "
+         "terminal); see also --name and --ctl-socket. With -c/--command, that "
+         "command runs once on connect and the session stays alive.")  //
+        ("name", "Name for the --ctl session (default: host plus a random "
+                 "suffix)",
+         cxxopts::value<std::string>())  //
+        ("ctl-socket",
+         "Path for the --ctl socket (default ~/.et/ctl/<name>.sock, "
+         "or under $ETCTL_HOME)",
+         cxxopts::value<std::string>())  //
         ("f,forward-ssh-agent", "Forward ssh-agent socket")     //
         ("ssh-socket", "The ssh-agent socket to forward",
          cxxopts::value<std::string>())  //
@@ -395,7 +421,14 @@ int main(int argc, char** argv) {
     }
 
     shared_ptr<Console> console;
-    if (!result.count("N")) {
+    shared_ptr<ControlConsole> controlConsole;
+    if (result.count("ctl")) {
+      // Programmatic control mode: drive the session through a local socket
+      // instead of a TTY.  ControlConsole is a Console, so TerminalClient is
+      // unchanged.
+      controlConsole.reset(new ControlConsole());
+      console = controlConsole;
+    } else if (!result.count("N")) {
       console.reset(new PseudoTerminalConsole());
     }
 
@@ -440,9 +473,63 @@ int main(int argc, char** argv) {
         clientSocket, clientPipeSocket, socketEndpoint, idpasskeypair.first,
         idpasskeypair.second, console, is_jumphost, tunnel_arg, r_tunnel_arg,
         forwardAgent, sshSocket, keepaliveDuration, sshConfigOptions.env_vars);
-    terminalClient.run(
-        result.count("command") ? result["command"].as<string>() : "",
-        result.count("noexit"));
+    if (controlConsole) {
+#ifdef WIN32
+      CLOG(INFO, "stdout") << "--ctl is not supported on Windows" << endl;
+      exit(1);
+#else
+      // Resolve a stable session name and its local control socket, announce
+      // them on the real stdout, then detach and serve etctl requests.
+      string sessionName = result.count("name")
+                               ? result["name"].as<string>()
+                               : (destinationHost + "-" + genRandomHandle());
+      string socketPath;
+      try {
+        if (result.count("ctl-socket")) {
+          // Explicit location: honor it verbatim, creating parent dirs as
+          // needed. Such a session won't appear in `etctl sessions` (it lives
+          // outside the control dir); address it by path.
+          socketPath = result["ctl-socket"].as<string>();
+          size_t slash = socketPath.find_last_of('/');
+          if (slash != string::npos && slash > 0) {
+            control_paths::mkdirp0700(socketPath.substr(0, slash));
+          }
+        } else {
+          control_paths::ensureControlDir();
+          socketPath = control_paths::socketPathForName(sessionName);
+        }
+      } catch (const std::exception& e) {
+        CLOG(INFO, "stdout")
+            << "Could not prepare control socket: " << e.what() << endl;
+        exit(1);
+      }
+      CLOG(INFO, "stdout") << "et control session: " << sessionName << endl;
+      CLOG(INFO, "stdout") << "control socket: " << socketPath << endl;
+
+      // Double-fork into the background; the parent exits here.
+      DaemonCreator::create(true, "");
+
+      ControlListener listener(
+          controlConsole, socketPath,
+          [&terminalClient]() { terminalClient.shutdown(); },
+          [&terminalClient]() { return terminalClient.isConnected(); },
+          username.empty() ? destinationHost
+                           : (username + "@" + destinationHost));
+      listener.start();
+      // A control session is always persistent, so honor -c/--command as a
+      // one-shot startup command run on connect (e.g. to set up a clean-room
+      // shell) instead of silently dropping it.  noexit is implied, so run()
+      // injects "<command>\n" and does not append "; exit".
+      terminalClient.run(
+          result.count("command") ? result["command"].as<string>() : "",
+          /*noexit=*/true);
+      listener.shutdown();
+#endif
+    } else {
+      terminalClient.run(
+          result.count("command") ? result["command"].as<string>() : "",
+          result.count("noexit"));
+    }
   } catch (TunnelParseException& tpe) {
     handleParseException(tpe, options);
   } catch (cxxopts::exceptions::exception& oe) {
