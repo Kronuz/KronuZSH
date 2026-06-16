@@ -5,7 +5,7 @@
  * control socket (~/.et/ctl/<name>.sock), sends one native control frame, and
  * prints the response.  The transport carries ET's own vocabulary (raw input
  * bytes, a TerminalInfo resize); the richer verbs here (writeln, key,
- * interrupt, eof, expect) are ergonomic sugar composed from it.
+ * interrupt, eof, expect, observe) are ergonomic sugar composed from it.
  */
 #include <algorithm>
 #include <csignal>
@@ -13,6 +13,8 @@
 #include <map>
 #include <regex>
 #include <sstream>
+
+#include <sys/ioctl.h>
 
 #include <cxxopts.hpp>
 
@@ -28,7 +30,7 @@ namespace {
 /*
  * Ctrl-C handling.  et-lib's easyloggingpp installs a crash handler that catches
  * SIGINT and aborts with a "CRASH HANDLED" backtrace; but here Ctrl-C is the
- * normal way to stop a blocking verb (run, expect, wait, read --follow, peep
+ * normal way to stop a blocking verb (run, expect, wait, read --follow, sniff
  * --follow).  main() runs after easyloggingpp's static init, so we replace its
  * handler with one that exits cleanly using the conventional code 130.  The
  * interactive attach/observe verbs put the terminal in raw mode (ISIG off), so
@@ -43,6 +45,18 @@ void installInterruptHandler() {
   sigaction(SIGINT, &sa, nullptr);
 }
 
+/*
+ * Window-size tracking for attach/observe.  The session has its own logical size
+ * (default 132x24); a viewer's terminal is usually a different width.  Because
+ * attach/observe replay the raw byte stream (no virtual screen), cursor-addressed
+ * output (a zsh prompt redraw, vim) is computed for the session's size and renders
+ * wrong at a different width.  So we push the local size to the session on start
+ * and on every SIGWINCH (unless --no-resize).  The handler only sets a flag; the
+ * attach loop does the actual send.
+ */
+volatile sig_atomic_t g_winchPending = 0;
+void onWinch(int) { g_winchPending = 1; }
+
 // One-line description for a subcommand (shown above its Usage:).
 string descFor(const string& cmd) {
   if (cmd == "open")
@@ -53,6 +67,7 @@ string descFor(const string& cmd) {
   if (cmd == "info") return "Show session status (liveness, link, size, cursor).";
   if (cmd == "kill") return "Force-stop a session's local daemon.";
   if (cmd == "read") return "Read session output without consuming it.";
+  if (cmd == "sniff") return "Tap the byte exchange (sent input + received output).";
   if (cmd == "wait") return "Wait until the session output goes quiet.";
   if (cmd == "write") return "Inject raw input bytes (a TEXT arg, or stdin).";
   if (cmd == "writeln")
@@ -62,6 +77,8 @@ string descFor(const string& cmd) {
   if (cmd == "run") return "Run a command; print its output verbatim, exit with its code.";
   if (cmd == "expect") return "Wait for a pattern to appear in the output.";
   if (cmd == "resize") return "Set the session's terminal size.";
+  if (cmd == "observe") return "Watch the live screen, read-only (Ctrl-C/Ctrl-] to detach).";
+  if (cmd == "attach") return "Attach interactively (Ctrl-] to detach).";
   return "";
 }
 
@@ -81,6 +98,17 @@ cxxopts::Options buildOptions(const string& cmd) {
     pos("NAME", "session name or socket path", cxxopts::value<string>());
     o.parse_positional({"NAME"});
     synopsis = "NAME";
+  } else if (cmd == "attach" || cmd == "observe") {
+    o.add_options()
+        ("cursor", "Start at byte offset N (default: oldest retained)",
+         cxxopts::value<long long>())
+        ("tail", "Start at the current head (only show new output)")
+        ("no-resize",
+         "Don't match the session's size to this terminal (by default attach "
+         "and observe resize the session on start and on every window change)");
+    pos("NAME", "session name or socket path", cxxopts::value<string>());
+    o.parse_positional({"NAME"});
+    synopsis = "NAME [OPTION...]";
   } else if (cmd == "kill") {
     o.add_options()(
         "wait",
@@ -97,6 +125,15 @@ cxxopts::Options buildOptions(const string& cmd) {
         ("follow", "Tail new output until interrupted (Ctrl-C)")
         ("timeout", "Wait up to S seconds for new output, then return",
          cxxopts::value<double>());
+    pos("NAME", "session", cxxopts::value<string>());
+    o.parse_positional({"NAME"});
+    synopsis = "NAME [OPTION...]";
+  } else if (cmd == "sniff") {
+    o.add_options()
+        ("cursor", "Start at byte offset N (default: oldest retained)",
+         cxxopts::value<long long>())
+        ("tail", "Start at the current head (only show new records)")
+        ("follow", "Keep streaming the exchange until interrupted (Ctrl-C)");
     pos("NAME", "session", cxxopts::value<string>());
     o.parse_positional({"NAME"});
     synopsis = "NAME [OPTION...]";
@@ -194,6 +231,9 @@ void printOverview() {
           "  wait        wait until output goes quiet\n"
           "\n"
           "  resize      set terminal size\n"
+          "  sniff       tap the byte exchange (sent + received)\n"
+          "  observe     watch the live screen (read-only)\n"
+          "  attach      attach interactively (Ctrl-] to detach)\n"
           "\n"
           "  sessions    list local control sessions\n"
           "  info        show session status\n"
@@ -277,6 +317,36 @@ string stripAnsi(const string& in) {
   s = std::regex_replace(s, other, "");
   s.erase(std::remove(s.begin(), s.end(), '\r'), s.end());
   return s;
+}
+
+// Escape bytes the way Python shows a bytes literal, so `sniff` output is both
+// human-readable and unambiguous: every byte round-trips, and because newlines
+// become "\n" each record stays on a single line.  The result is a valid Python
+// bytes-literal body, so a consumer can recover the exact bytes with e.g.
+// ast.literal_eval("b'" + payload + "'").
+string escapeBytes(const string& in) {
+  static const char* kHex = "0123456789abcdef";
+  string out;
+  for (unsigned char c : in) {
+    if (c == '\\') {
+      out += "\\\\";
+    } else if (c == '\'') {
+      out += "\\'";
+    } else if (c == '\n') {
+      out += "\\n";
+    } else if (c == '\r') {
+      out += "\\r";
+    } else if (c == '\t') {
+      out += "\\t";
+    } else if (c >= 0x20 && c < 0x7f) {
+      out += (char)c;
+    } else {
+      out += "\\x";
+      out += kHex[c >> 4];
+      out += kHex[c & 0xf];
+    }
+  }
+  return out;
 }
 
 // Named keys -> the byte sequences a real terminal would send.
@@ -726,6 +796,54 @@ int cmdExpect(const string& name, const string& pattern, double timeoutSec,
   return 1;
 }
 
+int cmdSniff(const string& name, bool follow, int64_t startCursor, bool tail) {
+  // Tap the byte exchange, one record per line: "» <input>" / "« <output>".
+  // Both directions are escaped (Python bytes-literal style) so the dump is
+  // unambiguous and a script can recover the exact bytes per line.  The cursor
+  // lives in the transcript's own offset space (distinct from the scrollback's,
+  // so it is not the headCursor `info` reports): -1 (default) is the oldest
+  // retained record, an explicit --cursor offset starts there, and --tail starts
+  // at the current head so only new records show.
+  int64_t cursor = startCursor;
+  if (tail) {
+    // Read once just to learn the current transcript head, discarding records.
+    uint8_t op = 0;
+    string payload;
+    if (!oneShot(name, CTL_SNIFF, control_proto::encodeCursor(-1), &op,
+                 &payload)) {
+      return 1;
+    }
+    cursor = control_proto::decodeTranscriptResp(payload).nextCursor;
+  }
+  bool any = false;
+  do {
+    uint8_t op = 0;
+    string payload;
+    if (!oneShot(name, CTL_SNIFF, control_proto::encodeCursor(cursor), &op,
+                 &payload)) {
+      return 1;
+    }
+    TranscriptRead tr = control_proto::decodeTranscriptResp(payload);
+    if (tr.truncated && !any) {
+      fprintf(stderr, "etctl: warning: sniff cursor fell behind; gap skipped\n");
+    }
+    for (const TranscriptRecord& rec : tr.records) {
+      any = true;
+      const char* mark = rec.dir == '>' ? "\xc2\xbb" : "\xc2\xab";  // » / «
+      printf("%s %s\n", mark, escapeBytes(rec.bytes).c_str());
+    }
+    fflush(stdout);
+    cursor = tr.nextCursor;
+    if (follow) {
+      ::usleep(150 * 1000);
+    }
+  } while (follow);
+  // Report where to resume (transcript-space), so a script can pass it back via
+  // --cursor.  Only meaningful for a one-shot read; --follow never returns here.
+  fprintf(stderr, "next-cursor: %lld\n", (long long)cursor);
+  return 0;
+}
+
 int cmdWait(const string& name, double idleSec, double timeoutSec) {
   // Return once the session output has been quiet for idleSec, or fail after
   // timeoutSec. Useful after sending input, to let an app settle before reading.
@@ -757,6 +875,133 @@ int cmdWait(const string& name, double idleSec, double timeoutSec) {
     ::usleep(50 * 1000);
   }
 }
+
+int cmdAttach(const string& name, bool readOnly, int64_t startCursor,
+              bool resize) {
+  /*
+   * Best-effort interactive attach: stream output to stdout and (unless
+   * read-only) forward stdin as input.  The local terminal renders full-screen
+   * apps.  In read-only mode keystrokes are swallowed -- only Ctrl-C or Ctrl-]
+   * detach -- so an observer can watch without disturbing the session.
+   *
+   * startCursor selects where to begin: -1 (default) replays the retained
+   * scrollback so an observer sees recent context, an explicit offset starts
+   * there, and the head cursor (via --tail) shows only what comes next.
+   *
+   * On start and on every SIGWINCH we push the local terminal size to the
+   * session (both attach and observe), so the remote shell and full-screen apps
+   * lay out for the viewer's actual width; otherwise cursor-addressed redraws
+   * sized for the session's default 80x24 paint over the wrong lines here.
+   */
+  int64_t cursor = startCursor;
+
+  termios orig;
+  bool raw = false;
+  if (isatty(STDIN_FILENO) && tcgetattr(STDIN_FILENO, &orig) == 0) {
+    termios t = orig;
+    cfmakeraw(&t);
+    tcsetattr(STDIN_FILENO, TCSANOW, &t);
+    raw = true;
+  }
+
+  // Match the session to this terminal up front, then on each resize (below),
+  // unless --no-resize was passed.
+  if (raw && resize) {
+    struct sigaction sa = {};
+    sigemptyset(&sa.sa_mask);
+    sa.sa_handler = onWinch;
+    sa.sa_flags = SA_RESTART;
+    sigaction(SIGWINCH, &sa, nullptr);
+    g_winchPending = 1;  // force the initial size sync on the first loop pass
+  }
+  /*
+   * Ctrl-] detaches locally without forwarding it or ending the session.  In
+   * attach (read-write) mode every other key (Ctrl-C, Ctrl-D, ...) is forwarded
+   * to the remote, so use Ctrl-] to leave; in observe (read-only) mode input is
+   * swallowed and Ctrl-C also detaches, since there is nothing to forward it to.
+   */
+  const char kDetach = 0x1d;   // Ctrl-]
+  const char kIntr = 0x03;     // Ctrl-C (a local quit in read-only observe)
+  const char* detachHint = readOnly ? "Ctrl-C or Ctrl-]" : "Ctrl-]";
+  fprintf(stderr, "[etctl %s '%s' -- press %s to detach]\r\n",
+          readOnly ? "observe" : "attach", name.c_str(), detachHint);
+
+  int rc = 0;
+  bool detached = false;
+  while (!detached) {
+    // A pending SIGWINCH (or the initial sync): push the live terminal size to
+    // the session so its layout matches what we render here.
+    if (g_winchPending) {
+      g_winchPending = 0;
+      struct winsize ws;
+      if (ioctl(STDIN_FILENO, TIOCGWINSZ, &ws) == 0 && ws.ws_row > 0) {
+        TerminalInfo ti;
+        ti.set_row(ws.ws_row);
+        ti.set_column(ws.ws_col);
+        ti.set_width(ws.ws_xpixel);
+        ti.set_height(ws.ws_ypixel);
+        string rzPayload, rzResp;
+        ti.SerializeToString(&rzPayload);
+        uint8_t rzOp = 0;
+        oneShot(name, CTL_RESIZE, rzPayload, &rzOp, &rzResp, /*quiet=*/true);
+      }
+    }
+    uint8_t op = 0;
+    string payload;
+    if (!oneShot(name, CTL_READ, control_proto::encodeCursor(cursor), &op,
+                 &payload, /*quiet=*/true)) {
+      fprintf(stderr, "\r\n[session ended]\r\n");
+      rc = 0;
+      break;
+    }
+    ScrollbackRead r = control_proto::decodeReadResp(payload);
+    cursor = r.nextCursor;
+    if (!r.data.empty()) {
+      fwrite(r.data.data(), 1, r.data.size(), stdout);
+      fflush(stdout);
+    }
+
+    fd_set rfds;
+    FD_ZERO(&rfds);
+    FD_SET(STDIN_FILENO, &rfds);
+    timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 100 * 1000;
+    if (select(STDIN_FILENO + 1, &rfds, NULL, NULL, &tv) > 0 &&
+        FD_ISSET(STDIN_FILENO, &rfds)) {
+      char buf[4096];
+      ssize_t n = ::read(STDIN_FILENO, buf, sizeof(buf));
+      if (n > 0) {
+        /*
+         * Forward up to a detach byte; anything after it is dropped and we
+         * leave without sending it to the remote.  In read-only observe the
+         * bytes are never forwarded, and Ctrl-C counts as a detach too.
+         */
+        ssize_t k = 0;
+        while (k < n && buf[k] != kDetach && !(readOnly && buf[k] == kIntr)) {
+          k++;
+        }
+        if (k > 0 && !readOnly) {
+          cmdWrite(name, string(buf, k));
+        }
+        if (k < n) {
+          detached = true;
+          fprintf(stderr, "\r\n[detached]\r\n");
+        }
+      } else if (n == 0) {
+        break;  // local stdin closed
+      }
+    }
+  }
+
+  if (raw) {
+    tcsetattr(STDIN_FILENO, TCSANOW, &orig);
+  }
+  return rc;
+}
+
+int cmdAttach(const string& name, bool readOnly, int64_t startCursor,
+              bool resize);
 
 /*
  * run(): send a command and collect its output verbatim + real exit code, the way
@@ -1044,11 +1289,22 @@ int main(int argc, char** argv) {
   if (cmd == "info") return cmdInfo(name);
   if (cmd == "kill")
     return cmdKill(name, res.count("wait") ? res["wait"].as<double>() : 0.0);
+  if (cmd == "observe" || cmd == "attach") {
+    int64_t cursor = res.count("tail")     ? sessionHeadCursor(name)
+                     : res.count("cursor") ? res["cursor"].as<long long>()
+                                           : -1;
+    return cmdAttach(name, /*readOnly=*/cmd == "observe", cursor,
+                     /*resize=*/res.count("no-resize") == 0);
+  }
   if (cmd == "read") {
     int64_t cursor = res.count("cursor") ? res["cursor"].as<long long>() : -1;
     double timeout = res.count("timeout") ? res["timeout"].as<double>() : 0.0;
     return cmdRead(name, cursor, res.count("strip") > 0, res.count("follow") > 0,
                    timeout);
+  }
+  if (cmd == "sniff") {
+    int64_t cursor = res.count("cursor") ? res["cursor"].as<long long>() : -1;
+    return cmdSniff(name, res.count("follow") > 0, cursor, res.count("tail") > 0);
   }
   if (cmd == "wait") {
     return cmdWait(name, res["idle"].as<double>(), res["timeout"].as<double>());
