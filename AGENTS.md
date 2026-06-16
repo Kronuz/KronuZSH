@@ -21,12 +21,19 @@ Dropped from the prezto version: the `async` worker (gitstatusd is the async
 engine), `pmodload`/`vcs_info`, and a stray debug `echo >> /tmp/prompt_kronuz` that
 ran on every precmd.
 
-## Load order (`init.zsh`)
+## Layout & load order
 
-`env → options → history → completion → keybindings → aliases → terminal →
-plugins → prompt → prompt_kronuz_setup`, then `local.zsh` and `~/.zshrc.local`.
-`$KRONUZSH` is the repo dir. `env.zsh` is also meant to be sourced by `~/.zshenv`
-(env for all shells); `init.zsh` self-sources it so a `.zshrc`-only install works.
+Entry points are in `runcoms/` (names match their `~/.*` symlink targets);
+implementation modules live at the repo root. `install.sh` symlinks
+`~/.{zshenv,zprofile,zshrc,zlogin,zlogout}` -> `runcoms/*`, and `$KRONUZSH`
+self-resolves from `runcoms/zshrc` via `${(%):-%x}:A:h:h`.
+
+- `runcoms/zshenv` (all shells): env. `runcoms/zprofile` (login): sources
+  `~/.profile` for cross-shell env. `runcoms/zshrc` (interactive): the entry that
+  sources the modules below. `runcoms/zlogin`: bg-compiles the compdump.
+- `runcoms/zshrc` order: `zshenv → options → history → completion → keybindings →
+  aliases → terminal → plugins → prompt → prompt_kronuz_setup`, then `setopt
+  PROMPT_SUBST`, then `local.zsh` and `~/.zshrc.local`.
 
 The bar for adding anything: keep only the **genuinely useful** part, lean and in
 an obviously-named file, and prefer zsh-native over a vendored module (that's why
