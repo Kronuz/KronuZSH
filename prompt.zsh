@@ -227,11 +227,22 @@ function _kronuz_git_fallback {
     || branch="$(command git rev-parse --short HEAD 2>/dev/null)"
   [[ -z "$branch" ]] && return
   local sep="${(e)col[sep]}" none="${(e)col[none]}"
-  local s="${sep}:${(e)col[branch]}${branch}${none}" icons=''
-  command git diff --cached --quiet --ignore-submodules 2>/dev/null || icons+="${(e)col[added]}✛${none}"
-  command git diff --quiet --ignore-submodules 2>/dev/null || icons+="${(e)col[modified]}✴${none}"
-  [[ -n "$(command git ls-files --others --exclude-standard 2>/dev/null | head -1)" ]] && icons+=" ${(e)col[untracked]}⊖${none}"
-  [[ -z "$icons" ]] && icons="${(e)col[clean]}✔${none}"
+  local s="${sep}:${(e)col[branch]}${branch}${none}"
+  local remote
+  remote="$(command git rev-parse --abbrev-ref --symbolic-full-name @{upstream} 2>/dev/null)"
+  [[ -n "$remote" ]] && s+="${sep}:${(e)col[remote]}${remote}${none}"
+  local staged='' unstaged='' untracked='' icons=''
+  command git diff --cached --quiet --ignore-submodules 2>/dev/null || staged=1
+  command git diff --quiet --ignore-submodules 2>/dev/null || unstaged=1
+  [[ -n "$(command git ls-files --others --exclude-standard 2>/dev/null | head -1)" ]] && untracked=1
+  if [[ -n "$staged$unstaged$untracked" ]]; then
+    icons+="${(e)col[dirty]}✗${none}"
+    [[ -n "$staged" ]]    && icons+="${(e)col[added]}✛${none}"
+    [[ -n "$unstaged" ]]  && icons+="${(e)col[modified]}✴${none}"
+    [[ -n "$untracked" ]] && icons+=" ${(e)col[untracked]}⊖${none}"
+  else
+    icons="${(e)col[clean]}✔${none}"
+  fi
   _prompt_kronuz_git=" ${(e)col[info]}git${none}${s}${sep}(${none}${icons}${sep})${none}"
 }
 
@@ -250,19 +261,23 @@ function _kronuz_git_segment {
   else
     s+="${sep}:${(e)col[commit]}${VCS_STATUS_COMMIT[1,7]}${none}"
   fi
-  [[ -n "$VCS_STATUS_REMOTE_BRANCH" && "$VCS_STATUS_REMOTE_BRANCH" != "$VCS_STATUS_LOCAL_BRANCH" ]] && \
-    s+="${sep}:${(e)col[remote]}${VCS_STATUS_REMOTE_BRANCH}${none}"
+  [[ -n "$VCS_STATUS_REMOTE_NAME" ]] && \
+    s+="${sep}:${(e)col[remote]}${VCS_STATUS_REMOTE_NAME}/${VCS_STATUS_REMOTE_BRANCH}${none}"
   [[ -n "$VCS_STATUS_ACTION" ]] && s+="${sep}:${(e)col[action]}${VCS_STATUS_ACTION}${none}"
 
   local icons=''
-  (( VCS_STATUS_STASHES ))        && icons+="${(e)col[stashed]}⼐${none}"
+  (( VCS_STATUS_STASHES )) && icons+="${(e)col[stashed]}⼐${none}"
+  if (( VCS_STATUS_NUM_STAGED + VCS_STATUS_NUM_UNSTAGED + VCS_STATUS_NUM_UNTRACKED + VCS_STATUS_NUM_CONFLICTED )); then
+    icons+="${(e)col[dirty]}✗${none}"
+  else
+    icons+="${(e)col[clean]}✔${none}"
+  fi
   (( VCS_STATUS_COMMITS_AHEAD ))  && icons+="${(e)col[ahead]}⇡${none}"
   (( VCS_STATUS_COMMITS_BEHIND )) && icons+="${(e)col[behind]}⇣${none}"
   (( VCS_STATUS_NUM_STAGED ))     && icons+="${(e)col[added]}✛${none}"
   (( VCS_STATUS_NUM_UNSTAGED ))   && icons+="${(e)col[modified]}✴${none}"
   (( VCS_STATUS_NUM_CONFLICTED )) && icons+="${(e)col[unmerged]}❖${none}"
   (( VCS_STATUS_NUM_UNTRACKED ))  && icons+=" ${(e)col[untracked]}⊖${none}"
-  [[ -z "$icons" ]] && icons="${(e)col[clean]}✔${none}"
 
   _prompt_kronuz_git=" ${(e)col[info]}git${none}${s}${sep}(${none}${icons}${sep})${none}"
 }
