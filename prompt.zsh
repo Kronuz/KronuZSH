@@ -170,11 +170,7 @@ function prompt_kronuz_colors {
     DEFAULT_PROMPT_KRONUZ_COLOR_SEP='$col[darkgrey]'
     DEFAULT_PROMPT_KRONUZ_COLOR_IP='$col[darkgrey]'
     DEFAULT_PROMPT_KRONUZ_COLOR_TIME='$col[darkgrey]'
-if [[ "$ET_VERSION" = "" ]]; then
-    DEFAULT_PROMPT_KRONUZ_COLOR_HOST='$col[yellow]'
-else
-    DEFAULT_PROMPT_KRONUZ_COLOR_HOST='$col[green]'
-fi
+    DEFAULT_PROMPT_KRONUZ_COLOR_HOST='$col[blue]'
     DEFAULT_PROMPT_KRONUZ_COLOR_PWD='%(!.$col[tomato].$col[aqua])'
     DEFAULT_PROMPT_KRONUZ_COLOR_USER='%(!.%B$col[tomato].%B$col[white])'
   else
@@ -212,7 +208,7 @@ fi
     DEFAULT_PROMPT_KRONUZ_COLOR_SEP='$col[darkgrey]'
     DEFAULT_PROMPT_KRONUZ_COLOR_IP='$col[darkgrey]'
     DEFAULT_PROMPT_KRONUZ_COLOR_TIME='$col[darkgrey]'
-    DEFAULT_PROMPT_KRONUZ_COLOR_HOST='$col[green]'
+    DEFAULT_PROMPT_KRONUZ_COLOR_HOST='$col[blue]'
     DEFAULT_PROMPT_KRONUZ_COLOR_PWD='%(!.$col[red].$col[cyan])'
     DEFAULT_PROMPT_KRONUZ_COLOR_USER='%(!.%B$col[red].%B$col[white])'
   fi
