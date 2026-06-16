@@ -28,16 +28,18 @@ something, the file it lives in is obvious.
 
 ```bash
 git clone --recursive https://github.com/Kronuz/kronuzsh.git ~/.config/kronuzsh
-# back up your current rc files, then point zsh at this one:
-cp ~/.zshrc ~/.zshrc.bak 2>/dev/null
-cp ~/.zshenv ~/.zshenv.bak 2>/dev/null
-echo 'source ~/.config/kronuzsh/env.zsh'  > ~/.zshenv   # env for all shells
-echo 'source ~/.config/kronuzsh/init.zsh' > ~/.zshrc    # interactive layer
+# back up your current rc files, then symlink zsh at this repo's:
+mv ~/.zshrc  ~/.zshrc.bak  2>/dev/null
+mv ~/.zshenv ~/.zshenv.bak 2>/dev/null
+ln -s ~/.config/kronuzsh/env.zsh  ~/.zshenv   # env for all shells
+ln -s ~/.config/kronuzsh/init.zsh ~/.zshrc    # interactive layer
 exec zsh
 ```
 
-(`init.zsh` also sources `env.zsh`, so the `~/.zshenv` line is optional, just
-recommended so non-interactive shells get `$EDITOR` etc. too.)
+(Symlinks, so editing `~/.zshrc` edits the tracked `init.zsh` directly; `$KRONUZSH`
+self-resolves through the symlink. `init.zsh` also sources `env.zsh`, so the
+`~/.zshenv` link is optional, just recommended so non-interactive shells get
+`$EDITOR` etc. too.)
 
 If you already cloned without `--recursive`:
 `git submodule update --init --recursive`.
