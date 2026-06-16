@@ -23,8 +23,15 @@ ran on every precmd.
 
 ## Load order (`init.zsh`)
 
-`options → history → completion → keybindings → plugins → prompt → prompt_kronuz_setup`,
-then `local.zsh` and `~/.zshrc.local`. `$KRONUZSH` is the repo dir.
+`env → options → history → completion → keybindings → aliases → terminal →
+plugins → prompt → prompt_kronuz_setup`, then `local.zsh` and `~/.zshrc.local`.
+`$KRONUZSH` is the repo dir. `env.zsh` is also meant to be sourced by `~/.zshenv`
+(env for all shells); `init.zsh` self-sources it so a `.zshrc`-only install works.
+
+The bar for adding anything: keep only the **genuinely useful** part, lean and in
+an obviously-named file, and prefer zsh-native over a vendored module (that's why
+there's no `safe-paste` module, no `spectrum`, no `terminal` module — the useful
+bit of each is a few native lines). Don't re-import prezto's breadth wholesale.
 
 In `plugins.zsh` the order matters: **gitstatus first**, autosuggestions and
 history-substring-search next, **fast-syntax-highlighting LAST** (it wraps ZLE

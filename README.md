@@ -16,17 +16,28 @@ me that I actually use is either mine or a standalone plugin:
   [zsh-autosuggestions](https://github.com/zsh-users/zsh-autosuggestions),
   [zsh-history-substring-search](https://github.com/zsh-users/zsh-history-substring-search),
   and [gitstatus](https://github.com/romkatv/gitstatus).
-- **config**: `options.zsh`, `history.zsh`, `completion.zsh`, `keybindings.zsh`.
+- **config**: `env.zsh`, `options.zsh`, `history.zsh`, `completion.zsh`,
+  `keybindings.zsh`, `aliases.zsh`, `terminal.zsh` — one named file per concern.
+
+The guiding rule: keep only the **genuinely useful** parts, lean and easy to find,
+and prefer zsh-native over a vendored module (e.g. bracketed paste is built in, so
+there's no `safe-paste`). No cryptic framework magic; if you want to change
+something, the file it lives in is obvious.
 
 ## Install
 
 ```bash
 git clone --recursive https://github.com/Kronuz/kronuzsh.git ~/.config/kronuzsh
-# back up your current rc, then point zsh at this one:
+# back up your current rc files, then point zsh at this one:
 cp ~/.zshrc ~/.zshrc.bak 2>/dev/null
-echo 'source ~/.config/kronuzsh/init.zsh' > ~/.zshrc
+cp ~/.zshenv ~/.zshenv.bak 2>/dev/null
+echo 'source ~/.config/kronuzsh/env.zsh'  > ~/.zshenv   # env for all shells
+echo 'source ~/.config/kronuzsh/init.zsh' > ~/.zshrc    # interactive layer
 exec zsh
 ```
+
+(`init.zsh` also sources `env.zsh`, so the `~/.zshenv` line is optional, just
+recommended so non-interactive shells get `$EDITOR` etc. too.)
 
 If you already cloned without `--recursive`:
 `git submodule update --init --recursive`.
@@ -65,11 +76,14 @@ into `~/.cache/gitstatus/` (from GitHub releases). Nothing is committed here.
 ## Layout
 
 ```
-init.zsh           entry point (your ~/.zshrc sources this)
+env.zsh            environment, for all shells (your ~/.zshenv sources this)
+init.zsh           interactive entry point (your ~/.zshrc sources this)
 options.zsh        shell options
 history.zsh        history (HISTSIZE 10M)
 completion.zsh     completion (cached compinit)
 keybindings.zsh    key bindings (emacs)
+aliases.zsh        the useful aliases (ls colors, ll, mkdir -p, ...)
+terminal.zsh       window/tab title
 plugins.zsh        plugin loader
 prompt.zsh         the Kronuz prompt
 local.zsh.example  machine-local template (real local.zsh is git-ignored)
