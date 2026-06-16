@@ -18,6 +18,11 @@ source "$KRONUZSH/terminal.zsh"
 source "$KRONUZSH/plugins.zsh"
 source "$KRONUZSH/prompt.zsh"
 prompt_kronuz_setup
+# The prompt's segments are deferred ${(e)...} strings; PROMPT_SUBST is what makes
+# zsh expand them at display. (prezto's prompt module used to apply this from
+# $prompt_opts; we set it explicitly since there's no module.) Set globally here,
+# not inside prompt_kronuz_setup, which uses LOCAL_OPTIONS and would revert it.
+setopt PROMPT_SUBST PROMPT_PERCENT PROMPT_CR PROMPT_SP
 
 # Machine-local, non-public config (tool hooks, corp URLs, PATH tweaks).
 # Tracked example: local.zsh.example. Real file is git-ignored.

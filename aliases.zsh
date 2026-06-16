@@ -1,7 +1,7 @@
 # aliases.zsh: the genuinely useful ones. Add your own freely, right here.
 
 # ls: color + group dirs first + classify, GNU or BSD/macOS.
-if ls --color=auto -d . &>/dev/null; then
+if ls --version &>/dev/null; then
   alias ls='ls --color=auto --group-directories-first -F'   # GNU coreutils
 else
   alias ls='ls -GF'                                         # BSD / macOS
