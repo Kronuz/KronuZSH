@@ -364,7 +364,7 @@ function prompt_kronuz_setup {
   esac
   DEFAULT_PROMPT_KRONUZ_OS="\${_kronuz_os:+\"$col[host]\${_kronuz_os}$col[none] \"}"
 
-  DEFAULT_PROMPT_KRONUZ_ERR="%(?.$col[status_ok]•$col[none].$col[status_err]•$col[none])"
+  DEFAULT_PROMPT_KRONUZ_ERR="%(?.$col[status_ok]●$col[none].$col[status_err]●$col[none])"
   DEFAULT_PROMPT_KRONUZ_ERROR="%(?.. $col[status_err]⏎ %?$col[none])"
   DEFAULT_PROMPT_KRONUZ_VIM="\${VIM:+\" $col[vim]V$col[none]\"}"
   DEFAULT_PROMPT_KRONUZ_EMACS="\${INSIDE_EMACS:+\" $col[emacs]E$col[none]\"}"
