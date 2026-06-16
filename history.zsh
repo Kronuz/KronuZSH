@@ -1,6 +1,9 @@
 # History. HISTSIZE bumped to 10M (German's VM tweak, generalized).
 
-HISTFILE="${HISTFILE:-${ZDOTDIR:-$HOME}/.zhistory}"
+# Force the history file rather than deferring to the system default (macOS
+# /etc/zshrc presets HISTFILE=~/.zsh_history before us), so it's the same file
+# on every machine and stays continuous.
+HISTFILE="${ZDOTDIR:-$HOME}/.zhistory"
 HISTSIZE=10000000
 SAVEHIST=10000000
 
