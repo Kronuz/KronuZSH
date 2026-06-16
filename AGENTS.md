@@ -107,10 +107,15 @@ the load order (fast-syntax-highlighting stays last). Bind keys after sourcing.
 - **Syntax**: `zsh -n <file>`.
 - **Sandbox** (doesn't touch the real shell):
   `ZDOTDIR=. HISTFILE=/tmp/kz-hist zsh -i`.
-- **Render the prompt** without a live line editor:
-  `prompt_kronuz_precmd; print -rP -- "${(e)PROMPT}"`.
-  The `${(e)}` is required: `print -P "$PROMPT"` alone does **not** trigger the
-  `subst` expansion and you'll see literal `${(e)...}`.
+- **Render the prompt the real way — in a pty.** The reliable test is an actual
+  interactive shell: a fresh `etctl open` to a host where kronuzsh is installed
+  shows the live prompt (and starts `gitstatusd`, which needs a tty), or a local
+  pty (`script -q /dev/null zsh -i`, or a Python `pty.fork`).
+- **Beware the false positive.** `prompt_kronuz_precmd; print -rP -- "${(e)PROMPT}"`
+  expands the segments manually with `${(e)}`, which **bypasses `PROMPT_SUBST`** — it
+  renders fine even when the live prompt is broken. (This masked two real bugs: a
+  missing `setopt PROMPT_SUBST`, and that the prompt is dead without it.) Use it
+  only as a quick structural check, never as proof it works.
 - **gitstatusd needs a tty** (job control). In a no-tty `zsh -ic` it won't start and
   the fallback runs; test the real daemon in a terminal (or an etctl VM pty).
 - The **vi/emacs keymap arrow** (`❯`) is set by a `zle-line-init` hook, so it only
