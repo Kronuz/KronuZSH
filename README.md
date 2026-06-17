@@ -39,6 +39,9 @@ by the hostname). Install any Nerd Font and point your terminal at it — e.g.
 Without a Nerd Font the prompt still works; the OS logo just shows as tofu (□) —
 set `_kronuz_os=''` in `local.zsh` to hide it.
 
+For a longer, opinionated (and surely incomplete) rundown of good coding fonts,
+see [NerdFonts.md](NerdFonts.md).
+
 ## Install
 
 ```bash
