@@ -16,6 +16,7 @@ source "$KRONUZSH/keybindings.zsh"
 source "$KRONUZSH/aliases.zsh"
 source "$KRONUZSH/terminal.zsh"
 source "$KRONUZSH/plugins.zsh"
+source "$KRONUZSH/integrations.zsh"   # optional external tools (fzf, zoxide, ...), each guarded
 source "$KRONUZSH/prompt.zsh"
 prompt_kronuz_setup
 # The prompt's segments are deferred ${(e)...} strings; PROMPT_SUBST is what makes

@@ -23,3 +23,9 @@
 
 # --- misc PATH ---
 # export PATH="$HOME/.local/bin:$PATH"
+
+# --- external tool tweaks (see integrations.zsh; all auto-enabled when present) ---
+# ripgrep: point at a config file for your default flags (smart-case, hidden, ...)
+# export RIPGREP_CONFIG_PATH="$HOME/.config/ripgrep/config"
+# fzf: override the look/behavior of the pickers
+# export FZF_DEFAULT_OPTS='--height 60% --layout=reverse --border --info=inline'

@@ -91,6 +91,48 @@ into `~/.cache/gitstatus/` (from GitHub releases). Nothing is committed here.
 - **Either way the prompt still works**: if `gitstatusd` isn't up, the git
   segment falls back to a direct `git` call (a little slower on huge repos).
 
+## External tools
+
+A handful of modern CLI tools get wired in automatically **when they're
+installed**, and are silently skipped when they aren't (so the same config works
+on a fresh box or the server). Install the ones you want, e.g. on macOS:
+
+```bash
+brew install ripgrep fd fzf zoxide bat git-delta
+```
+
+What each gets you, all guarded on the command being present (`integrations.zsh`,
+except delta which lives in git config):
+
+- **[fzf](https://github.com/junegunn/fzf)** — fuzzy finder. The modern
+  `fzf --zsh` integration binds **Ctrl-T** (insert a file path), **Ctrl-R**
+  (search history; this takes over from the plain incremental search), and
+  **Alt-C** (cd into a chosen directory).
+- **[fd](https://github.com/sharkdp/fd)** — a friendlier `find`, and the engine
+  behind fzf's file/dir pickers (hidden files, follows symlinks, skips `.git`).
+- **[zoxide](https://github.com/ajeetdsouza/zoxide)** — a `cd` that learns your
+  most-used dirs. Adds `z` (jump) and `zi` (interactive); the real `cd` is left
+  alone.
+- **[bat](https://github.com/sharkdp/bat)** — a syntax-highlighting pager, used
+  as the **man pager** and fzf's file preview. It does **not** shadow `cat`.
+- **[ripgrep](https://github.com/BurntSushi/ripgrep)** (`rg`) — a fast `grep`;
+  nothing to wire, it just works. Point `$RIPGREP_CONFIG_PATH` at a config in
+  `local.zsh` for defaults.
+- **[git-delta](https://github.com/dandavison/delta)** — a syntax-highlighting
+  pager for git diffs. `install.sh` sets it in your **global gitconfig** (so you
+  get `navigate`, line numbers, and `git add -p` highlighting, not just paging),
+  guarded with `command -v delta` so it falls back to `less`/`cat` where delta
+  isn't installed. To set it up without re-running the installer:
+
+  ```bash
+  git config --global core.pager \
+    'if command -v delta >/dev/null 2>&1; then delta; else less; fi'
+  git config --global interactive.diffFilter \
+    'if command -v delta >/dev/null 2>&1; then delta --color-only; else cat; fi'
+  git config --global delta.navigate true
+  git config --global delta.line-numbers true
+  ```
+
 ## Layout
 
 ```
@@ -107,6 +149,7 @@ completion.zsh     completion (cached compinit)
 keybindings.zsh    key bindings (emacs; word nav, Ctrl-W to last slash)
 aliases.zsh        the useful aliases (ls colors, ll, mkdir -p, ...)
 terminal.zsh       window/tab title
+integrations.zsh   optional external tools (fzf, fd, zoxide, bat), each guarded
 prompt.zsh         the Kronuz prompt (OS glyph, gitstatus, ...)
 plugins.zsh        plugin loader
 local.zsh.example  machine-local template (real local.zsh is git-ignored)

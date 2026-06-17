@@ -36,6 +36,20 @@ install() {
     echo "linked  ~/.$rc -> $target"
   done
 
+  # git-delta: use it as git's diff pager and `git add -p` highlighter, guarded
+  # with `command -v delta` so a box without delta falls back to less/cat. Set
+  # in the global gitconfig (the env can't carry interactive.diffFilter), and
+  # idempotent: re-running just re-sets the same keys.
+  if command -v git >/dev/null; then
+    git config --global core.pager \
+      'if command -v delta >/dev/null 2>&1; then delta; else less; fi'
+    git config --global interactive.diffFilter \
+      'if command -v delta >/dev/null 2>&1; then delta --color-only; else cat; fi'
+    git config --global delta.navigate true
+    git config --global delta.line-numbers true
+    echo "configured git to use delta when available (falls back to less)"
+  fi
+
   echo
   echo "done. start a fresh shell:  exec zsh"
 }
