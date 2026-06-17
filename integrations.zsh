@@ -67,9 +67,11 @@ fi
 # When present it takes over the ls aliases (overriding aliases.zsh, which loads
 # before this). NB: `--git` is deliberately left off `ll`/`la` because it walks
 # git status per entry, which is slow in large/deep dirs; use `llg`/`lag` when
-# you actually want the git column.
+# you actually want the git column. EZA_CONFIG_DIR points eza at our bundled
+# Kronuz theme (eza/theme.yml); override it in local.zsh for your own.
 # install: brew install eza · cargo install eza
 if (( $+commands[eza] )); then
+  export EZA_CONFIG_DIR="${EZA_CONFIG_DIR:-$KRONUZSH/eza}"
   alias ls='eza --group-directories-first --classify=auto --icons=auto'
   alias l='eza -1a --group-directories-first --icons=auto'
   alias ll='eza -lh --group-directories-first --icons=auto'

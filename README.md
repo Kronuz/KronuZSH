@@ -164,7 +164,10 @@ These need no shell wiring (they're just commands), so they aren't in
 `integrations.zsh`; install any and they work. Roughly ranked by daily payoff:
 
 1. **[eza](https://github.com/eza-community/eza)** — a modern `ls` (icons, git,
-   tree). *Wired*: when present it takes over the `ls`/`ll`/`la`/`lt` aliases.
+   tree). *Wired*: when present it takes over the `ls`/`ll`/`la`/`lt` aliases
+   (plus `llg`/`lag` for the slower git column), and uses the bundled Kronuz
+   color theme (`eza/theme.yml`, from the Kronuz VSCode palette; override with
+   `EZA_CONFIG_DIR` in `local.zsh`).
 2. **[lazygit](https://github.com/jesseduffield/lazygit)** — a terminal git UI
    for staging, rebasing, and stashing; uses your delta config.
 3. **[hyperfine](https://github.com/sharkdp/hyperfine)** — command-line
@@ -208,7 +211,8 @@ completion.zsh     completion (cached compinit)
 keybindings.zsh    key bindings (emacs; word nav, Ctrl-W to last slash)
 aliases.zsh        the useful aliases (ls colors, ll, mkdir -p, ...)
 terminal.zsh       window/tab title
-integrations.zsh   optional external tools (fzf, fd, zoxide, bat), each guarded
+integrations.zsh   optional external tools (fzf, fd, zoxide, bat, eza), guarded
+eza/theme.yml      Kronuz color theme for eza (loaded via $EZA_CONFIG_DIR)
 prompt.zsh         the Kronuz prompt (OS glyph, gitstatus, ...)
 plugins.zsh        plugin loader
 local.zsh.example  machine-local template (real local.zsh is git-ignored)

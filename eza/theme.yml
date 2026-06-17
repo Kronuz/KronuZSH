@@ -1,0 +1,76 @@
+# Kronuz palette for eza, derived from the Kronuz VSCode theme
+# (github.com/Kronuz/kronuz-theme-vscode). A warm, muted dark scheme, chosen to
+# tone eza down from its bright defaults: nothing bold, chrome (perms/size/user/
+# date/punctuation) in dim comment-tan and gray, names and git in soft accents.
+#
+# eza auto-loads this when $EZA_CONFIG_DIR points at this directory;
+# integrations.zsh sets that to $KRONUZSH/eza. Edit freely, or point
+# EZA_CONFIG_DIR elsewhere in local.zsh to use your own.
+colourful: true
+filekinds:
+  normal: {foreground: '#c8c6c5'}
+  directory: {foreground: '#e8bf6a'}
+  symlink: {foreground: '#6e9cbe'}
+  pipe: {foreground: '#95815e'}
+  block_device: {foreground: '#cc7833'}
+  char_device: {foreground: '#cc7833'}
+  socket: {foreground: '#95815e'}
+  special: {foreground: '#caa473'}
+  executable: {foreground: '#a5c261'}
+  mount_point: {foreground: '#6089b4'}
+perms:
+  user_read: {foreground: '#caa473'}
+  user_write: {foreground: '#cc7833'}
+  user_execute_file: {foreground: '#a5c261'}
+  user_execute_other: {foreground: '#a5c261'}
+  group_read: {foreground: '#95815e'}
+  group_write: {foreground: '#95815e'}
+  group_execute: {foreground: '#95815e'}
+  other_read: {foreground: '#676867'}
+  other_write: {foreground: '#676867'}
+  other_execute: {foreground: '#676867'}
+  special_user_file: {foreground: '#caa473'}
+  special_other: {foreground: '#676867'}
+  attribute: {foreground: '#95815e'}
+size:
+  major: {foreground: '#c1be91'}
+  minor: {foreground: '#95815e'}
+  number_byte: {foreground: '#c1be91'}
+  number_kilo: {foreground: '#c1be91'}
+  number_mega: {foreground: '#caa473'}
+  number_giga: {foreground: '#cc7833'}
+  number_huge: {foreground: '#da4939'}
+  unit_byte: {foreground: '#95815e'}
+  unit_kilo: {foreground: '#95815e'}
+  unit_mega: {foreground: '#95815e'}
+  unit_giga: {foreground: '#95815e'}
+  unit_huge: {foreground: '#95815e'}
+users:
+  user_you: {foreground: '#caa473'}
+  user_root: {foreground: '#C7444A'}
+  user_other: {foreground: '#95815e'}
+  group_yours: {foreground: '#95815e'}
+  group_other: {foreground: '#676867'}
+  group_root: {foreground: '#C7444A'}
+links:
+  normal: {foreground: '#6e9cbe'}
+  multi_link_file: {foreground: '#cc7833'}
+git:
+  new: {foreground: '#219186'}
+  modified: {foreground: '#cb4b16'}
+  deleted: {foreground: '#dc322f'}
+  renamed: {foreground: '#6089b4'}
+  typechange: {foreground: '#cc7833'}
+  ignored: {foreground: '#676867'}
+  conflicted: {foreground: '#da4939'}
+punctuation: {foreground: '#676867'}
+date: {foreground: '#95815e'}
+inode: {foreground: '#676867'}
+blocks: {foreground: '#95815e'}
+header: {foreground: '#95815e'}
+octal: {foreground: '#95815e'}
+flags: {foreground: '#95815e'}
+symlink_path: {foreground: '#676867'}
+control_char: {foreground: '#C7444A'}
+broken_symlink: {foreground: '#dc322f'}
+broken_path_overlay: {foreground: '#676867'}
