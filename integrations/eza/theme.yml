@@ -12,8 +12,8 @@ colourful: true
 
 filekinds:
   normal: {foreground: '#c8c6c5'}
-  directory: {foreground: "#5BB9CD"}
-  symlink: {foreground: '#6e9cbe'}        # blue
+  directory: {foreground: "#6e9cbe"}
+  symlink: {foreground: '#5BB9CD'}        # blue
   executable: {foreground: '#a5c261'}     # green
   pipe: {foreground: '#7a7775'}
   block_device: {foreground: '#cc7833'}
@@ -54,13 +54,13 @@ size:
 users:
   user_you: {foreground: '#9a9794'}       # calm neutral (was mustard)
   user_root: {foreground: '#da4939'}
-  user_other: {foreground: '#7a7775'}
-  group_yours: {foreground: '#7a7775'}
-  group_other: {foreground: '#676867'}
+  user_other: {foreground: '#575857'}
+  group_yours: {foreground: '#9a9794'}
   group_root: {foreground: '#da4939'}
+  group_other: {foreground: '#575857'}
 
 links:
-  normal: {foreground: '#6e9cbe'}
+  normal: {foreground: '#5BB9CD'}
   multi_link_file: {foreground: '#cc7833'}
 
 git:
