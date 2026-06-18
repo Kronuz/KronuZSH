@@ -428,6 +428,25 @@ function _kronuz_osc_precmd {
   _kronuz_osc_b=$'%{\e]133;B\a%}'
 }
 
+# ---- transient prompt: collapse a submitted prompt to a minimal caret ----
+# On accept-line, swap PROMPT to a one-line caret and redraw, so scrollback keeps
+# only a minimal prompt for past commands; restored before the next prompt. Off on
+# dumb (reset-prompt can't redraw in place there) and when PROMPT_KRONUZ_TRANSIENT=''.
+typeset -g _kronuz_prompt_full='' _kronuz_rprompt_full=''
+function _kronuz_transient_accept {
+  if (( ! ${_kronuz_dumb:-0} )) && [[ -n "$_kronuz_transient_prompt" ]]; then
+    _kronuz_prompt_full=$PROMPT _kronuz_rprompt_full=$RPROMPT
+    PROMPT=$_kronuz_transient_prompt RPROMPT=''
+    zle reset-prompt
+  fi
+  zle accept-line
+}
+function _kronuz_transient_restore {
+  [[ -n "$_kronuz_prompt_full" ]] || return
+  PROMPT=$_kronuz_prompt_full RPROMPT=$_kronuz_rprompt_full
+  _kronuz_prompt_full=''
+}
+
 # ---- precmd ----
 typeset -g _kronuz_dumb=0 _kronuz_nocolor=0
 function prompt_kronuz_precmd {
@@ -551,4 +570,12 @@ function prompt_kronuz_setup {
   SPROMPT='zsh: correct $col[red]%R%f to $col[green]%r%f [nyae]? '
   RPROMPT="$kronuz[overwrite]$kronuz[vim]$kronuz[emacs]"
   PROMPT="$kronuz[err] $kronuz[info]$kronuz[context]$kronuz[etctl]$kronuz[git]$kronuz[venv]$kronuz[jobs]$kronuz[error]$kronuz[duration]$kronuz[nl]$kronuz[time] $kronuz[pwd] $kronuz[prompt] \${_kronuz_osc_b}"
+
+  # Transient prompt: the caret left in scrollback for already-run commands.
+  # Override the look with PROMPT_KRONUZ_TRANSIENT, or set it to '' to disable.
+  _kronuz_transient_prompt="${PROMPT_KRONUZ_TRANSIENT-$col[primary3]❯$col[none] }"
+  zle -N _kronuz_transient_accept
+  bindkey '^M' _kronuz_transient_accept
+  bindkey '^J' _kronuz_transient_accept
+  add-zsh-hook precmd _kronuz_transient_restore
 }
