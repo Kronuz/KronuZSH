@@ -79,13 +79,13 @@ fi
 # install: brew install eza · cargo install eza
 if (( $+commands[eza] )); then
   export EZA_CONFIG_DIR="${EZA_CONFIG_DIR:-$KRONUZSH/integrations/eza}"
-  alias ls='eza --group-directories-first --classify=auto --icons=auto'
-  alias l='eza -1a --group-directories-first --icons=auto'
-  alias ll='eza -lh --group-directories-first --icons=auto'
-  alias la='eza -lha --group-directories-first --icons=auto'
+  alias ls='eza --group-directories-first --classify=auto --icons=never'
+  alias l='eza -1a --group-directories-first --icons=never'
+  alias ll='eza -lh --group-directories-first --icons=never'
+  alias la='eza -lha --group-directories-first --icons=never'
   alias llg='ll --git'   # long + git status (slower in big repos)
   alias lag='la --git'
-  alias lt='eza -T --level=2 --group-directories-first --icons=auto'   # tree
+  alias lt='eza -T --level=2 --group-directories-first --icons=never'   # tree
 fi
 
 # atuin: a SQLite-backed shell history with a great fuzzy search. It is the one
