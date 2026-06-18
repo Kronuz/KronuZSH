@@ -72,8 +72,17 @@ overridable by exporting `PROMPT_KRONUZ_COLOR_<NAME>` (e.g. in `local.zsh`).
 (`24bit`/`truecolor`) and `$terminfo[colors]`; on a non-truecolor terminal it
 `zmodload zsh/nearcolor`, which transparently maps the hex codes to the nearest
 256-color (and to the default foreground on 8/16-color terminals, so no broken
-escapes). One hex palette therefore covers every tier — truecolor → 256 → 16/8 →
-the `dumb` bail (which returns a plain, color-free prompt before any of this).
+escapes). One hex palette therefore covers every tier: truecolor → 256 → 16/8.
+
+**No-color mode.** `prompt_kronuz_precmd` sets two flags each prompt (so they
+react live to `export TERM=dumb` / `NO_COLOR=1` and back): `_kronuz_dumb`
+(`$TERM` empty/`dumb`/`unknown`) and `_kronuz_nocolor` (dumb **or** `$NO_COLOR`,
+the [no-color.org](https://no-color.org) standard). When `_kronuz_nocolor`,
+`prompt_kronuz_colors` blanks every `DEFAULT_PROMPT_KRONUZ_COLOR_*` (via
+`${(k)parameters[(I)...]}`) and returns, so the **full layout still renders with
+zero escapes**. When `_kronuz_dumb`, `prompt_kronuz_glyphs` forces the plain glyph
+set (PUA would be tofu). The keymap arrow is seeded in setup so a prompt char shows
+even where ZLE is off (Emacs `M-x shell`), where `zle-line-init` never fires.
 
 The **host** color is special: green when `$ET_VERSION` is set (inside an Eternal
 Terminal session), yellow otherwise.

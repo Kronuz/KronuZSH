@@ -138,6 +138,14 @@ function prompt_kronuz_colors {
   # the 16..255 colors and ANSI %F{0..15} for the basic ones; on a non-truecolor
   # terminal `zsh/nearcolor` (loaded in setup) downsamples the hex codes to 256 (or
   # to the default fg on 8/16-color terminals), so there's no 256-vs-8 branch here.
+  if (( ${_kronuz_nocolor:-0} )); then
+    # No-color mode (TERM=dumb/unknown or $NO_COLOR set): blank every semantic color
+    # so the full layout still renders, just with zero escapes. Recomputed every
+    # precmd, so toggling TERM or NO_COLOR live takes effect on the next prompt.
+    local v
+    for v in ${(k)parameters[(I)DEFAULT_PROMPT_KRONUZ_COLOR_*]}; do : ${(P)v::=}; done
+    return
+  fi
   DEFAULT_PROMPT_KRONUZ_COLOR_PRIMARY1='%(!.%B$col[red].%B$col[red])'
   DEFAULT_PROMPT_KRONUZ_COLOR_PRIMARY2='%(!.%B$col[red].%B$col[yellow])'
   DEFAULT_PROMPT_KRONUZ_COLOR_PRIMARY3='%(!.$col[red].%B$col[green])'
@@ -199,8 +207,9 @@ function prompt_kronuz_glyphs {
     darwin*) os_nerd=$'\uf179' ;;  # nf-fa-apple
     linux*)  os_nerd=$'\uf17c' ;;  # nf-fa-linux (Tux)
   esac
-  if [[ "${(L)PROMPT_KRONUZ_NERD_FONT:-1}" == (0|no|off|false) ]]; then
-    # Plain-Unicode set (no Nerd Font required; renders via normal font fallback)
+  if (( ${_kronuz_dumb:-0} )) || [[ "${(L)PROMPT_KRONUZ_NERD_FONT:-1}" == (0|no|off|false) ]]; then
+    # Plain-Unicode set (no Nerd Font required; renders via normal font fallback).
+    # Also forced on dumb/unknown terminals, where PUA glyphs would be tofu.
     g=(
       os         ''         # no good plain OS glyph; hidden by default
       branch     $'\u2387'  # ⎇  branch (Alternative key)
@@ -351,15 +360,26 @@ function _kronuz_editor_info {
   else
     editor_info[overwrite]=''
   fi
-  zle reset-prompt 2>/dev/null
+  # reset-prompt redraws in place, which needs cursor addressing. A dumb terminal
+  # has none, so on a multi-line prompt it reprints (duplicate line) instead — skip
+  # it there. The seeded keymap means the first render already shows the arrow.
+  (( ${_kronuz_dumb:-0} )) || zle reset-prompt 2>/dev/null
 }
 function zle-keymap-select { _kronuz_editor_info }
 function zle-line-init { _kronuz_editor_info }
 
 # ---- precmd ----
+typeset -g _kronuz_dumb=0 _kronuz_nocolor=0
 function prompt_kronuz_precmd {
   setopt LOCAL_OPTIONS
   unsetopt XTRACE KSH_ARRAYS
+  # Terminal capability, re-checked every prompt so `export TERM=dumb` / `NO_COLOR=1`
+  # (and back) take effect live. `dumb` also forces plain glyphs; `nocolor` strips
+  # all color while keeping the full layout (NO_COLOR = the no-color.org standard).
+  _kronuz_dumb=0
+  [[ -z "$TERM" || "$TERM" == (dumb|unknown) ]] && _kronuz_dumb=1
+  _kronuz_nocolor=$_kronuz_dumb
+  [[ -n "${NO_COLOR-}" ]] && _kronuz_nocolor=1
   prompt_kronuz_colors
   prompt_kronuz_glyphs
   _prompt_kronuz_pwd="${${(%):-%~}//\%/%%}"
@@ -371,16 +391,7 @@ function prompt_kronuz_precmd {
 function prompt_kronuz_setup {
   setopt LOCAL_OPTIONS
   unsetopt XTRACE KSH_ARRAYS
-
-  # Dumb/unknown terminals (Emacs `M-x shell`, some CI, a bare pipe) can't render
-  # colors or glyphs: zsh maps %F{N} through terminfo, and without a color
-  # capability the 8..255 codes come out as broken escapes (e.g. `\e[3231m`). Use a
-  # minimal, escape-free, glyph-free prompt and skip all the hooks/ZLE/git work.
-  if [[ -z "$TERM" || "$TERM" == (dumb|unknown) ]]; then
-    unset RPROMPT
-    PROMPT='%n@%m %~ %# '
-    return
-  fi
+  zmodload -i zsh/parameter 2>/dev/null  # $parameters, used by the no-color path
 
   prompt_opts=(cr percent sp subst)
 
@@ -414,6 +425,12 @@ function prompt_kronuz_setup {
   zstyle ':kronuz:editor:keymap:primary' format "$col[primary1]❯$col[none]$col[primary2]❯$col[none]$col[primary3]❯$col[none]"
   zstyle ':kronuz:editor:keymap:alternate' format "$col[primary3]❮$col[none]$col[primary2]❮$col[none]$col[primary1]❮$col[none]"
   zstyle ':kronuz:editor:keymap:overwrite' format " $col[overwrite]♺$col[none]"
+
+  # Seed the keymap arrow so there's always a prompt char, even where ZLE is off
+  # (e.g. Emacs `M-x shell`) and zle-line-init never fires to set it.
+  local REPLY
+  zstyle -s ':kronuz:editor:keymap:primary' format 'REPLY'
+  editor_info[keymap]="$REPLY"
 
   _prompt_kronuz_git=''
   _prompt_kronuz_pwd=''

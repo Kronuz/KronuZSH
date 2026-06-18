@@ -45,6 +45,12 @@ a normal font: set `PROMPT_KRONUZ_NERD_FONT=0` (also accepts `no`/`off`/`false`)
 hide it (e.g. `PROMPT_KRONUZ_GLYPH_MODIFIED='*'`). See the glyph table in
 `prompt_kronuz_glyphs` for the full list of names and both default sets.
 
+Color is handled automatically: a `dumb`/unknown terminal (Emacs `M-x shell`,
+some CI) or `NO_COLOR=1` ([no-color.org](https://no-color.org)) renders the full
+layout with **no color escapes** (and `dumb` also forces the plain glyphs). It's
+re-checked every prompt, so `export TERM=dumb` / `NO_COLOR=1` (and back) take
+effect live.
+
 For a longer, opinionated (and surely incomplete) rundown of good coding fonts,
 see [NerdFonts.md](NerdFonts.md).
 
