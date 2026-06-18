@@ -318,18 +318,18 @@ function _kronuz_git_segment {
     s+=" ${info}${glyph[action]}${none} ${(e)col[action]}${VCS_STATUS_ACTION}${none}"
 
   local icons=''
-  (( VCS_STATUS_STASHES )) && icons+="${(e)col[stashed]}${glyph[stashed]}${none}"
+  (( VCS_STATUS_STASHES )) && icons+="${(e)col[stashed]}${glyph[stashed]}${VCS_STATUS_STASHES}${none}"
   if (( VCS_STATUS_NUM_STAGED + VCS_STATUS_NUM_UNSTAGED + VCS_STATUS_NUM_UNTRACKED + VCS_STATUS_NUM_CONFLICTED )); then
     icons+="${(e)col[dirty]}${glyph[dirty]}${none}"
   else
     icons+="${(e)col[clean]}${glyph[clean]}${none}"
   fi
-  (( VCS_STATUS_COMMITS_AHEAD ))  && icons+="${(e)col[ahead]}${glyph[ahead]}${none}"
-  (( VCS_STATUS_COMMITS_BEHIND )) && icons+="${(e)col[behind]}${glyph[behind]}${none}"
-  (( VCS_STATUS_NUM_STAGED ))     && icons+="${(e)col[added]}${glyph[staged]}${none}"
-  (( VCS_STATUS_NUM_UNSTAGED ))   && icons+="${(e)col[modified]}${glyph[modified]}${none}"
-  (( VCS_STATUS_NUM_CONFLICTED )) && icons+="${(e)col[unmerged]}${glyph[conflicted]}${none}"
-  (( VCS_STATUS_NUM_UNTRACKED ))  && icons+=" ${(e)col[untracked]}${glyph[untracked]}${none}"
+  (( VCS_STATUS_COMMITS_AHEAD ))  && icons+="${(e)col[ahead]}${glyph[ahead]}${VCS_STATUS_COMMITS_AHEAD}${none}"
+  (( VCS_STATUS_COMMITS_BEHIND )) && icons+="${(e)col[behind]}${glyph[behind]}${VCS_STATUS_COMMITS_BEHIND}${none}"
+  (( VCS_STATUS_NUM_STAGED ))     && icons+="${(e)col[added]}${glyph[staged]}${VCS_STATUS_NUM_STAGED}${none}"
+  (( VCS_STATUS_NUM_UNSTAGED ))   && icons+="${(e)col[modified]}${glyph[modified]}${VCS_STATUS_NUM_UNSTAGED}${none}"
+  (( VCS_STATUS_NUM_CONFLICTED )) && icons+="${(e)col[unmerged]}${glyph[conflicted]}${VCS_STATUS_NUM_CONFLICTED}${none}"
+  (( VCS_STATUS_NUM_UNTRACKED ))  && icons+=" ${(e)col[untracked]}${glyph[untracked]}${VCS_STATUS_NUM_UNTRACKED}${none}"
 
   _prompt_kronuz_git="${s}${sep} (${none}${icons}${sep})${none}"
 }
