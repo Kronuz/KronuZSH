@@ -368,6 +368,15 @@ function _kronuz_editor_info {
 function zle-keymap-select { _kronuz_editor_info }
 function zle-line-init { _kronuz_editor_info }
 
+# ---- IP segment (cached; the lookup forks several procs, so don't run it on
+# every prompt render — refresh at most every 10s) ----
+typeset -g _prompt_kronuz_ip='' _prompt_kronuz_ip_ts=0
+function _kronuz_ip_segment {
+  (( ${EPOCHSECONDS:-0} - _prompt_kronuz_ip_ts < 10 )) && return
+  _prompt_kronuz_ip_ts=${EPOCHSECONDS:-0}
+  _prompt_kronuz_ip="$(ifconfig 2>/dev/null | grep 'inet ' | grep -v '127.0.0.1' | head -1 | awk '{print $2}')"
+}
+
 # ---- precmd ----
 typeset -g _kronuz_dumb=0 _kronuz_nocolor=0
 function prompt_kronuz_precmd {
@@ -384,6 +393,7 @@ function prompt_kronuz_precmd {
   prompt_kronuz_glyphs
   _prompt_kronuz_pwd="${${(%):-%~}//\%/%%}"
   _kronuz_venv_segment
+  _kronuz_ip_segment
   _kronuz_git_segment
 }
 
@@ -392,6 +402,7 @@ function prompt_kronuz_setup {
   setopt LOCAL_OPTIONS
   unsetopt XTRACE KSH_ARRAYS
   zmodload -i zsh/parameter 2>/dev/null  # $parameters, used by the no-color path
+  zmodload -i zsh/datetime 2>/dev/null   # $EPOCHSECONDS, for the cached IP segment
 
   # The base palette uses hex (%F{#RRGGBB}) for the 16..255 colors so they render at
   # full 24-bit on a truecolor terminal. On anything else, load zsh/nearcolor, which
@@ -442,7 +453,7 @@ function prompt_kronuz_setup {
   DEFAULT_PROMPT_KRONUZ_EMACS="\${INSIDE_EMACS:+\" $col[emacs]\${glyph[emacs]}$col[none]\"}"
   DEFAULT_PROMPT_KRONUZ_ETCTL="\${ETCTL_SESSION:+\" $col[info]etctl$col[none]:$col[etctl]\${ETCTL_SESSION}$col[none]\"}"
   DEFAULT_PROMPT_KRONUZ_USER="%n"
-  DEFAULT_PROMPT_KRONUZ_IP="\$(ifconfig 2>/dev/null | grep \"inet \" | grep -v \"127.0.0.1\" | head -1 | awk \"{print \\\$2;}\")"
+  DEFAULT_PROMPT_KRONUZ_IP="\${_prompt_kronuz_ip}"
   DEFAULT_PROMPT_KRONUZ_GIT="\${_prompt_kronuz_git:+\${(e)_prompt_kronuz_git}}"
   DEFAULT_PROMPT_KRONUZ_VENV="\${(e)python_info[virtualenv]}"
   DEFAULT_PROMPT_KRONUZ_OVERWRITE="\${(e)editor_info[overwrite]}"
