@@ -590,7 +590,13 @@ function prompt_kronuz_setup {
 
   # Transient prompt: the caret left in scrollback for already-run commands.
   # Override the look with PROMPT_KRONUZ_TRANSIENT, or set it to '' to disable.
-  _kronuz_transient_prompt="${PROMPT_KRONUZ_TRANSIENT-$col[primary3]\${glyph[caret]}$col[none] }"
+  # (Built with an if/else, not `${VAR-default}`: the default's `${glyph[caret]}`
+  # braces would be mis-matched by the outer parameter expansion.)
+  if (( ${+PROMPT_KRONUZ_TRANSIENT} )); then
+    _kronuz_transient_prompt="$PROMPT_KRONUZ_TRANSIENT"
+  else
+    _kronuz_transient_prompt="$col[primary3]\${glyph[caret]}$col[none] "
+  fi
   zle -N _kronuz_transient_accept
   bindkey '^M' _kronuz_transient_accept
   bindkey '^J' _kronuz_transient_accept
