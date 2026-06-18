@@ -203,7 +203,7 @@ function prompt_kronuz_colors {
 #   clean   ✔   dirty    ✗   stashed ≡(/archive)   ahead ⇡   behind ⇣
 #   staged  +/✛   modified pencil/✴   conflicted ⚠/❖   untracked ?/⊖
 #   venv    /venv   vim  /V   emacs  /E
-typeset -gA glyph
+typeset -gA glyph glyph_pad
 function prompt_kronuz_glyphs {
   local -A g
   local os_nerd=''
@@ -266,11 +266,21 @@ function prompt_kronuz_glyphs {
     )
   fi
   local name ov val sentinel='__KRONUZ_GLYPH_UNSET__'
+  local -i c
   for name in ${(k)g}; do
     ov="PROMPT_KRONUZ_GLYPH_${name:u}"
     val="${(P)ov-$sentinel}"
     [[ "$val" == "$sentinel" ]] && val="$g[$name]"
     glyph[$name]="$val"
+    # A single Private-Use-Area Nerd Font glyph can render past its cell and collide
+    # with adjacent text, so flag a trailing pad space for it; plain BMP symbols and
+    # multi-char text glyphs are single-width and get none (per-glyph, not blanket).
+    c=0; [[ ${#val} -eq 1 ]] && c=$(( #val ))
+    if (( (c >= 0xe000 && c <= 0xf8ff) || c >= 0xf0000 )); then
+      glyph_pad[$name]=' '
+    else
+      glyph_pad[$name]=''
+    fi
   done
   # Back-compat: an explicit `_kronuz_os` (set in local.zsh) wins for the OS glyph.
   (( ${+_kronuz_os} )) && glyph[os]="$_kronuz_os"
@@ -330,18 +340,18 @@ function _kronuz_git_segment {
     s+=" ${info}${glyph[action]}${none} ${(e)col[action]}${VCS_STATUS_ACTION}${none}"
 
   local icons=''
-  (( VCS_STATUS_STASHES )) && icons+="${(e)col[stashed]}${glyph[stashed]}${VCS_STATUS_STASHES}${none}"
+  (( VCS_STATUS_STASHES )) && icons+="${(e)col[stashed]}${glyph[stashed]}${glyph_pad[stashed]}${VCS_STATUS_STASHES}${none}"
   if (( VCS_STATUS_NUM_STAGED + VCS_STATUS_NUM_UNSTAGED + VCS_STATUS_NUM_UNTRACKED + VCS_STATUS_NUM_CONFLICTED )); then
     icons+="${(e)col[dirty]}${glyph[dirty]}${none}"
   else
     icons+="${(e)col[clean]}${glyph[clean]}${none}"
   fi
-  (( VCS_STATUS_COMMITS_AHEAD ))  && icons+="${(e)col[ahead]}${glyph[ahead]}${VCS_STATUS_COMMITS_AHEAD}${none}"
-  (( VCS_STATUS_COMMITS_BEHIND )) && icons+="${(e)col[behind]}${glyph[behind]}${VCS_STATUS_COMMITS_BEHIND}${none}"
-  (( VCS_STATUS_NUM_STAGED ))     && icons+="${(e)col[added]}${glyph[staged]}${VCS_STATUS_NUM_STAGED}${none}"
-  (( VCS_STATUS_NUM_UNSTAGED ))   && icons+="${(e)col[modified]}${glyph[modified]}${VCS_STATUS_NUM_UNSTAGED}${none}"
-  (( VCS_STATUS_NUM_CONFLICTED )) && icons+="${(e)col[unmerged]}${glyph[conflicted]}${VCS_STATUS_NUM_CONFLICTED}${none}"
-  (( VCS_STATUS_NUM_UNTRACKED ))  && icons+=" ${(e)col[untracked]}${glyph[untracked]}${VCS_STATUS_NUM_UNTRACKED}${none}"
+  (( VCS_STATUS_COMMITS_AHEAD ))  && icons+="${(e)col[ahead]}${glyph[ahead]}${glyph_pad[ahead]}${VCS_STATUS_COMMITS_AHEAD}${none}"
+  (( VCS_STATUS_COMMITS_BEHIND )) && icons+="${(e)col[behind]}${glyph[behind]}${glyph_pad[behind]}${VCS_STATUS_COMMITS_BEHIND}${none}"
+  (( VCS_STATUS_NUM_STAGED ))     && icons+="${(e)col[added]}${glyph[staged]}${glyph_pad[staged]}${VCS_STATUS_NUM_STAGED}${none}"
+  (( VCS_STATUS_NUM_UNSTAGED ))   && icons+="${(e)col[modified]}${glyph[modified]}${glyph_pad[modified]}${VCS_STATUS_NUM_UNSTAGED}${none}"
+  (( VCS_STATUS_NUM_CONFLICTED )) && icons+="${(e)col[unmerged]}${glyph[conflicted]}${glyph_pad[conflicted]}${VCS_STATUS_NUM_CONFLICTED}${none}"
+  (( VCS_STATUS_NUM_UNTRACKED ))  && icons+=" ${(e)col[untracked]}${glyph[untracked]}${glyph_pad[untracked]}${VCS_STATUS_NUM_UNTRACKED}${none}"
 
   _prompt_kronuz_git="${s}${sep} (${none}${icons}${sep})${none}"
 }
@@ -534,8 +544,8 @@ function prompt_kronuz_setup {
   DEFAULT_PROMPT_KRONUZ_VIM="\${VIM:+\" $col[vim]\${glyph[vim]}$col[none]\"}"
   DEFAULT_PROMPT_KRONUZ_EMACS="\${INSIDE_EMACS:+\" $col[emacs]\${glyph[emacs]}$col[none]\"}"
   DEFAULT_PROMPT_KRONUZ_ETCTL="\${ETCTL_SESSION:+\" $col[info]etctl$col[none]:$col[etctl]\${ETCTL_SESSION}$col[none]\"}"
-  DEFAULT_PROMPT_KRONUZ_JOBS="%(1j. $col[jobs]\${glyph[jobs]}%j$col[none].)"
-  DEFAULT_PROMPT_KRONUZ_DURATION="\${_prompt_kronuz_duration:+\" $col[duration]\${glyph[duration]}\${_prompt_kronuz_duration}$col[none]\"}"
+  DEFAULT_PROMPT_KRONUZ_JOBS="%(1j. $col[jobs]\${glyph[jobs]}\${glyph_pad[jobs]}%j$col[none].)"
+  DEFAULT_PROMPT_KRONUZ_DURATION="\${_prompt_kronuz_duration:+\" $col[duration]\${glyph[duration]}\${glyph_pad[duration]}\${_prompt_kronuz_duration}$col[none]\"}"
   DEFAULT_PROMPT_KRONUZ_USER="%n"
   DEFAULT_PROMPT_KRONUZ_IP="\${_prompt_kronuz_ip}"
   DEFAULT_PROMPT_KRONUZ_GIT="\${_prompt_kronuz_git:+\${(e)_prompt_kronuz_git}}"
