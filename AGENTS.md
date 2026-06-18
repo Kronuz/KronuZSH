@@ -117,13 +117,26 @@ in `prompt_kronuz_precmd` (pwd, venv, git) into vars the deferred strings read
 (`_prompt_kronuz_pwd`, `python_info[virtualenv]`, `_prompt_kronuz_git`).
 
 Current layout:
-`PROMPT = err info etctl git venv error \n time pwd prompt`,
+`PROMPT = err info context etctl git venv jobs error duration \n time pwd prompt`
+(plus a zero-width OSC 133 "B" mark at the end via `$_kronuz_osc_b`),
 `RPROMPT = overwrite vim emacs`.
+
+Beyond the deferred segments, a few features hook the line lifecycle:
+**command duration** (`preexec` stamps `$EPOCHREALTIME`, precmd formats the delta
+into `_prompt_kronuz_duration` when it tops `PROMPT_KRONUZ_CMD_DURATION_MIN`),
+**terminal integration** (OSC 7 cwd + OSC 133 marks from `_kronuz_osc_precmd` /
+`_kronuz_osc_preexec`, with the OSC precmd ordered first in `precmd_functions` so
+the `D` mark carries the real `$?`), and the **transient prompt** (an accept-line
+widget on `^M`/`^J` that swaps to `$_kronuz_transient_prompt` and `reset-prompt`s,
+restored in precmd). The **jobs** segment is prompt-native (`%(1j...)`); the
+**context** (SSH/container) badge is detected once at setup. All of these are gated
+off on dumb terminals.
 
 ### Add a segment
 
 1. (if it needs a new color) add the name to the `COLORS` list and set
-   `DEFAULT_PROMPT_KRONUZ_COLOR_<NAME>` in **both** branches of `prompt_kronuz_colors`.
+   `DEFAULT_PROMPT_KRONUZ_COLOR_<NAME>` in `prompt_kronuz_colors` (one branch now;
+   the no-color path blanks every color, so nothing terminal-specific is needed).
 2. Define `DEFAULT_PROMPT_KRONUZ_<NAME>` (its content; reference `$col[...]` and any
    dynamic var). Use `\${...}` to keep `$` deferred, matching the surrounding code.
 3. Define `kronuz[<name>]="\${(e)PROMPT_KRONUZ_<NAME>:-\$DEFAULT_PROMPT_KRONUZ_<NAME>}"`.

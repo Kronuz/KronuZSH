@@ -29,9 +29,15 @@
 # export PROMPT_KRONUZ_NERD_FONT=0
 # Retune a single glyph (either mode); '' hides it. Names: os branch tag commit
 # remote action clean dirty stashed ahead behind staged modified conflicted
-# untracked venv vim emacs.
+# untracked venv vim emacs jobs duration ssh container.
 # export PROMPT_KRONUZ_GLYPH_MODIFIED='*'
 # export PROMPT_KRONUZ_GLYPH_OS=''        # hide the OS logo by the hostname
+
+# --- prompt behavior ---
+# Show the last command's duration once it exceeds this many seconds (default 3):
+# export PROMPT_KRONUZ_CMD_DURATION_MIN=5
+# Transient prompt: past prompts collapse to this caret. Set to '' to disable.
+# export PROMPT_KRONUZ_TRANSIENT=''
 
 # --- external tool tweaks (see integrations/init.zsh; all auto-enabled when present) ---
 # ripgrep: point at a config file for your default flags (smart-case, hidden, ...)
