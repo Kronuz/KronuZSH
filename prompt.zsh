@@ -537,6 +537,11 @@ function _kronuz_transient_accept {
   if (( ! ${_kronuz_dumb:-0} )) && [[ -n "$_kronuz_transient_prompt" ]]; then
     _kronuz_prompt_full=$PROMPT _kronuz_rprompt_full=$RPROMPT
     PROMPT="${_prompt_kronuz_status_dim}${_kronuz_transient_prompt}" RPROMPT=''
+    # We bypass the autosuggestions / fsh accept-line wrappers (bound straight to ^M,
+    # and we call .accept-line), so clear the zsh-autosuggestions ghost ourselves;
+    # otherwise reset-prompt bakes the grey suggestion into the collapsed scrollback
+    # line (e.g. typing `exe` with `exec zsh` suggested would show `exec zsh`).
+    POSTDISPLAY=''
     # `keep` leaves the command's own syntax colours. The other styles restyle the
     # buffer; flag our _zsh_highlight wrapper (installed in setup) to re-apply the
     # style after fast-syntax-highlighting rebuilds region_highlight on line-finish.
