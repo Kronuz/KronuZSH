@@ -4,133 +4,83 @@
 # Authors:
 #   German M. Bravo (Kronuz) <german.mb@gmail.com>
 #
+# Layout (top to bottom):
+#   - base colour palette   a named %F{...} table ($col)
+#   - semantic colours      prompt_kronuz_colors -> $DEFAULT_PROMPT_KRONUZ_COLOR_*
+#   - glyphs                prompt_kronuz_glyphs  -> $glyph / $glyph_pad
+#   - segments              git, venv, keymap, ip, duration, OSC marks, transient
+#   - precmd / setup        prompt_kronuz_precmd, prompt_kronuz_setup
+#
 # Git status comes from gitstatus (gitstatusd); venv/keymap/pwd are tiny native
 # replacements for the prezto python-info/editor-info/prompt-pwd modules.
 #
 
+# ---- base colour palette (named %F{...} entries; ANSI 0..15 track the theme,
+# 16..255 are exact hex, downsampled by zsh/nearcolor off truecolor) ----
 unset col
-typeset -gA col
-col[black]='%F{0}'
-col[red]='%F{1}'
-col[lightgreen]='%F{10}'
-col[olive]='%F{#878700}'
-col[darkkhaki]='%F{#87875f}'
-col[gray]='%F{#878787}'
-col[lavender]='%F{#8787af}'
-col[mediumpurple]='%F{#8787d7}'
-col[mediumslateblue]='%F{#8787ff}'
-col[darkolivegreen]='%F{#87af5f}'
-col[darkseagreen]='%F{#87af87}'
-col[powderblue]='%F{#87afaf}'
-col[lightyellow]='%F{11}'
-col[skyblue]='%F{#87afd7}'
-col[cornflowerblue]='%F{#87afff}'
-col[lawngreen]='%F{#87d700}'
-col[palegreen]='%F{#87d787}'
-col[mediumaquamarine]='%F{#87d7af}'
-col[cadetblue]='%F{#87d7d7}'
-col[lightskyblue]='%F{#87d7ff}'
-col[chartreuse]='%F{#87ff00}'
-col[limegreen]='%F{#87ff5f}'
-col[lightblue]='%F{12}'
-col[aquamarine]='%F{#87ffaf}'
-col[darkred]='%F{#af0000}'
-col[mediumvioletred]='%F{#af005f}'
-col[darkmagenta]='%F{#af0087}'
-col[purple]='%F{#af00af}'
-col[darkviolet]='%F{#af00d7}'
-col[fuchsia]='%F{#af00ff}'
-col[lightmagenta]='%F{13}'
-col[chocolate]='%F{#af5f00}'
-col[lightcoral]='%F{#af5f5f}'
-col[palevioletred]='%F{#af5f87}'
-col[orchid]='%F{#af5faf}'
-col[mediumorchid]='%F{#af5fd7}'
-col[darkorchid]='%F{#af5fff}'
-col[darkgoldenrod]='%F{#af8700}'
-col[burlywood]='%F{#af875f}'
-col[rosybrown]='%F{#af8787}'
-col[plum]='%F{#af87af}'
-col[lightcyan]='%F{14}'
-col[violet]='%F{#af87d7}'
-col[khaki]='%F{#afaf5f}'
-col[palegoldenrod]='%F{#afaf87}'
-col[darkgray]='%F{#afafaf}'
-col[slategray]='%F{#afafd7}'
-col[lightsteelblue]='%F{#afafff}'
-col[yellowgreen]='%F{#afd75f}'
-col[lightgrey]='%F{15}'
-col[honeydew]='%F{#afd7af}'
-col[paleturquoise]='%F{#afd7d7}'
-col[greenyellow]='%F{#afff5f}'
-col[dimgray]='%F{#000000}'
-col[tomato]='%F{#d70000}'
-col[deeppink]='%F{#d7005f}'
-col[darkorange]='%F{#d75f00}'
-col[indianred]='%F{#d75f5f}'
-col[hotpink]='%F{#d75f87}'
-col[navy]='%F{#00005f}'
-col[goldenrod]='%F{#d78700}'
-col[lightsalmon]='%F{#d7875f}'
-col[lightpink]='%F{#d787af}'
-col[gold]='%F{#d7af00}'
-col[sandybrown]='%F{#d7af5f}'
-col[darkblue]='%F{#000087}'
-col[tan]='%F{#d7af87}'
-col[mistyrose]='%F{#d7afaf}'
-col[thistle]='%F{#d7afd7}'
-col[lemonchiffon]='%F{#d7d7af}'
-col[whitesmoke]='%F{#d7d7d7}'
-col[ghostwhite]='%F{#d7d7ff}'
-col[mediumblue]='%F{#0000af}'
-col[azure]='%F{#d7ffff}'
-col[orangered]='%F{#ff0000}'
-col[crimson]='%F{#ff005f}'
-col[green]='%F{2}'
-col[salmon]='%F{#ff5f5f}'
-col[orange]='%F{#ff8700}'
-col[coral]='%F{#ff875f}'
-col[peru]='%F{#ffaf5f}'
-col[darksalmon]='%F{#ffaf87}'
-col[pink]='%F{#ffafd7}'
-col[darkgreen]='%F{#005f00}'
-col[navajowhite]='%F{#ffd7af}'
-col[peachpuff]='%F{#ffd7d7}'
-col[teal]='%F{#005f5f}'
-col[lightgoldenrodyellow]='%F{#ffffd7}'
-col[white]='%F{#ffffff}'
-col[darkcyan]='%F{#005f87}'
-col[deepskyblue]='%F{#005faf}'
-col[silver]='%F{#bcbcbc}'
-col[lightgray]='%F{#c6c6c6}'
-col[gainsboro]='%F{#d0d0d0}'
-col[dodgerblue]='%F{#005fd7}'
-col[yellow]='%F{3}'
-col[darkturquoise]='%F{#0087af}'
-col[mediumspringgreen]='%F{#00af5f}'
-col[aqua]='%F{#00afff}'
-col[blue]='%F{4}'
-col[lime]='%F{#00d700}'
-col[springgreen]='%F{#00d75f}'
-col[magenta]='%F{5}'
-col[maroon]='%F{#5f0000}'
-col[indigo]='%F{#5f0087}'
-col[cyan]='%F{6}'
-col[lightslategray]='%F{#5f5f87}'
-col[darkslateblue]='%F{#5f5faf}'
-col[slateblue]='%F{#5f5fd7}'
-col[darkslategray]='%F{#5f8787}'
-col[steelblue]='%F{#5f87d7}'
-col[royalblue]='%F{#5f87ff}'
-col[grey]='%F{7}'
-col[mediumseagreen]='%F{#5fd787}'
-col[darkgrey]='%F{8}'
-col[mediumturquoise]='%F{#5fd7d7}'
-col[forestgreen]='%F{#5fff5f}'
-col[turquoise]='%F{#5fffd7}'
-col[lightred]='%F{9}'
-col[blueviolet]='%F{#8700ff}'
-col[brown]='%F{#875f00}'
+typeset -gA col=(
+  black                '%F{0}'        red                  '%F{1}'
+  lightgreen           '%F{10}'       olive                '%F{#878700}'
+  darkkhaki            '%F{#87875f}'  gray                 '%F{#878787}'
+  lavender             '%F{#8787af}'  mediumpurple         '%F{#8787d7}'
+  mediumslateblue      '%F{#8787ff}'  darkolivegreen       '%F{#87af5f}'
+  darkseagreen         '%F{#87af87}'  powderblue           '%F{#87afaf}'
+  lightyellow          '%F{11}'       skyblue              '%F{#87afd7}'
+  cornflowerblue       '%F{#87afff}'  lawngreen            '%F{#87d700}'
+  palegreen            '%F{#87d787}'  mediumaquamarine     '%F{#87d7af}'
+  cadetblue            '%F{#87d7d7}'  lightskyblue         '%F{#87d7ff}'
+  chartreuse           '%F{#87ff00}'  limegreen            '%F{#87ff5f}'
+  lightblue            '%F{12}'       aquamarine           '%F{#87ffaf}'
+  darkred              '%F{#af0000}'  mediumvioletred      '%F{#af005f}'
+  darkmagenta          '%F{#af0087}'  purple               '%F{#af00af}'
+  darkviolet           '%F{#af00d7}'  fuchsia              '%F{#af00ff}'
+  lightmagenta         '%F{13}'       chocolate            '%F{#af5f00}'
+  lightcoral           '%F{#af5f5f}'  palevioletred        '%F{#af5f87}'
+  orchid               '%F{#af5faf}'  mediumorchid         '%F{#af5fd7}'
+  darkorchid           '%F{#af5fff}'  darkgoldenrod        '%F{#af8700}'
+  burlywood            '%F{#af875f}'  rosybrown            '%F{#af8787}'
+  plum                 '%F{#af87af}'  lightcyan            '%F{14}'
+  violet               '%F{#af87d7}'  khaki                '%F{#afaf5f}'
+  palegoldenrod        '%F{#afaf87}'  darkgray             '%F{#afafaf}'
+  slategray            '%F{#afafd7}'  lightsteelblue       '%F{#afafff}'
+  yellowgreen          '%F{#afd75f}'  lightgrey            '%F{15}'
+  honeydew             '%F{#afd7af}'  paleturquoise        '%F{#afd7d7}'
+  greenyellow          '%F{#afff5f}'  dimgray              '%F{#000000}'
+  tomato               '%F{#d70000}'  deeppink             '%F{#d7005f}'
+  darkorange           '%F{#d75f00}'  indianred            '%F{#d75f5f}'
+  hotpink              '%F{#d75f87}'  navy                 '%F{#00005f}'
+  goldenrod            '%F{#d78700}'  lightsalmon          '%F{#d7875f}'
+  lightpink            '%F{#d787af}'  gold                 '%F{#d7af00}'
+  sandybrown           '%F{#d7af5f}'  darkblue             '%F{#000087}'
+  tan                  '%F{#d7af87}'  mistyrose            '%F{#d7afaf}'
+  thistle              '%F{#d7afd7}'  lemonchiffon         '%F{#d7d7af}'
+  whitesmoke           '%F{#d7d7d7}'  ghostwhite           '%F{#d7d7ff}'
+  mediumblue           '%F{#0000af}'  azure                '%F{#d7ffff}'
+  orangered            '%F{#ff0000}'  crimson              '%F{#ff005f}'
+  green                '%F{2}'        salmon               '%F{#ff5f5f}'
+  orange               '%F{#ff8700}'  coral                '%F{#ff875f}'
+  peru                 '%F{#ffaf5f}'  darksalmon           '%F{#ffaf87}'
+  pink                 '%F{#ffafd7}'  darkgreen            '%F{#005f00}'
+  navajowhite          '%F{#ffd7af}'  peachpuff            '%F{#ffd7d7}'
+  teal                 '%F{#005f5f}'  lightgoldenrodyellow '%F{#ffffd7}'
+  white                '%F{#ffffff}'  darkcyan             '%F{#005f87}'
+  deepskyblue          '%F{#005faf}'  silver               '%F{#bcbcbc}'
+  lightgray            '%F{#c6c6c6}'  gainsboro            '%F{#d0d0d0}'
+  dodgerblue           '%F{#005fd7}'  yellow               '%F{3}'
+  darkturquoise        '%F{#0087af}'  mediumspringgreen    '%F{#00af5f}'
+  aqua                 '%F{#00afff}'  blue                 '%F{4}'
+  lime                 '%F{#00d700}'  springgreen          '%F{#00d75f}'
+  magenta              '%F{5}'        maroon               '%F{#5f0000}'
+  indigo               '%F{#5f0087}'  cyan                 '%F{6}'
+  lightslategray       '%F{#5f5f87}'  darkslateblue        '%F{#5f5faf}'
+  slateblue            '%F{#5f5fd7}'  darkslategray        '%F{#5f8787}'
+  steelblue            '%F{#5f87d7}'  royalblue            '%F{#5f87ff}'
+  grey                 '%F{7}'        mediumseagreen       '%F{#5fd787}'
+  darkgrey             '%F{8}'        mediumturquoise      '%F{#5fd7d7}'
+  forestgreen          '%F{#5fff5f}'  turquoise            '%F{#5fffd7}'
+  lightred             '%F{9}'        blueviolet           '%F{#8700ff}'
+  brown                '%F{#875f00}'
+)
 
 
 function prompt_kronuz_colors {
@@ -660,23 +610,17 @@ function prompt_kronuz_setup {
   DEFAULT_PROMPT_KRONUZ_TIME="[%*]"
   DEFAULT_PROMPT_KRONUZ_PWD="\${_prompt_kronuz_pwd:+\${(e)_prompt_kronuz_pwd}}"
 
+  # Compose the prompt segments into $kronuz. The plain ones share one shape: a user
+  # override ($PROMPT_KRONUZ_<SEG>) or the built-in default, both (e)-evaluated at render.
   unset kronuz
   typeset -gA kronuz
   kronuz[nl]=$'%E\n'
-  kronuz[os]="\${(e)PROMPT_KRONUZ_OS:-\$DEFAULT_PROMPT_KRONUZ_OS}"
-  kronuz[err]="\${(e)PROMPT_KRONUZ_ERR:-\$DEFAULT_PROMPT_KRONUZ_ERR}"
-  kronuz[error]="\${(e)PROMPT_KRONUZ_ERROR:-\$DEFAULT_PROMPT_KRONUZ_ERROR}"
-  kronuz[vim]="\${(e)PROMPT_KRONUZ_VIM:-\$DEFAULT_PROMPT_KRONUZ_VIM}"
-  kronuz[emacs]="\${(e)PROMPT_KRONUZ_EMACS:-\$DEFAULT_PROMPT_KRONUZ_EMACS}"
-  kronuz[etctl]="\${(e)PROMPT_KRONUZ_ETCTL:-\$DEFAULT_PROMPT_KRONUZ_ETCTL}"
-  kronuz[context]="\${(e)PROMPT_KRONUZ_CONTEXT:-\$DEFAULT_PROMPT_KRONUZ_CONTEXT}"
-  kronuz[jobs]="\${(e)PROMPT_KRONUZ_JOBS:-\$DEFAULT_PROMPT_KRONUZ_JOBS}"
-  kronuz[duration]="\${(e)PROMPT_KRONUZ_DURATION:-\$DEFAULT_PROMPT_KRONUZ_DURATION}"
+  local seg
+  for seg in os err error vim emacs etctl context jobs duration git venv overwrite prompt; do
+    kronuz[$seg]="\${(e)PROMPT_KRONUZ_${seg:u}:-\$DEFAULT_PROMPT_KRONUZ_${seg:u}}"
+  done
+  # The rest wrap a segment in its own colour, or compose other segments.
   kronuz[user]="$col[user]\${(e)PROMPT_KRONUZ_USER:-\$DEFAULT_PROMPT_KRONUZ_USER}$col[none]"
-  kronuz[git]="\${(e)PROMPT_KRONUZ_GIT:-\$DEFAULT_PROMPT_KRONUZ_GIT}"
-  kronuz[venv]="\${(e)PROMPT_KRONUZ_VENV:-\$DEFAULT_PROMPT_KRONUZ_VENV}"
-  kronuz[overwrite]="\${(e)PROMPT_KRONUZ_OVERWRITE:-\$DEFAULT_PROMPT_KRONUZ_OVERWRITE}"
-  kronuz[prompt]="\${(e)PROMPT_KRONUZ_PROMPT:-\$DEFAULT_PROMPT_KRONUZ_PROMPT}"
   kronuz[time]="$col[time]\${(e)PROMPT_KRONUZ_TIME:-\$DEFAULT_PROMPT_KRONUZ_TIME}$col[none]"
   kronuz[pwd]="$col[pwd]\${(e)PROMPT_KRONUZ_PWD:-\$DEFAULT_PROMPT_KRONUZ_PWD}$col[none]"
   kronuz[host]="$kronuz[os]$col[host]%M$col[none] $col[ip](\${(e)PROMPT_KRONUZ_IP:-\$DEFAULT_PROMPT_KRONUZ_IP})$col[none]"
