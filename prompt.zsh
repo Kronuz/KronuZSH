@@ -469,8 +469,8 @@ function _kronuz_color_rgb {
   [[ $v = <0-255> ]] || return
   local -i n=$v
   if (( n < 16 )); then
-    local -a sys=(000000 800000 008000 808000 000080 800080 008080 c0c0c0
-                  808080 ff0000 00ff00 ffff00 0000ff ff00ff 00ffff ffffff)
+    local -a sys=(000000 cd0000 00cd00 cdcd00 0000ee cd00cd 00cdcd e5e5e5
+                  7f7f7f ff0000 00ff00 ffff00 5c5cff ff00ff 00ffff ffffff)
     local h=${sys[n+1]}
     reply=( $(( 16#${h[1,2]} )) $(( 16#${h[3,4]} )) $(( 16#${h[5,6]} )) )
   elif (( n < 232 )); then
@@ -488,7 +488,7 @@ function _kronuz_transient_style {
     *)  # dim: same hues, darker — scale each fg toward black (truecolor output).
       # zsh region_highlight has no faint/dim attribute, so we recolour.
       setopt localoptions extendedglob
-      local -F factor=${PROMPT_KRONUZ_TRANSIENT_DIM:-0.5}
+      local -F factor=${PROMPT_KRONUZ_TRANSIENT_DIM:-0.99}
       local -a out p reply; local e hex; local -i r g b
       for e in "${region_highlight[@]}"; do
         p=("${(z)e}")
