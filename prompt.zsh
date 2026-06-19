@@ -358,17 +358,46 @@ function _kronuz_ip_segment {
 }
 
 # ---- status line (last command's exit code + duration, on its own line) ----
-# Shows ⏎<code> when the last command failed and the duration when it was slow, on a
-# line above the info line. Empty (and no line) when the command was quick and clean.
-typeset -g _prompt_kronuz_status='' _kronuz_last_exit=0
+typeset -g _prompt_kronuz_status='' _prompt_kronuz_status_dim='' _kronuz_last_exit=0
+# Dimmed colour escape for a palette name, per PROMPT_KRONUZ_TRANSIENT_STYLE (used for the
+# kept history copy of the outcome line): keep = original, mute = grey (like the caret),
+# dim = same hue darkened by the transient factor. Result in REPLY.
+function _kronuz_dim_col {
+  emulate -L zsh -o extendedglob
+  local reply
+  case "${PROMPT_KRONUZ_TRANSIENT_STYLE:-dim}" in
+    keep|none|off)  REPLY="${(e)col[$1]}"; return ;;
+    mute|grey|gray) REPLY="${(e)col[transient]}"; return ;;
+  esac
+  local esc="${(e)col[$1]}"
+  if [[ "$esc" == (#b)'%F{'(*)'}' ]]; then
+    _kronuz_color_rgb "$match[1]"
+    if (( $#reply == 3 )); then
+      local -F f=${PROMPT_KRONUZ_TRANSIENT_DIM:-0.7}
+      local -i r=$(( reply[1]*f )) g=$(( reply[2]*f )) b=$(( reply[3]*f ))
+      local hex; printf -v hex '%02x%02x%02x' r g b
+      REPLY="%F{#$hex}"; return
+    fi
+  fi
+  REPLY="$esc"
+}
+# Outcome line: the last command's exit code (when nonzero) and duration (when slow), on a
+# line above the info line. Built twice: full colour for the live prompt, and dimmed for the
+# copy the transient prompt leaves in scrollback. Empty (no line) on a quick, clean command.
 function _kronuz_status_segment {
-  _prompt_kronuz_status=''
-  local out=''
-  (( ${_kronuz_last_exit:-0} != 0 )) && \
-    out+="${(e)col[status_err]}${glyph[return]} ${_kronuz_last_exit}${(e)col[none]}"
-  [[ -n "$_prompt_kronuz_duration" ]] && \
-    out+="${out:+ }${(e)col[duration]}${glyph[duration]}${glyph_pad[duration]}${_prompt_kronuz_duration}${(e)col[none]}"
-  [[ -n "$out" ]] && _prompt_kronuz_status="${out}%E"$'\n'
+  _prompt_kronuz_status='' _prompt_kronuz_status_dim=''
+  local out='' dim='' body sp REPLY
+  if (( ${_kronuz_last_exit:-0} != 0 )); then
+    body="${glyph[return]} ${_kronuz_last_exit}"
+    out+="${(e)col[status_err]}${body}${(e)col[none]}"
+    _kronuz_dim_col status_err; dim+="${REPLY}${body}${(e)col[none]}"
+  fi
+  if [[ -n "$_prompt_kronuz_duration" ]]; then
+    sp="${out:+ }"; body="${glyph[duration]}${glyph_pad[duration]}${_prompt_kronuz_duration}"
+    out+="${sp}${(e)col[duration]}${body}${(e)col[none]}"
+    _kronuz_dim_col duration; dim+="${sp}${REPLY}${body}${(e)col[none]}"
+  fi
+  [[ -n "$out" ]] && { _prompt_kronuz_status="${out}%E"$'\n'; _prompt_kronuz_status_dim="${dim}%E"$'\n'; }
 }
 
 # ---- command duration (preexec timer) ----
@@ -503,7 +532,7 @@ function _kronuz_transient_style {
 function _kronuz_transient_accept {
   if (( ! ${_kronuz_dumb:-0} )) && [[ -n "$_kronuz_transient_prompt" ]]; then
     _kronuz_prompt_full=$PROMPT _kronuz_rprompt_full=$RPROMPT
-    PROMPT=$_kronuz_transient_prompt RPROMPT=''
+    PROMPT="${_prompt_kronuz_status_dim}${_kronuz_transient_prompt}" RPROMPT=''
     # `keep` leaves the command's own syntax colours. The other styles restyle the
     # buffer; flag our _zsh_highlight wrapper (installed in setup) to re-apply the
     # style after fast-syntax-highlighting rebuilds region_highlight on line-finish.
