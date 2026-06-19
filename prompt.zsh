@@ -457,6 +457,35 @@ function _kronuz_osc_precmd {
 # leave it), so the whole past line reads as history. Off on dumb (reset-prompt
 # can't redraw in place there) and when PROMPT_KRONUZ_TRANSIENT=''.
 typeset -g _kronuz_prompt_full='' _kronuz_rprompt_full='' _kronuz_muting=0
+# Query the terminal's 16 ANSI palette colours (OSC 4) once at setup so `dim` darkens
+# your actual theme rather than a guessed table. Cached in _kronuz_pal; falls back to
+# the xterm defaults below when the terminal doesn't answer (or tmux/dumb/no-tty).
+typeset -gA _kronuz_pal
+function _kronuz_query_palette {
+  emulate -L zsh -o extendedglob
+  _kronuz_pal=()
+  [[ -t 0 && -t 1 ]] || return
+  [[ "$TERM" = (dumb|unknown|linux) || -n "${TMUX-}" || "$TERM" = (screen*|tmux*) ]] && return
+  zmodload zsh/datetime zsh/system 2>/dev/null || return
+  local saved chunk resp='' piece
+  saved="$(stty -g 2>/dev/null)" || return
+  {
+    stty -echo -icanon min 0 time 0 2>/dev/null
+    local -i i; for i in {0..15}; do print -n -- "\e]4;${i};?\e\\"; done
+    local -F end=$(( EPOCHREALTIME + 0.3 )); local -i n=0
+    while (( EPOCHREALTIME < end && n < 16 )); do
+      chunk=''; sysread -t 0.05 chunk 2>/dev/null
+      resp+="$chunk"
+      n=$(( (${#resp} - ${#${resp//;rgb:/}}) / 5 ))
+    done
+  } always {
+    stty "$saved" 2>/dev/null
+  }
+  for piece in "${(@ps.\e]4;.)resp}"; do
+    [[ "$piece" = (#b)(<0-15>)';rgb:'([0-9a-fA-F]##)'/'([0-9a-fA-F]##)'/'([0-9a-fA-F]##)* ]] || continue
+    _kronuz_pal[${match[1]}]="$(( 16#${match[2][1,2]} )) $(( 16#${match[3][1,2]} )) $(( 16#${match[4][1,2]} ))"
+  done
+}
 function _kronuz_color_rgb {
   # $1: #rrggbb | 0-255 index | basic colour name -> reply=(r g b), or reply=()
   emulate -L zsh -o extendedglob
@@ -469,6 +498,7 @@ function _kronuz_color_rgb {
   [[ $v = <0-255> ]] || return
   local -i n=$v
   if (( n < 16 )); then
+    if [[ -n ${_kronuz_pal[$n]-} ]]; then reply=( ${=_kronuz_pal[$n]} ); return; fi
     local -a sys=(000000 cd0000 00cd00 cdcd00 0000ee cd00cd 00cdcd e5e5e5
                   7f7f7f ff0000 00ff00 ffff00 5c5cff ff00ff 00ffff ffffff)
     local h=${sys[n+1]}
@@ -677,4 +707,7 @@ function prompt_kronuz_setup {
   # hook runs last and gets the final say on the muted buffer highlight.
   autoload -Uz add-zle-hook-widget
   add-zle-hook-widget zle-line-finish _kronuz_transient_linefinish 2>/dev/null
+  # `dim` needs the terminal's real ANSI palette; query it once now (skipped for the
+  # other styles, which don't recolour by RGB).
+  [[ "${PROMPT_KRONUZ_TRANSIENT_STYLE:-dim}" != (keep|none|off|mute|grey|gray) ]] && _kronuz_query_palette
 }

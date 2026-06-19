@@ -136,7 +136,9 @@ into `_prompt_kronuz_duration` when it tops `PROMPT_KRONUZ_CMD_DURATION_MIN`),
 widget on `^M`/`^J` that swaps to `$_kronuz_transient_prompt` and `reset-prompt`s,
 restored in precmd; it also restyles the just-run command per
 `PROMPT_KRONUZ_TRANSIENT_STYLE` — `dim` (darken each fg to truecolor hex, since zsh
-`region_highlight` has no faint attribute), `mute` (grey), or `keep` — via a
+`region_highlight` has no faint attribute; the 16 ANSI colours come from an OSC 4
+palette query at setup, `_kronuz_query_palette`, so dim matches the real theme and
+falls back to xterm defaults if unanswered), `mute` (grey), or `keep` — via a
 `zle-line-finish` hook registered after fast-syntax-highlighting so it wins the
 final paint). The **jobs** segment is prompt-native (`%(1j...)`); the
 **context** (SSH/container) badge is detected once at setup. All of these are gated
