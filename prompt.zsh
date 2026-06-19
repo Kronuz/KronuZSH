@@ -157,59 +157,68 @@ function _kronuz_query_palette {
   done
 }
 
-# Semantic colours: map each prompt element to a base-palette colour, into the
-# $DEFAULT_PROMPT_KRONUZ_COLOR_* the deferred segments read. Recomputed every precmd.
-# No-colour mode ($_kronuz_nocolor) blanks them all, so the layout still renders with
-# zero escapes; toggling $NO_COLOR / $TERM thus takes effect on the next prompt.
+# Semantic colours: map each prompt element to a base-palette colour, resolved with
+# the live palette into the same $col array the segments read ($col[host], $col[branch],
+# ...). Mirrors prompt_kronuz_glyphs: a defaults table, then one loop that applies any
+# $PROMPT_KRONUZ_COLOR_<NAME> override and writes the final value. No-colour mode
+# ($_kronuz_nocolor) blanks the built-in defaults (so the layout still renders with zero
+# escapes) while still honouring an explicit override. Recomputed every precmd, so
+# toggling $NO_COLOR / $TERM takes effect on the next prompt.
 function prompt_kronuz_colors {
-  if (( ${_kronuz_nocolor:-0} )); then
-    local v
-    for v in ${(k)parameters[(I)DEFAULT_PROMPT_KRONUZ_COLOR_*]}; do : ${(P)v::=}; done
-    return
-  fi
-  DEFAULT_PROMPT_KRONUZ_COLOR_PRIMARY1='%(!.%B$col[red].%B$col[red])'
-  DEFAULT_PROMPT_KRONUZ_COLOR_PRIMARY2='%(!.%B$col[red].%B$col[yellow])'
-  DEFAULT_PROMPT_KRONUZ_COLOR_PRIMARY3='%(!.$col[red].%B$col[green])'
-  DEFAULT_PROMPT_KRONUZ_COLOR_STATUS_ERR='$col[red]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_STATUS_OK='$col[green]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_VENV='$col[white]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_VIM='%B$col[green]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_EMACS='%B$col[green]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_ETCTL='%B$col[magenta]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_OVERWRITE='$col[red]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_INSERT='$col[darkgrey]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_COMPLETING='%B$col[black]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_JOBS='$col[gold]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_DURATION='$col[goldenrod]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_SSH='$col[mediumpurple]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_CONTAINER='$col[deepskyblue]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_TRANSIENT='$col[darkgrey]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_ACTION='$col[darkorange]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_ADDED='$col[darkorange]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_AHEAD='$col[chartreuse]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_BEHIND='$col[deeppink]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_DIRTY='$col[brown]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_CLEAN='$col[forestgreen]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_BRANCH='%B$col[white]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_REMOTE='$col[white]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_COMMIT='$col[white]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_DELETED='$col[red]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_MODIFIED='$col[red]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_POSITION='$col[white]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_RENAMED='$col[darkorange]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_STASHED='$col[lightsteelblue]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_UNMERGED='$col[red]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_INDEXED='$col[darkorange]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_UNINDEXED='$col[red]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_UNTRACKED='$col[darkgrey]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_INFO='$col[darkgrey]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_SEP='$col[darkgrey]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_IP='$col[darkgrey]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_TIME='$col[darkgrey]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_HOST='$col[blue]'
-  DEFAULT_PROMPT_KRONUZ_COLOR_PWD='%(!.$col[tomato].$col[aqua])'
-  DEFAULT_PROMPT_KRONUZ_COLOR_USER='%(!.%B$col[tomato].%B$col[white])'
-  DEFAULT_PROMPT_KRONUZ_COLOR_NONE='%b%u%s%f%k'
+  local -A d=(
+    primary1   '%(!.%B$col[red].%B$col[red])'
+    primary2   '%(!.%B$col[red].%B$col[yellow])'
+    primary3   '%(!.$col[red].%B$col[green])'
+    status_err '$col[red]'
+    status_ok  '$col[green]'
+    venv       '$col[white]'
+    vim        '%B$col[green]'
+    emacs      '%B$col[green]'
+    etctl      '%B$col[magenta]'
+    overwrite  '$col[red]'
+    insert     '$col[darkgrey]'
+    completing '%B$col[black]'
+    jobs       '$col[gold]'
+    duration   '$col[goldenrod]'
+    ssh        '$col[mediumpurple]'
+    container  '$col[deepskyblue]'
+    transient  '$col[darkgrey]'
+    action     '$col[darkorange]'
+    added      '$col[darkorange]'
+    ahead      '$col[chartreuse]'
+    behind     '$col[deeppink]'
+    dirty      '$col[brown]'
+    clean      '$col[forestgreen]'
+    branch     '%B$col[white]'
+    remote     '$col[white]'
+    commit     '$col[white]'
+    deleted    '$col[red]'
+    modified   '$col[red]'
+    position   '$col[white]'
+    renamed    '$col[darkorange]'
+    stashed    '$col[lightsteelblue]'
+    unmerged   '$col[red]'
+    indexed    '$col[darkorange]'
+    unindexed  '$col[red]'
+    untracked  '$col[darkgrey]'
+    info       '$col[darkgrey]'
+    sep        '$col[darkgrey]'
+    ip         '$col[darkgrey]'
+    time       '$col[darkgrey]'
+    host       '$col[blue]'
+    pwd        '%(!.$col[tomato].$col[aqua])'
+    user       '%(!.%B$col[tomato].%B$col[white])'
+    none       '%b%u%s%f%k'
+  )
+  local name ov raw def
+  for name in ${(k)d}; do
+    ov="PROMPT_KRONUZ_COLOR_${name:u}"
+    # No-colour blanks the built-in default, but an explicit override still colours.
+    def="${d[$name]}"; (( ${_kronuz_nocolor:-0} )) && def=''
+    raw="${(P)ov}"
+    [[ -z "$raw" ]] && raw="$def"
+    col[$name]="${(e)raw}"
+  done
 }
 
 # ============================================================================
@@ -629,22 +638,9 @@ function prompt_kronuz_setup {
   zle -N zle-keymap-select
   zle -N zle-line-init
 
-  # Build the deferred semantic-colour accessors: col[name] re-expands to a user
-  # override or the built-in default at every render.
-  local -a COLORS
-  COLORS=(action added ahead behind branch clean commit completing deleted
-    dirty duration host indexed info insert ip jobs modified none overwrite position primary1
-    primary2 primary3 pwd remote renamed sep stashed status_err status_ok time
-    unindexed unmerged untracked user venv vim emacs etctl ssh container transient)
-  local color C
-  for color in "${COLORS[@]}" ; do
-    C="\${(e)PROMPT_KRONUZ_COLOR_${color:u}:-\$DEFAULT_PROMPT_KRONUZ_COLOR_${color:u}}"
-    col[$color]="$C"
-  done
-
-  zstyle ':kronuz:editor:keymap:primary' format "$col[primary1]\${glyph[caret]}$col[none]$col[primary2]\${glyph[caret]}$col[none]$col[primary3]\${glyph[caret]}$col[none]"
-  zstyle ':kronuz:editor:keymap:alternate' format "$col[primary3]\${glyph[caret_alt]}$col[none]$col[primary2]\${glyph[caret_alt]}$col[none]$col[primary1]\${glyph[caret_alt]}$col[none]"
-  zstyle ':kronuz:editor:keymap:overwrite' format " $col[overwrite]\${glyph[overwrite]}$col[none]"
+  zstyle ':kronuz:editor:keymap:primary' format "\${col[primary1]}\${glyph[caret]}\${col[none]}\${col[primary2]}\${glyph[caret]}\${col[none]}\${col[primary3]}\${glyph[caret]}\${col[none]}"
+  zstyle ':kronuz:editor:keymap:alternate' format "\${col[primary3]}\${glyph[caret_alt]}\${col[none]}\${col[primary2]}\${glyph[caret_alt]}\${col[none]}\${col[primary1]}\${glyph[caret_alt]}\${col[none]}"
+  zstyle ':kronuz:editor:keymap:overwrite' format " \${col[overwrite]}\${glyph[overwrite]}\${col[none]}"
 
   # Seed the keymap caret so a prompt char shows even where zle-line-init never fires
   # (e.g. Emacs `M-x shell`).
@@ -662,15 +658,15 @@ function prompt_kronuz_setup {
 
   # Per-segment defaults. Each is a deferred string; dynamic ones read the
   # $_prompt_kronuz_* / state vars the precmd computes.
-  DEFAULT_PROMPT_KRONUZ_OS="\${glyph[os]:+\"$col[host]\${glyph[os]}$col[none] \"}"
-  DEFAULT_PROMPT_KRONUZ_CONTEXT="\${_kronuz_is_container:+\" $col[container]\${glyph[container]}$col[none]\"}\${_kronuz_is_ssh:+\" $col[ssh]\${glyph[ssh]}$col[none]\"}"
-  DEFAULT_PROMPT_KRONUZ_ERR="%(?.$col[status_ok]\${glyph[dot]}$col[none].$col[status_err]\${glyph[dot]}$col[none])"
-  DEFAULT_PROMPT_KRONUZ_ERROR="%(?.. $col[status_err]\${glyph[return]} %?$col[none])"
-  DEFAULT_PROMPT_KRONUZ_VIM="\${VIM:+\" $col[vim]\${glyph[vim]}$col[none]\"}"
-  DEFAULT_PROMPT_KRONUZ_EMACS="\${INSIDE_EMACS:+\" $col[emacs]\${glyph[emacs]}$col[none]\"}"
-  DEFAULT_PROMPT_KRONUZ_ETCTL="\${ETCTL_SESSION:+\" $col[info]etctl$col[none]:$col[etctl]\${ETCTL_SESSION}$col[none]\"}"
-  DEFAULT_PROMPT_KRONUZ_JOBS="%(1j. $col[jobs]\${glyph[jobs]}\${glyph_pad[jobs]}%j$col[none].)"
-  DEFAULT_PROMPT_KRONUZ_DURATION="\${_prompt_kronuz_duration:+\" $col[duration]\${glyph[duration]}\${glyph_pad[duration]}\${_prompt_kronuz_duration}$col[none]\"}"
+  DEFAULT_PROMPT_KRONUZ_OS="\${glyph[os]:+\"\${col[host]}\${glyph[os]}\${col[none]} \"}"
+  DEFAULT_PROMPT_KRONUZ_CONTEXT="\${_kronuz_is_container:+\" \${col[container]}\${glyph[container]}\${col[none]}\"}\${_kronuz_is_ssh:+\" \${col[ssh]}\${glyph[ssh]}\${col[none]}\"}"
+  DEFAULT_PROMPT_KRONUZ_ERR="%(?.\${col[status_ok]}\${glyph[dot]}\${col[none]}.\${col[status_err]}\${glyph[dot]}\${col[none]})"
+  DEFAULT_PROMPT_KRONUZ_ERROR="%(?.. \${col[status_err]}\${glyph[return]} %?\${col[none]})"
+  DEFAULT_PROMPT_KRONUZ_VIM="\${VIM:+\" \${col[vim]}\${glyph[vim]}\${col[none]}\"}"
+  DEFAULT_PROMPT_KRONUZ_EMACS="\${INSIDE_EMACS:+\" \${col[emacs]}\${glyph[emacs]}\${col[none]}\"}"
+  DEFAULT_PROMPT_KRONUZ_ETCTL="\${ETCTL_SESSION:+\" \${col[info]}etctl\${col[none]}:\${col[etctl]}\${ETCTL_SESSION}\${col[none]}\"}"
+  DEFAULT_PROMPT_KRONUZ_JOBS="%(1j. \${col[jobs]}\${glyph[jobs]}\${glyph_pad[jobs]}%j\${col[none]}.)"
+  DEFAULT_PROMPT_KRONUZ_DURATION="\${_prompt_kronuz_duration:+\" \${col[duration]}\${glyph[duration]}\${glyph_pad[duration]}\${_prompt_kronuz_duration}\${col[none]}\"}"
   DEFAULT_PROMPT_KRONUZ_USER="%n"
   DEFAULT_PROMPT_KRONUZ_IP="\${_prompt_kronuz_ip}"
   DEFAULT_PROMPT_KRONUZ_GIT="\${_prompt_kronuz_git:+\${(e)_prompt_kronuz_git}}"
@@ -690,10 +686,10 @@ function prompt_kronuz_setup {
     kronuz[$seg]="\${(e)PROMPT_KRONUZ_${seg:u}:-\$DEFAULT_PROMPT_KRONUZ_${seg:u}}"
   done
   # The rest wrap a segment in its own colour, or compose other segments.
-  kronuz[user]="$col[user]\${(e)PROMPT_KRONUZ_USER:-\$DEFAULT_PROMPT_KRONUZ_USER}$col[none]"
-  kronuz[time]="$col[time]\${(e)PROMPT_KRONUZ_TIME:-\$DEFAULT_PROMPT_KRONUZ_TIME}$col[none]"
-  kronuz[pwd]="$col[pwd]\${(e)PROMPT_KRONUZ_PWD:-\$DEFAULT_PROMPT_KRONUZ_PWD}$col[none]"
-  kronuz[host]="$kronuz[os]$col[host]%M$col[none] $col[ip](\${(e)PROMPT_KRONUZ_IP:-\$DEFAULT_PROMPT_KRONUZ_IP})$col[none]"
+  kronuz[user]="\${col[user]}\${(e)PROMPT_KRONUZ_USER:-\$DEFAULT_PROMPT_KRONUZ_USER}\${col[none]}"
+  kronuz[time]="\${col[time]}\${(e)PROMPT_KRONUZ_TIME:-\$DEFAULT_PROMPT_KRONUZ_TIME}\${col[none]}"
+  kronuz[pwd]="\${col[pwd]}\${(e)PROMPT_KRONUZ_PWD:-\$DEFAULT_PROMPT_KRONUZ_PWD}\${col[none]}"
+  kronuz[host]="$kronuz[os]\${col[host]}%M\${col[none]} \${col[ip]}(\${(e)PROMPT_KRONUZ_IP:-\$DEFAULT_PROMPT_KRONUZ_IP})\${col[none]}"
   kronuz[info]="$kronuz[user] at $kronuz[host]"
 
   SPROMPT='zsh: correct $col[red]%R%f to $col[green]%r%f [nyae]? '
@@ -706,7 +702,7 @@ function prompt_kronuz_setup {
   if (( ${+PROMPT_KRONUZ_TRANSIENT} )); then
     _kronuz_transient_prompt="$PROMPT_KRONUZ_TRANSIENT"
   else
-    _kronuz_transient_prompt="$col[transient]\${glyph[caret]}$col[none] "
+    _kronuz_transient_prompt="\${col[transient]}\${glyph[caret]}\${col[none]} "
   fi
   zle -N _kronuz_transient_accept
   bindkey '^M' _kronuz_transient_accept

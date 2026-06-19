@@ -54,22 +54,27 @@ things make it work; keep both intact:
    sets `PROMPT_PERCENT PROMPT_CR PROMPT_SP`. (These used to ride on prezto's
    `$prompt_opts`, which only `promptinit`'s `prompt` command reads — we call
    `prompt_kronuz_setup` directly, so it's set explicitly in zshrc instead.)
-2. **`${(e)...}` recurses**: one `${(e)}` pass resolves a value that itself
-   contains further `$`-expansions, down through the color layers.
+2. **`${(e)...}` resolves the array refs**: each segment embeds `${col[...]}` and
+   `${glyph[...]}`, and one `${(e)}` pass at render expands them to the final escape /
+   icon (a value that itself holds prompt `%`-escapes, left for `print -P`).
 
-### Colors (two layers)
+### Colors
 
 - **Base palette**: `col[red]='%F{1}'`, `col[darkorange]='%F{#d75f00}'`, ... (name to
-  a zsh color escape). Defined inline near the top of `prompt.zsh`. The ANSI 0..15
+  a zsh color escape). A load-time literal near the top of `prompt.zsh`. The ANSI 0..15
   colors stay `%F{N}` so they track the terminal's theme; the 16..255 colors are
   **hex** `%F{#RRGGBB}` so they render at full 24-bit on a truecolor terminal.
-- **Semantic layer**: `prompt_kronuz_colors` sets
-  `DEFAULT_PROMPT_KRONUZ_COLOR_<NAME>='$col[...]'` (e.g. `..._BRANCH='%B$col[white]'`)
-  in a single branch (no 256-vs-8 split). A loop in `prompt_kronuz_setup` then
-  builds `col[<name>]="${(e)PROMPT_KRONUZ_COLOR_<NAME>:-$DEFAULT_PROMPT_KRONUZ_COLOR_<NAME>}"`.
+- **Semantic layer**: `prompt_kronuz_colors` works exactly like `prompt_kronuz_glyphs`
+  (the two are intentionally symmetric): a local defaults table maps each name to a
+  palette colour (`branch '%B$col[white]'`, `host '$col[blue]'`, ...), then one loop
+  applies any `PROMPT_KRONUZ_COLOR_<NAME>` override and writes the **resolved** escape
+  (`${(e)}` expands the `$col[...]` palette ref) into the same `col[]` array. Recomputed
+  every precmd.
 
-So `${(e)col[branch]}` yields the final color escape, and any semantic color is
-overridable by exporting `PROMPT_KRONUZ_COLOR_<NAME>` (e.g. in `local.zsh`).
+So `col[branch]` already holds the final escape; segments embed it deferredly as
+`\${col[branch]}` (or read it at runtime via `${(e)col[branch]}`), and any semantic
+colour is overridable by exporting `PROMPT_KRONUZ_COLOR_<NAME>` (e.g. in `local.zsh`).
+An explicit override colours even in no-colour mode, matching the glyph overrides.
 
 **Truecolor / degradation.** `prompt_kronuz_setup` checks `$COLORTERM`
 (`24bit`/`truecolor`) and `$terminfo[colors]`; on a non-truecolor terminal it
@@ -81,9 +86,10 @@ escapes). One hex palette therefore covers every tier: truecolor → 256 → 16/
 react live to `export TERM=dumb` / `NO_COLOR=1` and back): `_kronuz_dumb`
 (`$TERM` empty/`dumb`/`unknown`) and `_kronuz_nocolor` (dumb **or** `$NO_COLOR`,
 the [no-color.org](https://no-color.org) standard). When `_kronuz_nocolor`,
-`prompt_kronuz_colors` blanks every `DEFAULT_PROMPT_KRONUZ_COLOR_*` (via
-`${(k)parameters[(I)...]}`) and returns, so the **full layout still renders with
-zero escapes**. When `_kronuz_dumb`, `prompt_kronuz_glyphs` forces the plain glyph
+`prompt_kronuz_colors` blanks each name's built-in default (so `col[*]` resolves to
+the empty string), so the **full layout still renders with zero escapes**; an explicit
+`PROMPT_KRONUZ_COLOR_*` override still colours. When `_kronuz_dumb`,
+`prompt_kronuz_glyphs` forces the plain glyph
 set (PUA would be tofu). The keymap arrow is seeded in setup so a prompt char shows
 even where ZLE is off (Emacs `M-x shell`), where `zle-line-init` never fires.
 
@@ -160,10 +166,10 @@ off on dumb terminals.
 
 ### Add a segment
 
-1. (if it needs a new color) add the name to the `COLORS` list and set
-   `DEFAULT_PROMPT_KRONUZ_COLOR_<NAME>` in `prompt_kronuz_colors` (one branch now;
-   the no-color path blanks every color, so nothing terminal-specific is needed).
-2. Define `DEFAULT_PROMPT_KRONUZ_<NAME>` (its content; reference `$col[...]` and any
+1. (if it needs a new color) add a `<name> '$col[...]'` entry to the defaults table in
+   `prompt_kronuz_colors`. The loop builds `col[<name>]` and the override automatically;
+   the no-color path blanks the default, so nothing terminal-specific is needed.
+2. Define `DEFAULT_PROMPT_KRONUZ_<NAME>` (its content; reference `\${col[...]}` and any
    dynamic var). Use `\${...}` to keep `$` deferred, matching the surrounding code.
 3. Define `kronuz[<name>]="\${(e)PROMPT_KRONUZ_<NAME>:-\$DEFAULT_PROMPT_KRONUZ_<NAME>}"`.
 4. Splice `$kronuz[<name>]` into `PROMPT` or `RPROMPT`.
