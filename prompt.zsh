@@ -539,22 +539,18 @@ function _kronuz_transient_accept {
   if (( ! ${_kronuz_dumb:-0} )) && [[ -n "$_kronuz_transient_prompt" ]]; then
     _kronuz_prompt_full=$PROMPT _kronuz_rprompt_full=$RPROMPT
     PROMPT=$_kronuz_transient_prompt RPROMPT=''
-    _kronuz_muting=1
-    _kronuz_transient_style
+    # `keep` leaves the command's own syntax colours. The other styles restyle the
+    # buffer; flag our _zsh_highlight wrapper (installed in setup) to re-apply the
+    # style after fast-syntax-highlighting rebuilds region_highlight on line-finish.
+    [[ "${PROMPT_KRONUZ_TRANSIENT_STYLE:-dim}" != (keep|none|off) ]] && _kronuz_muting=1
     zle .reset-prompt
     zle .accept-line
     return
   fi
   zle accept-line
 }
-# Runs as a zle-line-finish hook (registered after fast-syntax-highlighting's, so it
-# wins the final paint): re-apply our styling to the buffer fsh just re-coloured.
-function _kronuz_transient_linefinish {
-  (( ${_kronuz_muting:-0} )) || return
-  _kronuz_muting=0
-  _kronuz_transient_style
-}
 function _kronuz_transient_restore {
+  _kronuz_muting=0          # resume highlighting for the next line (reset every prompt)
   [[ -n "$_kronuz_prompt_full" ]] || return
   PROMPT=$_kronuz_prompt_full RPROMPT=$_kronuz_rprompt_full
   _kronuz_prompt_full=''
@@ -703,10 +699,22 @@ function prompt_kronuz_setup {
   bindkey '^M' _kronuz_transient_accept
   bindkey '^J' _kronuz_transient_accept
   add-zsh-hook precmd _kronuz_transient_restore
-  # Register after plugins load (e.g. fast-syntax-highlighting) so our line-finish
-  # hook runs last and gets the final say on the muted buffer highlight.
-  autoload -Uz add-zle-hook-widget
-  add-zle-hook-widget zle-line-finish _kronuz_transient_linefinish 2>/dev/null
+  # Mute/dim styles restyle region_highlight for the accepted line; fast-syntax-
+  # highlighting rebuilds it on its own zle-line-finish. Rather than hook
+  # zle-line-finish (which recurses badly once fsh re-wraps the add-zle-hook-widget
+  # dispatcher), wrap _zsh_highlight once: let it build the fresh colours, then
+  # re-apply our style on top while `_kronuz_muting` is set. The line-finish rebuild
+  # is unconditional in fsh, so this also covers a buffer fsh skipped (e.g. a paste).
+  # Covers fast-syntax-highlighting and zsh-syntax-highlighting (same function name).
+  if (( ${+functions[_zsh_highlight]} )) && (( ! ${+functions[_kronuz_zsh_highlight_orig]} )); then
+    functions[_kronuz_zsh_highlight_orig]=$functions[_zsh_highlight]
+    function _zsh_highlight {
+      _kronuz_zsh_highlight_orig "$@"
+      local ret=$?
+      (( ${_kronuz_muting:-0} )) && _kronuz_transient_style
+      return ret
+    }
+  fi
   # `dim` needs the terminal's real ANSI palette; query it once now (skipped for the
   # other styles, which don't recolour by RGB).
   [[ "${PROMPT_KRONUZ_TRANSIENT_STYLE:-dim}" != (keep|none|off|mute|grey|gray) ]] && _kronuz_query_palette
