@@ -244,16 +244,32 @@ Three variables control it:
 | `PROMPT_KRONUZ_TRANSIENT_STYLE`| `dim`              | How the just-run **command and the kept outcome line** are restyled in the collapsed line: `dim`, `mute`, or `keep`. |
 | `PROMPT_KRONUZ_TRANSIENT_DIM`  | `0.7`              | For `dim`: darkness factor, `0` = black, `1` = unchanged. Lower is darker. |
 | `PROMPT_KRONUZ_TRANSIENT_HL`   | `fg=8`             | For `mute`: the `region_highlight` spec to paint the command with (default = grey). |
+| `PROMPT_KRONUZ_PALETTE`        | _(unset)_          | For `dim`: hardcode the terminal's 16 ANSI colors instead of querying. An assoc array, index `0-15` → `#RRGGBB` (or a color name). Set in `local.zsh` when the terminal can't be queried. |
+| `PROMPT_KRONUZ_PALETTE_TTL`    | `86400`            | How long (seconds) the queried palette is cached on disk, per terminal. `0` disables the cache (query every shell). |
+| `PROMPT_KRONUZ_PALETTE_TIMEOUT`| `0.6`              | For `dim`: seconds to wait for the OSC 4 query to answer. Bump it if a remote/slow terminal misses the round-trip. |
 
 The three styles:
 
 - **`dim`** keeps the command's own syntax colors but darkens them, so the line
   reads as faded history without losing its shape. The default factor (`0.7`) is a
   moderate fade; go lower (`0.4` to `0.5`) for darker, higher (`0.85`+) for subtler.
-  To darken the
-  right hue, the prompt queries your terminal's real 16 ANSI colors once at startup
-  (via an OSC 4 query), falling back to the xterm defaults if the terminal doesn't
-  answer.
+  To darken the right hue, the prompt needs your terminal's real 16 ANSI colors. It
+  finds them in order: a hardcoded `PROMPT_KRONUZ_PALETTE` (no query), then an on-disk
+  cache, then a one-time **OSC 4** query of the terminal (cached afterward for
+  `PROMPT_KRONUZ_PALETTE_TTL`). If nothing answers it falls back to the xterm defaults.
+  Over a remote shell (e.g. SSH or Eternal Terminal) the query round-trip is
+  network-bound, so the cache and a generous `PROMPT_KRONUZ_PALETTE_TIMEOUT` matter;
+  if your terminal still can't be queried, hardcode the palette in `local.zsh`:
+
+  ```zsh
+  # iTerm "Pastel (Dark Background)" — your terminal's 16 ANSI colors as #RRGGBB.
+  typeset -gA PROMPT_KRONUZ_PALETTE=(
+    0  '#000000'  1  '#ff5c57'  2  '#5af78e'  3  '#f3f99d'
+    4  '#57c7ff'  5  '#ff6ac1'  6  '#9aedfe'  7  '#f1f1f0'
+    8  '#686868'  9  '#ff5c57'  10 '#5af78e'  11 '#f3f99d'
+    12 '#57c7ff'  13 '#ff6ac1'  14 '#9aedfe'  15 '#eff0eb'
+  )
+  ```
 - **`mute`** repaints the whole command in one flat color (grey by default; change
   it with `PROMPT_KRONUZ_TRANSIENT_HL`).
 - **`keep`** leaves the syntax colors untouched.
@@ -319,6 +335,9 @@ through it.
 | `PROMPT_KRONUZ_TRANSIENT_STYLE` | `dim` | Restyle of the past command: `dim`, `mute`, or `keep`. |
 | `PROMPT_KRONUZ_TRANSIENT_DIM` | `0.7` | `dim` darkness factor (`0` black .. `1` unchanged). |
 | `PROMPT_KRONUZ_TRANSIENT_HL` | `fg=8` | `mute` color, as a `region_highlight` spec. |
+| `PROMPT_KRONUZ_PALETTE` | (unset) | `dim`: hardcode the 16 ANSI colors (assoc array, `0-15` → `#RRGGBB`); skips the OSC 4 query. |
+| `PROMPT_KRONUZ_PALETTE_TTL` | `86400` | Seconds the queried palette is cached on disk (per terminal); `0` disables the cache. |
+| `PROMPT_KRONUZ_PALETTE_TIMEOUT` | `0.6` | Seconds to wait for the OSC 4 palette answer; bump it for a slow/remote terminal. |
 | `NO_COLOR` | (unset) | Standard env var; when set, renders with no color escapes. |
 
 Anything not set falls back to the built-in default, and every variable is read

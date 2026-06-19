@@ -148,9 +148,14 @@ into `_prompt_kronuz_duration` when it tops `PROMPT_KRONUZ_CMD_DURATION_MIN`),
 widget on `^M`/`^J` that swaps to `$_kronuz_transient_prompt` and `reset-prompt`s,
 restored in precmd; it also restyles the just-run command per
 `PROMPT_KRONUZ_TRANSIENT_STYLE` — `dim` (darken each fg to truecolor hex, since zsh
-`region_highlight` has no faint attribute; the 16 ANSI colours come from an OSC 4
-palette query at setup, `_kronuz_query_palette`, so dim matches the real theme and
-falls back to xterm defaults if unanswered), `mute` (grey), or `keep`. To win the
+`region_highlight` has no faint attribute; the 16 ANSI colours are loaded by
+`_kronuz_load_palette` at setup, cheapest source first: a hardcoded
+`$PROMPT_KRONUZ_PALETTE` (assoc, index→`#RRGGBB`), an on-disk cache
+(`$XDG_CACHE_HOME/kronuzsh/palette-<term>`, kept `$PROMPT_KRONUZ_PALETTE_TTL`s, per
+terminal), else an OSC 4 query `_kronuz_query_palette` (budget
+`$PROMPT_KRONUZ_PALETTE_TIMEOUT`, default 0.6s, so a remote/slow link still answers;
+a complete 16-colour result is cached) — falling back to xterm defaults if all fail),
+`mute` (grey), or `keep`. To win the
 final paint over fast-syntax-highlighting it wraps fsh's `_zsh_highlight` once (not a
 `zle-line-finish` hook — `add-zle-hook-widget zle-line-finish` recurses once fsh
 re-wraps the dispatcher): the wrapper runs fsh, then re-applies our style while the

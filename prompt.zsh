@@ -127,9 +127,12 @@ function _kronuz_color_rgb {
   fi
 }
 
-# Query the terminal's 16 ANSI colours (OSC 4) once at setup and cache them in
-# $_kronuz_pal, so `dim` darkens the real theme rather than a guessed table. A no-op
-# (leaving the xterm-default fallback in place) without a tty, or on tmux/screen/dumb.
+# Query the terminal's 16 ANSI colours (OSC 4) into $_kronuz_pal, so `dim` darkens the
+# real theme rather than a guessed table. A no-op (leaving the xterm-default fallback in
+# place) without a tty, or on tmux/screen/dumb. The budget ($PROMPT_KRONUZ_PALETTE_TIMEOUT,
+# default 0.6s) is generous so the round-trip survives a slow link (e.g. a remote shell
+# over the network); the loop still exits the instant all 16 answers arrive, so a local
+# terminal pays nothing.
 typeset -gA _kronuz_pal
 function _kronuz_query_palette {
   emulate -L zsh -o extendedglob
@@ -142,7 +145,7 @@ function _kronuz_query_palette {
   {
     stty -echo -icanon min 0 time 0 2>/dev/null
     local -i i; for i in {0..15}; do print -n -- "\e]4;${i};?\e\\"; done
-    local -F end=$(( EPOCHREALTIME + 0.3 )); local -i n=0
+    local -F end=$(( EPOCHREALTIME + ${PROMPT_KRONUZ_PALETTE_TIMEOUT:-0.6} )); local -i n=0
     while (( EPOCHREALTIME < end && n < 16 )); do
       chunk=''; sysread -t 0.05 chunk 2>/dev/null
       resp+="$chunk"
@@ -155,6 +158,50 @@ function _kronuz_query_palette {
     [[ "$piece" = (#b)(<0-15>)';rgb:'([0-9a-fA-F]##)'/'([0-9a-fA-F]##)'/'([0-9a-fA-F]##)* ]] || continue
     _kronuz_pal[${match[1]}]="$(( 16#${match[2][1,2]} )) $(( 16#${match[3][1,2]} )) $(( 16#${match[4][1,2]} ))"
   done
+}
+
+# Populate $_kronuz_pal for `dim`, cheapest source first:
+#   1. $PROMPT_KRONUZ_PALETTE — a hardcoded override (an assoc array, index 0-15 -> #RRGGBB
+#      or colour name), e.g. in local.zsh; the terminal is never queried.
+#   2. a fresh on-disk cache — so a shell doesn't re-query (and re-stall on a slow link)
+#      every start. Kept for $PROMPT_KRONUZ_PALETTE_TTL seconds (default a day), per
+#      terminal; set TTL=0 to disable the cache.
+#   3. an OSC 4 query — whose complete (16-colour) result is cached for next time.
+function _kronuz_load_palette {
+  emulate -L zsh -o extendedglob
+  zmodload zsh/datetime 2>/dev/null
+  zmodload -F zsh/stat b:zstat 2>/dev/null
+  _kronuz_pal=()
+
+  if (( ${#PROMPT_KRONUZ_PALETTE} )); then
+    local k reply
+    for k in ${(k)PROMPT_KRONUZ_PALETTE}; do
+      _kronuz_color_rgb "${PROMPT_KRONUZ_PALETTE[$k]}"
+      (( ${#reply} )) && _kronuz_pal[$k]="${reply[*]}"
+    done
+    return
+  fi
+
+  local -i ttl=${PROMPT_KRONUZ_PALETTE_TTL:-86400}
+  local term="${LC_TERMINAL:-${TERM_PROGRAM:-$TERM}}"
+  local cache="${XDG_CACHE_HOME:-$HOME/.cache}/kronuzsh/palette-${term//[^A-Za-z0-9._-]/_}"
+  local -a mt
+
+  if (( ttl > 0 )) && [[ -r $cache ]] && zstat -A mt +mtime -- $cache 2>/dev/null \
+     && (( EPOCHSECONDS - mt[1] < ttl )); then
+    local k r g b
+    while read -r k r g b; do _kronuz_pal[$k]="$r $g $b"; done < $cache
+    (( ${#_kronuz_pal} == 16 )) && return
+    _kronuz_pal=()
+  fi
+
+  _kronuz_query_palette
+  if (( ttl > 0 && ${#_kronuz_pal} == 16 )); then
+    mkdir -p ${cache:h} 2>/dev/null && {
+      local k
+      for k in ${(onk)_kronuz_pal}; do print -r -- "$k ${_kronuz_pal[$k]}"; done
+    } > $cache 2>/dev/null
+  fi
 }
 
 # Semantic colours: map each prompt element to a base-palette colour, resolved with
@@ -722,7 +769,7 @@ function prompt_kronuz_setup {
       return ret
     }
   fi
-  # dim needs the terminal's real palette; query it once now (the other styles don't
-  # recolour by RGB).
-  [[ "${PROMPT_KRONUZ_TRANSIENT_STYLE:-dim}" != (keep|none|off|mute|grey|gray) ]] && _kronuz_query_palette
+  # dim needs the terminal's real palette; load it once now (hardcoded override, cache,
+  # or an OSC 4 query). The other styles don't recolour by RGB.
+  [[ "${PROMPT_KRONUZ_TRANSIENT_STYLE:-dim}" != (keep|none|off|mute|grey|gray) ]] && _kronuz_load_palette
 }
