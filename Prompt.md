@@ -11,34 +11,39 @@ OS, and session and does the right thing.
 
 ## What you see
 
-A typical two-line prompt, after a command that failed and took a while (shown
-with the plain-Unicode glyphs so it renders anywhere; with a Nerd Font the `⎇`,
-`venv`, and time marks become polished icons):
+A typical prompt, after a command that failed and took a while (shown with the
+plain-Unicode glyphs so it renders anywhere; with a Nerd Font the `⎇`, `venv`, and
+time marks become polished icons). The exit code and duration sit on their own line
+on top, then the info line, then the line you type on:
 
 ```
-● gmendezb at host.example.com (10.0.0.5)  ⎇ main ⇡1 ✛2 ✴3  venv myproj  3.2s ⏎ 1
+⏎ 1  3.2s
+● gmendezb at host.example.com (10.0.0.5)  ⎇ main ⇡1 ✛2 ✴3  venv myproj
 [16:26:02] ~/Development/kronuzsh ❯❯❯
 ```
 
-Read left to right, top line:
+Read top to bottom:
 
 ```
+⏎ 1          exit code    the nonzero exit status (only when the last command failed)
+3.2s         duration     how long it ran (only past a threshold); shares the top line
 ●            status dot   green if the last command succeeded, red if it failed
 gmendezb     user         %n
 at host…     host         OS logo (Nerd Font) + hostname + cached LAN IP
 ⎇ main …     git          branch/tag/commit, ahead/behind, staged/modified/…
 venv myproj  venv         the active Python virtualenv ($VIRTUAL_ENV)
-3.2s         duration     how long the last command ran (only past a threshold)
-⏎ 1          exit code    the nonzero exit status (only when it failed)
 ```
 
-Bottom line: `[time]`, the working directory, and the caret (`❯❯❯`) you type at.
-On the **right** (RPROMPT): the vi/emacs keymap indicator and an overwrite-mode
-mark. Segments that have nothing to show (no git repo, no venv, a fast command)
-simply don't render, so the prompt stays as short as the moment allows.
+The **top line is conditional**: it shows only when the last command failed or was
+slow, and is absent entirely on a quick, clean command (so a normal prompt is just
+the info line and the input line). Bottom line: `[time]`, the working directory, and
+the caret (`❯❯❯`) you type at. On the **right** (RPROMPT): the vi/emacs keymap
+indicator and an overwrite-mode mark. Segments that have nothing to show (no git
+repo, no venv) simply don't render, so the prompt stays as short as the moment allows.
 
 Other segments that appear when relevant: a background-jobs count, an SSH or
 container badge, and an `etctl:<name>` tag inside an Eternal Terminal session.
+
 
 ## Quick start
 
@@ -182,10 +187,18 @@ layout still renders with zero escapes. It's re-evaluated every prompt, so
 
 ## Behavior
 
+### The status line (exit code + duration)
+
+When the last command **failed or was slow**, the prompt shows a line on top, above
+the info row, with its exit code (`⏎<code>`) and/or duration. On a quick, clean
+command that line is absent entirely. When you submit the next command, that line
+stays behind in scrollback (dimmed, per your transient style), so your history reads
+as a quiet log of what failed or dragged. See [Transient prompt](#transient-prompt).
+
 ### Command duration
 
 After a command runs longer than `PROMPT_KRONUZ_CMD_DURATION_MIN` seconds
-(default `3`), the next prompt shows how long it took, formatted compactly:
+(default `3`), the status line above shows how long it took, formatted compactly:
 `3.2s`, `1m05s`, `1h02m03s`. Set the threshold to `0` to always show it.
 
 ### Background jobs
@@ -210,13 +223,17 @@ remote session a shell belongs to.
 When you press Enter, the prompt for the command you just ran collapses to a single
 short caret, so your scrollback is a clean column of carets and commands instead of
 a wall of repeated full prompts. The live prompt above the cursor is always the
-full one; only the past ones shrink.
+full one; only the past ones shrink. A command that **failed or was slow** also
+leaves its outcome line (the `⏎<code>` / duration) behind, dimmed, so scrollback
+stays a quiet log of what happened; quiet commands collapse to a bare caret.
 
 ```
 ❯ cd src
 ❯ make
+⏎ 2          ← make failed; its outcome line stays, dimmed
 ❯ ./run --watch
-● gmendezb at host (10.0.0.5)  ⎇ main ❯❯❯        ← the live prompt, full
+3.4s         ← slow; the dimmed duration stays
+● gmendezb at host (10.0.0.5)  ⎇ main ❯❯❯        ← the live prompt, full color
 ```
 
 Three variables control it:
@@ -224,7 +241,7 @@ Three variables control it:
 | Variable                       | Default            | Effect                                            |
 |--------------------------------|--------------------|---------------------------------------------------|
 | `PROMPT_KRONUZ_TRANSIENT`      | a faded `❯`        | The collapsed prompt string. Set to `''` to disable transience entirely (past prompts stay full). |
-| `PROMPT_KRONUZ_TRANSIENT_STYLE`| `dim`              | How the just-run **command** is restyled in the collapsed line: `dim`, `mute`, or `keep`. |
+| `PROMPT_KRONUZ_TRANSIENT_STYLE`| `dim`              | How the just-run **command and the kept outcome line** are restyled in the collapsed line: `dim`, `mute`, or `keep`. |
 | `PROMPT_KRONUZ_TRANSIENT_DIM`  | `0.7`              | For `dim`: darkness factor, `0` = black, `1` = unchanged. Lower is darker. |
 | `PROMPT_KRONUZ_TRANSIENT_HL`   | `fg=8`             | For `mute`: the `region_highlight` spec to paint the command with (default = grey). |
 
@@ -241,13 +258,16 @@ The three styles:
   it with `PROMPT_KRONUZ_TRANSIENT_HL`).
 - **`keep`** leaves the syntax colors untouched.
 
-### Why a past caret can't go red
+### The exit code lives above the caret, not in it
 
-A natural wish is to color the caret of a failed command red, or show its exit code
-inline. The prompt can't: the caret is drawn when you press Enter, before the
-command has run, so its own result doesn't exist yet. The job belongs to the
-terminal instead, via the OSC 133 prompt marks below (the prompt emits a
-`D;<exitcode>` mark per command), which terminals like iTerm2 use to flag failed
+A natural wish is to color the caret of a failed command red. The caret itself
+can't be: it's drawn the moment you press Enter, before the command runs, so at
+caret-draw time its own result doesn't exist yet. Instead the result shows on the
+**line above** the caret. The live prompt puts the `⏎<code>` / duration on its own
+line, and when you submit the next command that line stays behind (dimmed) in
+scrollback, so past failures and slow commands are still visible at a glance. The
+terminal also gets the machine-readable version via the OSC 133 `D;<exitcode>` mark
+the prompt emits per command, which terminals like iTerm2 use to flag failed
 commands in the gutter.
 
 ## Terminal integration
@@ -269,8 +289,10 @@ There's nothing to configure; it activates wherever the terminal understands it.
 Beyond colors and glyphs, you can override a segment's entire content with
 `PROMPT_KRONUZ_<SEGMENT>`. The value is a prompt string (zsh `%`-escapes and
 `$col[...]` / `$glyph[...]` references work). Available segments: `OS`, `ERR`,
-`ERROR`, `USER`, `IP`, `HOST` (composed), `TIME`, `PWD`, `GIT`, `VENV`, `JOBS`,
-`DURATION`, `CONTEXT`, `ETCTL`, `VIM`, `EMACS`, `OVERWRITE`, `PROMPT`.
+`USER`, `IP`, `HOST` (composed), `TIME`, `PWD`, `GIT`, `VENV`, `JOBS`,
+`CONTEXT`, `ETCTL`, `VIM`, `EMACS`, `OVERWRITE`, `PROMPT`. (The exit code and
+duration are no longer their own overridable segments; they're built into the
+status line on top, formatted by `_kronuz_status_segment`.)
 
 ```zsh
 # A 24-hour clock with seconds instead of the default [%*]:

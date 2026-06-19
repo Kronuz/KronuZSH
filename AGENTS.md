@@ -122,9 +122,14 @@ in `prompt_kronuz_precmd` (pwd, venv, git) into vars the deferred strings read
 (`_prompt_kronuz_pwd`, `python_info[virtualenv]`, `_prompt_kronuz_git`).
 
 Current layout:
-`PROMPT = err info context etctl git venv jobs error duration \n time pwd prompt`
+`PROMPT = status err info context etctl git venv jobs \n time pwd prompt`
 (plus a zero-width OSC 133 "B" mark at the end via `$_kronuz_osc_b`),
-`RPROMPT = overwrite vim emacs`.
+`RPROMPT = overwrite vim emacs`. The **status** segment (`_prompt_kronuz_status`,
+built in `_kronuz_status_segment`) is the last command's exit code (`⏎<code>` when
+nonzero) and duration (when slow) on their own line above the info row, and renders
+nothing (no line) on a quick, clean command. Its exit code comes from
+`_kronuz_last_exit`, captured first thing in `_kronuz_osc_precmd` (which runs first
+among the precmd hooks). `err` is the always-on `●` success/failure dot.
 
 Beyond the deferred segments, a few features hook the line lifecycle:
 **command duration** (`preexec` stamps `$EPOCHREALTIME`, precmd formats the delta
@@ -145,7 +150,11 @@ final paint over fast-syntax-highlighting it wraps fsh's `_zsh_highlight` once (
 re-wraps the dispatcher): the wrapper runs fsh, then re-applies our style while the
 `_kronuz_muting` flag is set (set at accept, cleared in precmd). fsh rebuilds
 `region_highlight` unconditionally on line-finish, so this also covers a buffer fsh
-skipped, e.g. a paste). The **jobs** segment is prompt-native (`%(1j...)`); the
+skipped, e.g. a paste). On accept it also keeps a **dimmed copy of the status line**
+(`_prompt_kronuz_status_dim`, dimmed per the same style via `_kronuz_dim_col`) above
+the collapsed caret, so a failed or slow command leaves a one-line marker in
+scrollback while quiet commands collapse to a bare caret. The **jobs** segment is
+prompt-native (`%(1j...)`); the
 **context** (SSH/container) badge is detected once at setup. All of these are gated
 off on dumb terminals.
 
