@@ -451,16 +451,29 @@ function _kronuz_osc_precmd {
 
 # ---- transient prompt: collapse a submitted prompt to a minimal caret ----
 # On accept-line, swap PROMPT to a one-line caret and redraw, so scrollback keeps
-# only a minimal prompt for past commands; restored before the next prompt. Off on
-# dumb (reset-prompt can't redraw in place there) and when PROMPT_KRONUZ_TRANSIENT=''.
-typeset -g _kronuz_prompt_full='' _kronuz_rprompt_full=''
+# only a minimal prompt for past commands; restored before the next prompt. The
+# just-entered command is muted too (its syntax highlighting replaced with one grey
+# span, $col[transient]), so the whole past line reads as history. Off on dumb
+# (reset-prompt can't redraw in place there) and when PROMPT_KRONUZ_TRANSIENT=''.
+typeset -g _kronuz_prompt_full='' _kronuz_rprompt_full='' _kronuz_muting=0
 function _kronuz_transient_accept {
   if (( ! ${_kronuz_dumb:-0} )) && [[ -n "$_kronuz_transient_prompt" ]]; then
     _kronuz_prompt_full=$PROMPT _kronuz_rprompt_full=$RPROMPT
     PROMPT=$_kronuz_transient_prompt RPROMPT=''
-    zle reset-prompt
+    _kronuz_muting=1
+    region_highlight=("0 ${#BUFFER} ${PROMPT_KRONUZ_TRANSIENT_HL:-fg=8}")
+    zle .reset-prompt
+    zle .accept-line
+    return
   fi
   zle accept-line
+}
+# Runs as a zle-line-finish hook (registered after fast-syntax-highlighting's, so it
+# wins the final paint): re-mute the buffer that fsh just re-coloured on line finish.
+function _kronuz_transient_linefinish {
+  (( ${_kronuz_muting:-0} )) || return
+  _kronuz_muting=0
+  region_highlight=("0 ${#BUFFER} ${PROMPT_KRONUZ_TRANSIENT_HL:-fg=8}")
 }
 function _kronuz_transient_restore {
   [[ -n "$_kronuz_prompt_full" ]] || return
@@ -611,4 +624,8 @@ function prompt_kronuz_setup {
   bindkey '^M' _kronuz_transient_accept
   bindkey '^J' _kronuz_transient_accept
   add-zsh-hook precmd _kronuz_transient_restore
+  # Register after plugins load (e.g. fast-syntax-highlighting) so our line-finish
+  # hook runs last and gets the final say on the muted buffer highlight.
+  autoload -Uz add-zle-hook-widget
+  add-zle-hook-widget zle-line-finish _kronuz_transient_linefinish 2>/dev/null
 }

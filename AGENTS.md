@@ -134,7 +134,9 @@ into `_prompt_kronuz_duration` when it tops `PROMPT_KRONUZ_CMD_DURATION_MIN`),
 `$_kronuz_is_iterm`, it also emits the proprietary OSC 1337 ShellIntegrationVersion
 / RemoteHost / CurrentDir), and the **transient prompt** (an accept-line
 widget on `^M`/`^J` that swaps to `$_kronuz_transient_prompt` and `reset-prompt`s,
-restored in precmd). The **jobs** segment is prompt-native (`%(1j...)`); the
+restored in precmd; it also dims the just-run command to grey via `region_highlight`
+plus a `zle-line-finish` hook registered after fast-syntax-highlighting so it wins
+the final paint). The **jobs** segment is prompt-native (`%(1j...)`); the
 **context** (SSH/container) badge is detected once at setup. All of these are gated
 off on dumb terminals.
 
