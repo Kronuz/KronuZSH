@@ -13,6 +13,12 @@
 # fzf is Go, not Rust: where there's no package, grab its prebuilt binary into
 # ~/.local/bin (https://github.com/junegunn/fzf/releases).
 #
+# PATH timing: this file runs at .zshrc start, so any tool dir it should see
+# (~/.cargo/bin, ~/.local/bin, ...) must be on PATH already. Put that in ~/.profile
+# (sourced at login, before .zshrc), NOT in local.zsh (sourced after this file):
+#   [ -r "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
+#   case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) PATH="$HOME/.local/bin:$PATH"; export PATH ;; esac
+#
 # Loaded after keybindings.zsh + plugins.zsh, so fzf's Ctrl-R wins over the
 # plain incremental search and its widgets layer cleanly over the plugins.
 

@@ -165,7 +165,15 @@ curl -sSL "https://github.com/junegunn/fzf/releases/download/v$ver/fzf-$ver-linu
 Most of the "worth adding" tools are Rust too, so `cargo install <crate>` works
 anywhere Rust does (crate names: `du-dust`, `procs`, `tokei`, `sd`, ...). lazygit,
 yq, duf, glow, and xh are Go; grab their prebuilt release binaries. Both
-`~/.cargo/bin` and `~/.local/bin` need to be on `$PATH` (they usually are).
+`~/.cargo/bin` and `~/.local/bin` need to be on `$PATH` **before `.zshrc` runs**, so
+`integrations/init.zsh` can detect what's there: put them in `~/.profile` (sourced at
+login, before `.zshrc`), not in `local.zsh` (sourced after):
+
+```sh
+# ~/.profile
+[ -r "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
+case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) PATH="$HOME/.local/bin:$PATH"; export PATH ;; esac
+```
 
 ## Theming
 

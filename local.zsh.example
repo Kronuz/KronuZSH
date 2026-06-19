@@ -1,10 +1,23 @@
 # Machine-local config. Copy to local.zsh (git-ignored) and adapt per machine.
 # Keep machine-specific paths and CORP-INTERNAL urls here, NOT in the repo.
+#
+# IMPORTANT — load order: local.zsh is sourced near the END of .zshrc, AFTER
+# integrations/init.zsh has already looked for your tools (bat, fd, delta, zoxide,
+# fzf, ...). So PATH changes here are too late for that detection. Put anything that
+# puts a tool ON PATH (cargo, ~/.local/bin, pyenv, ...) in ~/.profile instead, which
+# is sourced at login before .zshrc. Keep only non-PATH tweaks here: env vars, tool
+# hooks (the tool is already on PATH by now), and PROMPT_KRONUZ_* overrides.
 
 # COLORTERM is universal enough to keep in the repo, but tool hooks below
 # differ per machine and error out if the tool isn't installed.
 
-# --- direnv ---
+# --- PATH (put these in ~/.profile, not here — see the note above) ---
+# ~/.profile is POSIX sh, sourced at login before .zshrc, so tools land on PATH in
+# time for integrations/init.zsh:
+#   case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) PATH="$HOME/.local/bin:$PATH"; export PATH ;; esac
+#   [ -r "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
+
+# --- direnv (hook is fine here: direnv is on PATH via ~/.profile by now) ---
 # command -v direnv >/dev/null && eval "$(direnv hook zsh)"
 
 # --- Volta (node) ---
@@ -16,13 +29,9 @@
 # [[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh"
 # [[ -s "$NVM_DIR/bash_completion" ]] && source "$NVM_DIR/bash_completion"
 
-# --- Rust / cargo (point at your internal mirror if you have one) ---
+# --- Rust / cargo mirror (env only; the PATH bit goes in ~/.profile, above) ---
 # export RUSTUP_DIST_SERVER=https://your-internal-mirror.example.com/rustup
 # export RUSTUP_UPDATE_ROOT=https://your-internal-mirror.example.com/rustup/rustup
-# [[ -r "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
-
-# --- misc PATH ---
-# export PATH="$HOME/.local/bin:$PATH"
 
 # --- prompt glyphs ---
 # No Nerd Font? Switch the prompt to plain-Unicode glyphs (renders in any font):
