@@ -358,7 +358,7 @@ function _kronuz_ip_segment {
 }
 
 # ---- status line (last command's exit code + duration, on its own line) ----
-typeset -g _prompt_kronuz_status='' _prompt_kronuz_status_dim='' _prompt_kronuz_dot='' _kronuz_last_exit=0
+typeset -g _prompt_kronuz_status='' _prompt_kronuz_status_dim='' _kronuz_last_exit=0
 # Dimmed colour escape for a palette name, per PROMPT_KRONUZ_TRANSIENT_STYLE (used for the
 # kept history copy of the outcome line): keep = original, mute = grey (like the caret),
 # dim = same hue darkened by the transient factor. Result in REPLY.
@@ -386,16 +386,8 @@ function _kronuz_dim_col {
 # copy the transient prompt leaves in scrollback. Empty (no line) on a quick, clean command.
 function _kronuz_status_segment {
   _prompt_kronuz_status='' _prompt_kronuz_status_dim=''
-  # The ● dot: red only when the last REAL command failed, green otherwise. A blank Enter
-  # leaves $? unchanged, but it didn't run anything, so it reads as green (not a lingering
-  # failure). Computed here rather than via %(?..) so it tracks _kronuz_cmd_ran, not raw $?.
-  if (( ${_kronuz_cmd_ran:-0} && ${_kronuz_last_exit:-0} != 0 )); then
-    _prompt_kronuz_dot="${(e)col[status_err]}${glyph[dot]}${(e)col[none]}"
-  else
-    _prompt_kronuz_dot="${(e)col[status_ok]}${glyph[dot]}${(e)col[none]}"
-  fi
-  # The status line (exit code / duration) likewise shows only after a real command ran,
-  # so a blank Enter doesn't re-show or re-keep the previous command's outcome.
+  # Only after a real command ran (preexec fired). An empty Enter leaves $? unchanged,
+  # so without this it would re-show and re-keep the previous command's exit code.
   (( ${_kronuz_cmd_ran:-0} )) || return
   local out='' dim='' body sp REPLY
   if (( ${_kronuz_last_exit:-0} != 0 )); then
@@ -651,7 +643,7 @@ function prompt_kronuz_setup {
   DEFAULT_PROMPT_KRONUZ_OS="\${glyph[os]:+\"$col[host]\${glyph[os]}$col[none] \"}"
   DEFAULT_PROMPT_KRONUZ_CONTEXT="\${_kronuz_is_container:+\" $col[container]\${glyph[container]}$col[none]\"}\${_kronuz_is_ssh:+\" $col[ssh]\${glyph[ssh]}$col[none]\"}"
 
-  DEFAULT_PROMPT_KRONUZ_ERR="\${_prompt_kronuz_dot}"
+  DEFAULT_PROMPT_KRONUZ_ERR="%(?.$col[status_ok]\${glyph[dot]}$col[none].$col[status_err]\${glyph[dot]}$col[none])"
   DEFAULT_PROMPT_KRONUZ_ERROR="%(?.. $col[status_err]\${glyph[return]} %?$col[none])"
   DEFAULT_PROMPT_KRONUZ_VIM="\${VIM:+\" $col[vim]\${glyph[vim]}$col[none]\"}"
   DEFAULT_PROMPT_KRONUZ_EMACS="\${INSIDE_EMACS:+\" $col[emacs]\${glyph[emacs]}$col[none]\"}"
