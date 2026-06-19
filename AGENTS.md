@@ -63,7 +63,10 @@ things make it work; keep both intact:
 - **Base palette**: `col[red]='%F{1}'`, `col[darkorange]='%F{#d75f00}'`, ... (name to
   a zsh color escape). A load-time literal near the top of `prompt.zsh`. The ANSI 0..15
   colors stay `%F{N}` so they track the terminal's theme; the 16..255 colors are
-  **hex** `%F{#RRGGBB}` so they render at full 24-bit on a truecolor terminal.
+  **hex** `%F{#RRGGBB}` so they render at full 24-bit on a truecolor terminal. The 16
+  ANSI names (`$_kronuz_basic`, name→index) are each overridable to a `#RRGGBB`/index via
+  `PROMPT_KRONUZ_PALETTE_<NAME>`, applied to `col[]` at the top of `prompt_kronuz_colors`
+  (and fed to `dim`'s RGB, see the transient section).
 - **Semantic layer**: `prompt_kronuz_colors` works exactly like `prompt_kronuz_glyphs`
   (the two are intentionally symmetric): a local defaults table maps each name to a
   palette colour (`branch '%B$col[white]'`, `host '$col[blue]'`, ...), then one loop
@@ -148,13 +151,16 @@ into `_prompt_kronuz_duration` when it tops `PROMPT_KRONUZ_CMD_DURATION_MIN`),
 widget on `^M`/`^J` that swaps to `$_kronuz_transient_prompt` and `reset-prompt`s,
 restored in precmd; it also restyles the just-run command per
 `PROMPT_KRONUZ_TRANSIENT_STYLE` — `dim` (darken each fg to truecolor hex, since zsh
-`region_highlight` has no faint attribute; the 16 ANSI colours are loaded by
-`_kronuz_load_palette` at setup, cheapest source first: a hardcoded
-`$PROMPT_KRONUZ_PALETTE` (assoc, index→`#RRGGBB`), an on-disk cache
+`region_highlight` has no faint attribute; the 16 ANSI colours' RGB are loaded into
+`$_kronuz_pal` by `_kronuz_load_palette`, run once from the **first precmd** (not setup,
+so `local.zsh` can configure it): an on-disk cache
 (`$XDG_CACHE_HOME/kronuzsh/palette-<term>`, kept `$PROMPT_KRONUZ_PALETTE_TTL`s, per
-terminal), else an OSC 4 query `_kronuz_query_palette` (budget
-`$PROMPT_KRONUZ_PALETTE_TIMEOUT`, default 0.6s, so a remote/slow link still answers;
-a complete 16-colour result is cached) — falling back to xterm defaults if all fail),
+terminal) else an OSC 4 query `_kronuz_query_palette` (budget
+`$PROMPT_KRONUZ_PALETTE_TIMEOUT`, default 0.6s, so a remote/slow link still answers; a
+complete 16-colour result is cached), then per-colour `$PROMPT_KRONUZ_PALETTE_<NAME>`
+overrides win on top (never cached; if all 16 are set the query is skipped) — falling
+back to xterm defaults. The same overrides also re-tint `$col` for those names in
+`prompt_kronuz_colors`, so display and dim stay in sync),
 `mute` (grey), or `keep`. To win the
 final paint over fast-syntax-highlighting it wraps fsh's `_zsh_highlight` once (not a
 `zle-line-finish` hook — `add-zle-hook-widget zle-line-finish` recurses once fsh

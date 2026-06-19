@@ -100,6 +100,16 @@ typeset -gA col=(
   brown                '%F{#875f00}'
 )
 
+# The 16 ANSI colours, by palette name -> index. They default to symbolic %F{N} (above)
+# so they track the terminal theme, but each is overridable to a concrete colour via
+# $PROMPT_KRONUZ_PALETTE_<NAME> (a #RRGGBB or a 0-255 index), applied to $col in
+# prompt_kronuz_colors and fed to `dim`'s RGB in _kronuz_load_palette.
+typeset -gA _kronuz_basic=(
+  black 0  red 1  green 2  yellow 3  blue 4  magenta 5  cyan 6  grey 7
+  darkgrey 8  lightred 9  lightgreen 10  lightyellow 11  lightblue 12
+  lightmagenta 13  lightcyan 14  lightgrey 15
+)
+
 # Resolve a colour to (r g b), into $reply: a #rrggbb hex, a 0-255 index, or a basic
 # colour name. $reply is left empty if it can't be resolved. Indices 0..15 use the
 # terminal's queried palette ($_kronuz_pal) when available, else the xterm defaults.
@@ -160,48 +170,52 @@ function _kronuz_query_palette {
   done
 }
 
-# Populate $_kronuz_pal for `dim`, cheapest source first:
-#   1. $PROMPT_KRONUZ_PALETTE — a hardcoded override (an assoc array, index 0-15 -> #RRGGBB
-#      or colour name), e.g. in local.zsh; the terminal is never queried.
-#   2. a fresh on-disk cache — so a shell doesn't re-query (and re-stall on a slow link)
-#      every start. Kept for $PROMPT_KRONUZ_PALETTE_TTL seconds (default a day), per
-#      terminal; set TTL=0 to disable the cache.
-#   3. an OSC 4 query — whose complete (16-colour) result is cached for next time.
+# Populate $_kronuz_pal (RGB of the 16 ANSI colours) for `dim`. The base layer is the
+# terminal's real colours, from a fresh on-disk cache (kept $PROMPT_KRONUZ_PALETTE_TTL
+# seconds, default a day, per terminal; TTL=0 disables it) or a one-off OSC 4 query.
+# Per-colour $PROMPT_KRONUZ_PALETTE_<NAME> overrides then win on top (never cached); if
+# all 16 are overridden the terminal is never queried at all. Run once from the first
+# precmd, so overrides / TTL / timeout set in local.zsh are in effect.
 function _kronuz_load_palette {
   emulate -L zsh -o extendedglob
   zmodload zsh/datetime 2>/dev/null
   zmodload -F zsh/stat b:zstat 2>/dev/null
   _kronuz_pal=()
 
-  if (( ${#PROMPT_KRONUZ_PALETTE} )); then
-    local k reply
-    for k in ${(k)PROMPT_KRONUZ_PALETTE}; do
-      _kronuz_color_rgb "${PROMPT_KRONUZ_PALETTE[$k]}"
-      (( ${#reply} )) && _kronuz_pal[$k]="${reply[*]}"
-    done
-    return
+  local name ov reply
+  local -i n_over=0
+  for name in ${(k)_kronuz_basic}; do
+    ov="PROMPT_KRONUZ_PALETTE_${name:u}"; [[ -n "${(P)ov}" ]] && (( n_over++ ))
+  done
+
+  # Base layer: the terminal's real colours, unless every basic is overridden.
+  if (( n_over < 16 )); then
+    local -i ttl=${PROMPT_KRONUZ_PALETTE_TTL:-86400}
+    local term="${LC_TERMINAL:-${TERM_PROGRAM:-$TERM}}"
+    local cache="${XDG_CACHE_HOME:-$HOME/.cache}/kronuzsh/palette-${term//[^A-Za-z0-9._-]/_}"
+    local -a mt
+    if (( ttl > 0 )) && [[ -r $cache ]] && zstat -A mt +mtime -- $cache 2>/dev/null \
+       && (( EPOCHSECONDS - mt[1] < ttl )); then
+      local k r g b
+      while read -r k r g b; do _kronuz_pal[$k]="$r $g $b"; done < $cache
+      (( ${#_kronuz_pal} == 16 )) || _kronuz_pal=()
+    fi
+    if (( ${#_kronuz_pal} != 16 )); then
+      _kronuz_query_palette
+      if (( ttl > 0 && ${#_kronuz_pal} == 16 )); then
+        mkdir -p ${cache:h} 2>/dev/null && {
+          local k; for k in ${(onk)_kronuz_pal}; do print -r -- "$k ${_kronuz_pal[$k]}"; done
+        } > $cache 2>/dev/null
+      fi
+    fi
   fi
 
-  local -i ttl=${PROMPT_KRONUZ_PALETTE_TTL:-86400}
-  local term="${LC_TERMINAL:-${TERM_PROGRAM:-$TERM}}"
-  local cache="${XDG_CACHE_HOME:-$HOME/.cache}/kronuzsh/palette-${term//[^A-Za-z0-9._-]/_}"
-  local -a mt
-
-  if (( ttl > 0 )) && [[ -r $cache ]] && zstat -A mt +mtime -- $cache 2>/dev/null \
-     && (( EPOCHSECONDS - mt[1] < ttl )); then
-    local k r g b
-    while read -r k r g b; do _kronuz_pal[$k]="$r $g $b"; done < $cache
-    (( ${#_kronuz_pal} == 16 )) && return
-    _kronuz_pal=()
-  fi
-
-  _kronuz_query_palette
-  if (( ttl > 0 && ${#_kronuz_pal} == 16 )); then
-    mkdir -p ${cache:h} 2>/dev/null && {
-      local k
-      for k in ${(onk)_kronuz_pal}; do print -r -- "$k ${_kronuz_pal[$k]}"; done
-    } > $cache 2>/dev/null
-  fi
+  # Per-colour overrides win (from local.zsh); resolved to RGB, never cached.
+  for name in ${(k)_kronuz_basic}; do
+    ov="PROMPT_KRONUZ_PALETTE_${name:u}"; [[ -n "${(P)ov}" ]] || continue
+    _kronuz_color_rgb "${(P)ov}"
+    (( ${#reply} )) && _kronuz_pal[${_kronuz_basic[$name]}]="${reply[*]}"
+  done
 }
 
 # Semantic colours: map each prompt element to a base-palette colour, resolved with
@@ -212,6 +226,15 @@ function _kronuz_load_palette {
 # escapes) while still honouring an explicit override. Recomputed every precmd, so
 # toggling $NO_COLOR / $TERM takes effect on the next prompt.
 function prompt_kronuz_colors {
+  # Apply any per-colour overrides to the 16 ANSI basics (defaults live in the $col
+  # palette table above); semantic colours below reference them, and `dim` picks up the
+  # same overrides via _kronuz_load_palette.
+  local bn bov
+  for bn in ${(k)_kronuz_basic}; do
+    bov="PROMPT_KRONUZ_PALETTE_${bn:u}"
+    [[ -n "${(P)bov}" ]] && col[$bn]="%F{${(P)bov}}"
+  done
+
   local -A d=(
     primary1   '%(!.%B$col[red].%B$col[red])'
     primary2   '%(!.%B$col[red].%B$col[yellow])'
@@ -635,7 +658,7 @@ function _kronuz_transient_restore {
 # Lifecycle: precmd + setup
 # ============================================================================
 
-typeset -g _kronuz_dumb=0 _kronuz_nocolor=0
+typeset -g _kronuz_dumb=0 _kronuz_nocolor=0 _kronuz_pal_loaded=0
 function prompt_kronuz_precmd {
   setopt LOCAL_OPTIONS
   unsetopt XTRACE KSH_ARRAYS
@@ -648,6 +671,12 @@ function prompt_kronuz_precmd {
   [[ -n "${NO_COLOR-}" ]] && _kronuz_nocolor=1
   prompt_kronuz_colors
   prompt_kronuz_glyphs
+  # Load the dim palette once, here rather than in setup, so any PROMPT_KRONUZ_PALETTE_*
+  # override / TTL / timeout from local.zsh (sourced after setup) is in effect.
+  if (( ! ${_kronuz_pal_loaded:-0} )); then
+    _kronuz_pal_loaded=1
+    [[ "${PROMPT_KRONUZ_TRANSIENT_STYLE:-dim}" != (keep|none|off|mute|grey|gray) ]] && _kronuz_load_palette
+  fi
   _prompt_kronuz_pwd="${${(%):-%~}//\%/%%}"
   _kronuz_venv_segment
   _kronuz_ip_segment
@@ -769,7 +798,7 @@ function prompt_kronuz_setup {
       return ret
     }
   fi
-  # dim needs the terminal's real palette; load it once now (hardcoded override, cache,
-  # or an OSC 4 query). The other styles don't recolour by RGB.
-  [[ "${PROMPT_KRONUZ_TRANSIENT_STYLE:-dim}" != (keep|none|off|mute|grey|gray) ]] && _kronuz_load_palette
+  # The dim palette is loaded lazily on the first precmd (so local.zsh, sourced after
+  # setup, can configure it); re-arm that one-shot here in case setup is re-run.
+  _kronuz_pal_loaded=0
 }

@@ -46,15 +46,13 @@
 # export PROMPT_KRONUZ_TRANSIENT_DIM=0.4
 # export PROMPT_KRONUZ_TRANSIENT_HL='fg=242'
 # `dim` darkens your terminal's real ANSI palette, queried once via OSC 4 and cached
-# per terminal. Over a slow/remote terminal that can't be queried, bump the budget or
-# hardcode the 16 colors (index 0-15 -> #RRGGBB); then no query is needed:
+# per terminal. Over a slow/remote terminal that can't be queried, bump the budget, or
+# pin each base color (#RRGGBB or a 0-255 index) — which also fixes the displayed colors
+# and skips the query. Names: BLACK RED GREEN YELLOW BLUE MAGENTA CYAN GREY and the
+# LIGHT* / DARKGREY brights (the 16 ANSI colors):
 # export PROMPT_KRONUZ_PALETTE_TIMEOUT=1.0
-# typeset -gA PROMPT_KRONUZ_PALETTE=(
-#   0  '#000000'  1  '#ff5c57'  2  '#5af78e'  3  '#f3f99d'
-#   4  '#57c7ff'  5  '#ff6ac1'  6  '#9aedfe'  7  '#f1f1f0'
-#   8  '#686868'  9  '#ff5c57'  10 '#5af78e'  11 '#f3f99d'
-#   12 '#57c7ff'  13 '#ff6ac1'  14 '#9aedfe'  15 '#eff0eb'
-# )
+# export PROMPT_KRONUZ_PALETTE_RED='#ff5c57'
+# export PROMPT_KRONUZ_PALETTE_BLUE='#57c7ff'
 
 # --- external tool tweaks (see integrations/init.zsh; all auto-enabled when present) ---
 # ripgrep: point at a config file for your default flags (smart-case, hidden, ...)
