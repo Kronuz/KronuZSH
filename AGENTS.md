@@ -87,8 +87,9 @@ zero escapes**. When `_kronuz_dumb`, `prompt_kronuz_glyphs` forces the plain gly
 set (PUA would be tofu). The keymap arrow is seeded in setup so a prompt char shows
 even where ZLE is off (Emacs `M-x shell`), where `zle-line-init` never fires.
 
-The **host** color is special: green when `$ET_VERSION` is set (inside an Eternal
-Terminal session), yellow otherwise.
+The **host** color is the `host` semantic color (blue by default). The Eternal
+Terminal cue is the separate **etctl** segment (`$ETCTL_SESSION`), not a host-color
+change. (The old prezto theme tinted the host by `$ET_VERSION`; that wasn't ported.)
 
 ### Glyphs (Nerd Font, with a plain fallback)
 

@@ -43,7 +43,7 @@ a normal font: set `PROMPT_KRONUZ_NERD_FONT=0` (also accepts `no`/`off`/`false`)
 `local.zsh`. You can also retune individual glyphs (in either mode) via
 `PROMPT_KRONUZ_GLYPH_<NAME>` — set one to a character of your choice, or to `''` to
 hide it (e.g. `PROMPT_KRONUZ_GLYPH_MODIFIED='*'`). See the glyph table in
-`prompt_kronuz_glyphs` for the full list of names and both default sets.
+[Prompt.md](Prompt.md#glyphs) for the full list of names and both default sets.
 
 Color is handled automatically: a `dumb`/unknown terminal (Emacs `M-x shell`,
 some CI) or `NO_COLOR=1` ([no-color.org](https://no-color.org)) renders the full
@@ -160,11 +160,12 @@ integrations/      optional external tools, guarded (see Integrations.md)
   setup.sh           one-time setup: bat theme cache + git-delta gitconfig
   eza/theme.yml      Kronuz color theme for eza (loaded via $EZA_CONFIG_DIR)
   bat/themes/        Kronuz.tmTheme for bat + delta (built into bat's cache)
-prompt.zsh         the Kronuz prompt (OS glyph, gitstatus, ...)
+prompt.zsh         the Kronuz prompt (OS glyph, gitstatus, ...; see Prompt.md)
 plugins.zsh        plugin loader
 local.zsh.example  machine-local template (real local.zsh is git-ignored)
 plugins/           vendored plugins (git submodules)
 ```
 
-Topic docs: **[Integrations.md](Integrations.md)** (the external-tool catalog) and
+Topic docs: **[Prompt.md](Prompt.md)** (the full prompt manual: every segment and
+option), **[Integrations.md](Integrations.md)** (the external-tool catalog) and
 **[NerdFonts.md](NerdFonts.md)** (font rankings + setup).
