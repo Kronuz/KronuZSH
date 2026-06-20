@@ -160,11 +160,13 @@ lib/               modules sourced by zshrc, one per concern
   terminal.zsh       window/tab title
   plugins.zsh        plugin loader
   prompt.zsh         the Kronuz prompt (OS glyph, gitstatus, ...; see Prompt.md)
-integrations/      optional external tools, guarded (see Integrations.md)
-  init.zsh           per-shell wiring (fzf, fd, zoxide, bat, eza, ...), sourced by zshrc
-  setup.sh           one-time setup: bat theme cache + git-delta gitconfig
+integrations/      optional external tools, one self-contained dir per tool (see Integrations.md)
+  init.zsh           loader: sources each <tool>/init.zsh at shell start
+  setup.sh           loader: sources each <tool>/setup.sh at install time
+  <tool>/init.zsh    per-shell wiring (fd, bat, fzf, zoxide, atuin, eza, yazi, ...)
+  bat/setup.sh       builds bat's theme cache; bat/themes/ holds Kronuz.tmTheme
+  delta/setup.sh     wires git-delta into the global gitconfig
   eza/theme.yml      Kronuz color theme for eza (loaded via $EZA_CONFIG_DIR)
-  bat/themes/        Kronuz.tmTheme for bat + delta (built into bat's cache)
 zshrc.local.example  machine-local template (copy to ~/.zshrc.local)
 plugins/           vendored plugins (git submodules)
 ```

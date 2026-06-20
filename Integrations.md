@@ -7,10 +7,13 @@ colored) and **new capabilities** that never had a classic equivalent.
 Everything here is **optional and guarded**: each tool is wired in only when its
 binary is actually present (`(( $+commands[tool] ))`), and silently skipped when
 it isn't. The same config works on your laptop, a fresh box, or a locked-down
-server with none of them installed. The shell wiring lives in
-[`integrations/init.zsh`](integrations/init.zsh); the install-time setup (bat's
-theme cache and git-delta's gitconfig) in
-[`integrations/setup.sh`](integrations/setup.sh).
+server with none of them installed. Each tool is self-contained in its own
+`integrations/<tool>/` directory — the shell wiring in `init.zsh`, the install-time
+setup (bat's theme cache, git-delta's gitconfig) in `setup.sh`, theme data
+alongside — so dropping a tool is just deleting its directory. Two thin loaders tie
+them together: [`integrations/init.zsh`](integrations/init.zsh) sources every
+`<tool>/init.zsh` at shell start, [`integrations/setup.sh`](integrations/setup.sh)
+sources every `<tool>/setup.sh` at install.
 
 ## The short version
 
