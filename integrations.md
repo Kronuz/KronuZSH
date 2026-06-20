@@ -218,4 +218,6 @@ removable block to your `~/.vimrc` (or nvim's `init.vim`/`init.lua`) that runs `
 on` / `set termguicolors` / `colorscheme kronuz`; off a terminal it just prints the
 snippet. It backs the rc up first, and skips an rc that already loads kronuz, so it's
 safe to re-run. Force the choice with `KRONUZ_VIM_AUTORC=1` (always add) or
-`KRONUZ_VIM_NOAUTORC=1` (never).
+`KRONUZ_VIM_NOAUTORC=1` (never). For a transparent editor (inherit your terminal's
+background instead of the theme's), set `let g:kronuz_transparent = 1` before
+`colorscheme kronuz`.

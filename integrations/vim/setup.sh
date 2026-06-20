@@ -16,6 +16,7 @@ _kronuz_vim_block() {  # $1 = vim|lua
 -- >>> kronuzsh (Kronuz colorscheme) >>>
 -- Added by kronuzsh integrations/vim/setup.sh; delete this block to opt out.
 vim.opt.termguicolors = true
+-- vim.g.kronuz_transparent = 1   -- uncomment to inherit your terminal background
 pcall(vim.cmd, 'colorscheme kronuz')
 -- <<< kronuzsh (Kronuz colorscheme) <<<
 RC
@@ -28,6 +29,7 @@ syntax on
 if has('termguicolors')
   set termguicolors
 endif
+" let g:kronuz_transparent = 1   " uncomment to inherit your terminal background
 silent! colorscheme kronuz
 " <<< kronuzsh (Kronuz colorscheme) <<<
 RC
