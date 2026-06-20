@@ -195,3 +195,12 @@ The colored tools share one **Kronuz** look (from
 - **zsh-autosuggestions** / **zsh-history-substring-search** — their highlight
   colors are set in `lib/plugins.zsh` (a dim grey ghost; green/red diff-tinted
   match), since each is a single variable rather than a theme file.
+- **ripgrep** — `integrations/ripgrep/config` (`--colors`: path green, match
+  orange-bold), wired via `$RIPGREP_CONFIG_PATH`.
+- **fd** (and GNU `ls`) — a Kronuz `LS_COLORS` set in `fd/init.zsh` (dir blue, link
+  green, exec orange, archives red, images gold).
+- **glow** — `integrations/glow/kronuz.json` glamour style, wired via
+  `$GLAMOUR_STYLE`.
+
+Each of these is set only as a default (`${VAR:-...}`), so your own value in
+`~/.zshrc.local` wins.

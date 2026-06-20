@@ -1,0 +1,8 @@
+# ripgrep config — Kronuz match colours (path green, line/column grey, match orange).
+# Colours only, no opinionated search flags, so it themes rg without changing what it
+# finds. ripgrep reads this when $RIPGREP_CONFIG_PATH points here (set in init.zsh).
+--colors=path:fg:165,194,97
+--colors=line:fg:149,129,94
+--colors=column:fg:149,129,94
+--colors=match:fg:204,120,51
+--colors=match:style:bold
