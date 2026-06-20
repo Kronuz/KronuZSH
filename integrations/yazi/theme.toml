@@ -9,6 +9,14 @@
 #   ln -sf "$KRONUZSH/integrations/themes/Kronuz.tmTheme" ~/.config/yazi/Kronuz.tmTheme
 # (Schema follows yazi's v25+ layout; tweak keys if your yazi differs.)
 
+# Whole-window background. yazi has no preview-only background (the preview pane draws on
+# the terminal's background), so this [app] overall bg sets the entire yazi window via
+# OSC 11 — a notch darker than the Kronuz #383838. Needs an OSC 11-capable terminal
+# (iTerm2, kitty, ...); it's restored on exit. Remove this section to inherit your
+# terminal background instead, or set it to #383838 for the canonical Kronuz background.
+[app]
+overall = { bg = "#2b2b2b" }
+
 [mgr]
 cwd = { fg = "#6e9cbe" }
 
