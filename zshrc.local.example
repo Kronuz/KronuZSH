@@ -19,7 +19,7 @@
 # like $col[green], or a raw zsh colour: %F{N} / %F{#RRGGBB}). This one marks a dev box:
 PROMPT_KRONUZ_COLOR_HOST='$col[green]'
 
-# --- Prompt: other colours (any semantic name from the colour table in Prompt.md) ---
+# --- Prompt: other colours (any semantic name from the colour table in prompt.md) ---
 # PROMPT_KRONUZ_COLOR_TIME='%F{45}'
 # PROMPT_KRONUZ_COLOR_BRANCH='%B$col[white]'
 

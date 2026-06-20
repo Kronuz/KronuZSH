@@ -43,7 +43,7 @@ a normal font: set `PROMPT_KRONUZ_NERD_FONT=0` (also accepts `no`/`off`/`false`)
 `~/.zshrc.local`. You can also retune individual glyphs (in either mode) via
 `PROMPT_KRONUZ_GLYPH_<NAME>` — set one to a character of your choice, or to `''` to
 hide it (e.g. `PROMPT_KRONUZ_GLYPH_MODIFIED='*'`). See the glyph table in
-[Prompt.md](Prompt.md#glyphs) for the full list of names and both default sets.
+[prompt.md](prompt.md#glyphs) for the full list of names and both default sets.
 
 Color is handled automatically: a `dumb`/unknown terminal (Emacs `M-x shell`,
 some CI) or `NO_COLOR=1` ([no-color.org](https://no-color.org)) renders the full
@@ -52,7 +52,7 @@ re-checked every prompt, so `export TERM=dumb` / `NO_COLOR=1` (and back) take
 effect live.
 
 For a longer, opinionated (and surely incomplete) rundown of good coding fonts,
-see [NerdFonts.md](NerdFonts.md).
+see [nerd_fonts.md](nerd_fonts.md).
 
 ## Install
 
@@ -114,7 +114,7 @@ ripgrep, git-delta, eza, yazi) gets key bindings, aliases, env, or git
 config; a longer list of "just run them" tools (lazygit, jq, dust, btop, ...) is
 worth having too.
 
-**See [Integrations.md](Integrations.md) for the full catalog** — what each tool
+**See [integrations.md](integrations.md) for the full catalog** — what each tool
 does, the classic command it replaces, the per-platform install matrix, and the
 shared Kronuz theming. The quick install:
 
@@ -132,7 +132,7 @@ sudo dnf install fd-find bat fzf zoxide ripgrep git-delta
 On a minimal or locked-down distro that lacks them (e.g. the CBL-Mariner dev VM,
 which only ships `ripgrep`), install via Rust (`cargo install --locked fd-find
 bat zoxide git-delta eza`) and grab fzf's prebuilt Go binary; the exact commands
-are in [Integrations.md](Integrations.md#installing-them).
+are in [integrations.md](integrations.md#installing-them).
 
 The colored tools (eza, bat, delta, fzf) share one **Kronuz** look from
 [Kronuz-Theme](https://github.com/Kronuz/Kronuz-Theme), bundled under
@@ -159,8 +159,8 @@ lib/               modules sourced by zshrc, one per concern
   aliases.zsh        the useful aliases (ls colors, ll, mkdir -p, ...)
   terminal.zsh       window/tab title
   plugins.zsh        plugin loader
-  prompt.zsh         the Kronuz prompt (OS glyph, gitstatus, ...; see Prompt.md)
-integrations/      optional external tools, one self-contained dir per tool (see Integrations.md)
+  prompt.zsh         the Kronuz prompt (OS glyph, gitstatus, ...; see prompt.md)
+integrations/      optional external tools, one self-contained dir per tool (see integrations.md)
   init.zsh           loader: sources each <tool>/init.zsh at shell start
   setup.sh           loader: sources each <tool>/setup.sh at install time
   <tool>/init.zsh    per-shell wiring (fd, bat, fzf, zoxide, eza, yazi, ...)
@@ -171,6 +171,6 @@ zshrc.local.example  machine-local template (copy to ~/.zshrc.local)
 plugins/           vendored plugins (git submodules)
 ```
 
-Topic docs: **[Prompt.md](Prompt.md)** (the full prompt manual: every segment and
-option), **[Integrations.md](Integrations.md)** (the external-tool catalog) and
-**[NerdFonts.md](NerdFonts.md)** (font rankings + setup).
+Topic docs: **[prompt.md](prompt.md)** (the full prompt manual: every segment and
+option), **[integrations.md](integrations.md)** (the external-tool catalog) and
+**[nerd_fonts.md](nerd_fonts.md)** (font rankings + setup).

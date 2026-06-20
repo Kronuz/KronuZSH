@@ -76,7 +76,7 @@ The prompt ships two full glyph sets and picks one automatically:
 
 - **Nerd Font** (default): the polished icon set. Needs a [Nerd Font](https://www.nerdfonts.com/)
   installed and selected in your terminal (see [README](README.md#fonts-nerd-font)
-  and [NerdFonts.md](NerdFonts.md)).
+  and [nerd_fonts.md](nerd_fonts.md)).
 - **Plain Unicode**: BMP symbols that render in any normal font. Switch to it with
   `PROMPT_KRONUZ_NERD_FONT=0` (also accepts `no`, `off`, `false`). It's also forced
   automatically on a `dumb`/unknown terminal, where Nerd Font glyphs would be tofu.

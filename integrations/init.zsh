@@ -12,10 +12,10 @@
 #
 # Sourced by runcoms/zshrc after lib/keybindings + lib/plugins, so the widgets layer
 # over the plugins. PATH timing: a tool's bin dir must be on PATH before .zshrc runs —
-# put that in ~/.profile, not ~/.zshrc.local (Integrations.md).
+# put that in ~/.profile, not ~/.zshrc.local (integrations.md).
 #
 # Tools that need no shell wiring (lazygit, hyperfine, jq/yq, dust, duf, btop, procs,
-# tokei, sd, tldr, xh) aren't here — see Integrations.md for the full catalog.
+# tokei, sd, tldr, xh) aren't here — see integrations.md for the full catalog.
 for _kronuz_i in "$KRONUZSH"/integrations/*/init.zsh(N); do
   [[ -r $_kronuz_i ]] && source "$_kronuz_i"
 done
