@@ -207,3 +207,12 @@ opt in by symlinking it into place (see the header in each file):
 - **btop** — `integrations/btop/Kronuz.theme` → `~/.config/btop/themes/`, then set
   `color_theme` in btop.
 - **yazi** — `integrations/yazi/theme.toml` → `~/.config/yazi/theme.toml`.
+
+**vim / neovim** get a real colorscheme,
+[`integrations/vim/colors/kronuz.vim`](integrations/vim/colors/kronuz.vim) — a
+railscasts-family theme on the same palette (functions gold, keywords orange, strings
+green, types red, comments grey), truecolor with xterm-256 fallbacks. Dropping a
+colorscheme into `colors/` doesn't touch your config, so here `setup.sh` *does* place
+it for you: it links the file into `~/.vim/colors/` and `~/.config/nvim/colors/`
+(guarded on vim/nvim). Turn it on with `colorscheme kronuz` in your vimrc/init.vim
+(and `set termguicolors` for truecolor).

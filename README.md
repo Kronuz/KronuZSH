@@ -167,6 +167,7 @@ integrations/      optional external tools, one self-contained dir per tool (see
   bat/setup.sh       builds bat's theme cache; bat/themes/ holds Kronuz.tmTheme
   delta/setup.sh     wires git-delta into the global gitconfig
   eza/theme.yml      Kronuz color theme for eza (loaded via $EZA_CONFIG_DIR)
+  vim/colors/        Kronuz vim/nvim colorscheme (linked into ~/.vim/colors by setup.sh)
 zshrc.local.example  machine-local template (copy to ~/.zshrc.local)
 plugins/           vendored plugins (git submodules)
 ```
