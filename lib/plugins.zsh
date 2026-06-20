@@ -7,11 +7,15 @@
 source "$KRONUZSH/plugins/gitstatus/gitstatus.plugin.zsh"
 gitstatus_start -s -1 -u -1 -c -1 -d -1 KRONUZ 2>/dev/null
 
-# zsh-autosuggestions: fish-style suggestions from history.
-ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=8'
+# zsh-autosuggestions: fish-style suggestions from history. Dim grey (Kronuz) so the
+# ghost suggestion sits behind what you're typing.
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#676867'
 source "$KRONUZSH/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
 
-# history-substring-search: type a fragment, press Up to match in history.
+# history-substring-search: type a fragment, press Up to match in history. Kronuz
+# match colors echo the delta diff tints: a green wash when found, red when not.
+HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND='bg=#26331a,fg=#e8e6e5,bold'
+HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND='bg=#3a1d1d,fg=#e8e6e5,bold'
 source "$KRONUZSH/plugins/zsh-history-substring-search/zsh-history-substring-search.zsh"
 bindkey '^[[A' history-substring-search-up
 bindkey '^[[B' history-substring-search-down

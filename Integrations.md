@@ -188,4 +188,10 @@ The colored tools share one **Kronuz** look (from
 - **bat** and **delta** — the same `integrations/bat/themes/Kronuz.tmTheme`,
   registered into bat's cache by `setup.sh` and read by both
   (`BAT_THEME=Kronuz`, `delta.syntax-theme = Kronuz`).
-- **fzf** — its `--color` flags in `FZF_DEFAULT_OPTS` (set in init.zsh).
+- **fzf** — its `--color` flags in `FZF_DEFAULT_OPTS` (set in `fzf/init.zsh`).
+- **fast-syntax-highlighting** — `integrations/fast-syntax-highlighting/Kronuz.ini`
+  maps shell syntax to the bat palette (commands gold, strings green, builtins
+  orange, comments grey, ...); `setup.sh` applies it with `fast-theme`.
+- **zsh-autosuggestions** / **zsh-history-substring-search** — their highlight
+  colors are set in `lib/plugins.zsh` (a dim grey ghost; green/red diff-tinted
+  match), since each is a single variable rather than a theme file.
