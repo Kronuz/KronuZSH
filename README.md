@@ -134,10 +134,12 @@ which only ships `ripgrep`), install via Rust (`cargo install --locked fd-find
 bat zoxide git-delta eza`) and grab fzf's prebuilt Go binary; the exact commands
 are in [integrations.md](integrations.md#installing-them).
 
-The colored tools (eza, bat, delta, fzf) share one **Kronuz** look from
-[Kronuz-Theme](https://github.com/Kronuz/Kronuz-Theme), bundled under
-`integrations/` (`eza/theme.yml`, `bat/themes/Kronuz.tmTheme`, and fzf's
-`--color`). The wiring is in `integrations/init.zsh` (per-shell) and
+The colored tools (eza, bat, delta, fzf) share one **Kronuz** look, bundled under
+`integrations/` (`eza/theme.yml`, `themes/Kronuz.tmTheme`, and fzf's
+`--color`). The syntax theme is generated from one source of truth
+([kronuz-theme-vscode](https://github.com/Kronuz/kronuz-theme-vscode)), identical to
+the VS Code and Sublime ([Kronuz-Theme](https://github.com/Kronuz/Kronuz-Theme))
+editions. The wiring is in `integrations/init.zsh` (per-shell) and
 `integrations/setup.sh` (one-time: bat's theme cache + delta's gitconfig).
 
 
@@ -164,7 +166,8 @@ integrations/      optional external tools, one self-contained dir per tool (see
   init.zsh           loader: sources each <tool>/init.zsh at shell start
   setup.sh           loader: sources each <tool>/setup.sh at install time
   <tool>/init.zsh    per-shell wiring (fd, bat, fzf, zoxide, eza, yazi, ...)
-  bat/setup.sh       builds bat's theme cache; bat/themes/ holds Kronuz.tmTheme
+  bat/setup.sh       builds bat's theme cache from themes/Kronuz.tmTheme
+  themes/            shared Kronuz .tmTheme files (bat, delta, yazi); generated
   delta/setup.sh     wires git-delta into the global gitconfig
   eza/theme.yml      Kronuz color theme for eza (loaded via $EZA_CONFIG_DIR)
   vim/colors/        Kronuz vim/nvim colorscheme (linked into ~/.vim/colors by setup.sh)

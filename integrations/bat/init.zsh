@@ -1,8 +1,8 @@
 # bat: a `cat`/pager with syntax highlighting (Debian/Ubuntu ship it as `batcat`, a
 # name clash). We don't shadow `cat` (too surprising); we use bat where it clearly
 # helps: as the man pager, and as fzf's file preview (see ../fzf/init.zsh).
-# `MANROFFOPT=-c` avoids the groff/col spacing glitch. The Kronuz theme + cache build
-# live in ./setup.sh and ./themes/.
+# `MANROFFOPT=-c` avoids the groff/col spacing glitch. The Kronuz theme cache build
+# lives in ./setup.sh; the theme files live in ../themes/ (shared with delta + yazi).
 # install: brew install bat · cargo install bat · apt/dnf install bat
 _kronuz_bat=''
 (( $+commands[bat] ))    && _kronuz_bat=bat

@@ -66,7 +66,7 @@ interactively. The real `cd` and `AUTO_CD` are left untouched.
 Line numbers, a git change gutter, and language detection. kronuzsh uses it where
 it clearly helps (as the **man pager** and fzf's file preview) without shadowing
 `cat`. Themed with Kronuz: `setup.sh` builds bat's cache with the bundled theme
-([`integrations/bat/themes/Kronuz.tmTheme`](integrations/bat/themes/Kronuz.tmTheme))
+([`integrations/themes/Kronuz.tmTheme`](integrations/themes/Kronuz.tmTheme))
 and init.zsh sets `BAT_THEME=Kronuz`. Debian ships it as `batcat`; init.zsh
 accepts either name.
 
@@ -175,12 +175,16 @@ case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) PATH="$HOME/.local/bin:$PATH"; e
 
 ## Theming
 
-The colored tools share one **Kronuz** look (from
-[Kronuz-Theme](https://github.com/Kronuz/Kronuz-Theme)):
+The colored tools share one **Kronuz** look. The syntax-highlighting theme is the
+canonical Kronuz theme, generated identically for VS Code, Sublime Text
+([Kronuz-Theme](https://github.com/Kronuz/Kronuz-Theme)) and TextMate from one source
+of truth ([kronuz-theme-vscode](https://github.com/Kronuz/kronuz-theme-vscode)); the
+TextMate build lives in `integrations/themes/` (don't hand-edit it). The rest of the
+palette wiring:
 
 - **eza** — `integrations/eza/theme.yml` (column colors), loaded via
   `$EZA_CONFIG_DIR`.
-- **bat** and **delta** — the same `integrations/bat/themes/Kronuz.tmTheme`,
+- **bat** and **delta** — the same `integrations/themes/Kronuz.tmTheme`,
   registered into bat's cache by `setup.sh` and read by both
   (`BAT_THEME=Kronuz`, `delta.syntax-theme = Kronuz`).
 - **fzf** — its `--color` flags in `FZF_DEFAULT_OPTS` (set in `fzf/init.zsh`).
@@ -200,13 +204,17 @@ The colored tools share one **Kronuz** look (from
 Each of these is set only as a default (`${VAR:-...}`), so your own value in
 `~/.zshrc.local` wins.
 
-Two TUIs pick their theme from their *own* config file (no env to override), so
-kronuzsh ships the theme but can't auto-apply it without clobbering your config —
-opt in by symlinking it into place (see the header in each file):
+Three tools pick their theme from their *own* config file (no env to override), so
+kronuzsh can't theme them through the environment. Instead `setup.sh` **offers to wire
+them up** at install (a `[y/N]` prompt each, like vim; default No, honoring
+`KRONUZ_YES` / `KRONUZ_NO`), placing files non-destructively (backing up anything it
+replaces, idempotent):
 
-- **btop** — `integrations/btop/Kronuz.theme` → `~/.config/btop/themes/`, then set
-  `color_theme` in btop.
-- **yazi** — `integrations/yazi/theme.toml` → `~/.config/yazi/theme.toml`.
+- **btop** — links `integrations/btop/Kronuz.theme` into `~/.config/btop/themes/` and
+  sets `color_theme = "Kronuz"` in `btop.conf`.
+- **yazi** — links `integrations/yazi/theme.toml` into the yazi config dir, plus the
+  shared `integrations/themes/Kronuz.tmTheme` so yazi's **code preview** highlights with
+  the same Kronuz theme bat uses (`syntect_theme`).
 
 **vim / neovim** get a real colorscheme,
 [`integrations/vim/colors/kronuz.vim`](integrations/vim/colors/kronuz.vim) — a
