@@ -1,23 +1,23 @@
-# integrations/init.zsh — wire up optional external CLI tools, one dir per tool
-# (integrations/<tool>/init.zsh), each guarded on its command existing so a machine
-# missing a tool just skips it. To drop a tool, delete its integrations/<tool>/.
+# integrations/init.zsh — wire up optional external CLI tools. Each tool's runtime
+# config is its own integrations/<tool>/init.zsh, guarded internally on the command
+# existing, and sourced explicitly below — like lib/ and the plugins — so the load
+# order is right there to read. Most tools are independent; the one that isn't: atuin
+# must bind Ctrl-R *after* fzf. To add a tool, drop in its dir and add a line here; to
+# remove one, delete both. (The install-time half, setup.sh, globs instead, since
+# install order is independent.)
+#
 # Sourced by runcoms/zshrc after lib/keybindings + lib/plugins, so fzf's Ctrl-R wins
-# and the tool widgets layer cleanly over the plugins.
-#
-# Order: most tools are order-independent, but a few care (atuin must bind Ctrl-R
-# after fzf), so source those in a set order, then any other tool dir alphabetically
-# — a new drop-in tool needs no edit here.
-#
-# PATH timing: this runs at .zshrc start, so a tool's bin dir (~/.cargo/bin,
-# ~/.local/bin, ...) must be on PATH already. Put that in ~/.profile (sourced at
-# login, before .zshrc), NOT in ~/.zshrc.local (sourced after this). The install-time
-# half is each tool's setup.sh (run by ./setup.sh; see Integrations.md).
+# and the widgets layer over the plugins. PATH timing: a tool's bin dir must be on
+# PATH before .zshrc runs — put that in ~/.profile, not ~/.zshrc.local (Integrations.md).
 #
 # Tools that need no shell wiring (lazygit, hyperfine, jq/yq, dust, duf, btop, procs,
-# tokei, sd, tldr, glow, xh) aren't here — see Integrations.md for the catalog.
-_kronuz_int=( fd bat fzf zoxide atuin eza yazi "$KRONUZSH"/integrations/*(/N:t) )
-for _kronuz_t in ${(u)_kronuz_int[@]}; do
-  [[ -r "$KRONUZSH/integrations/$_kronuz_t/init.zsh" ]] && \
-    source "$KRONUZSH/integrations/$_kronuz_t/init.zsh"
-done
-unset _kronuz_int _kronuz_t
+# tokei, sd, tldr, xh) aren't here — see Integrations.md for the full catalog.
+source "$KRONUZSH/integrations/fd/init.zsh"
+source "$KRONUZSH/integrations/bat/init.zsh"
+source "$KRONUZSH/integrations/fzf/init.zsh"
+source "$KRONUZSH/integrations/zoxide/init.zsh"
+source "$KRONUZSH/integrations/atuin/init.zsh"   # after fzf, so atuin owns Ctrl-R
+source "$KRONUZSH/integrations/eza/init.zsh"
+source "$KRONUZSH/integrations/yazi/init.zsh"
+source "$KRONUZSH/integrations/ripgrep/init.zsh"
+source "$KRONUZSH/integrations/glow/init.zsh"
