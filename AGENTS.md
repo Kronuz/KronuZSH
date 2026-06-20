@@ -15,7 +15,7 @@ dependencies were replaced with small native pieces:
 | `python-info` (venv) | `_kronuz_venv_segment` ($VIRTUAL_ENV) |
 | `editor-info` (keymap) | `_kronuz_keymap_update` (zle hooks) |
 | `prompt-pwd` | `${(%):-%~}` in precmd |
-| `spectrum` ($col) | the `col` palette is defined inline in `prompt.zsh` |
+| `spectrum` ($col) | the `col` palette is defined inline in `lib/prompt.zsh` |
 
 Dropped from the prezto version: the `async` worker (gitstatusd is the async
 engine), `pmodload`/`vcs_info`, and a stray debug `echo >> /tmp/prompt_kronuz` that
@@ -24,27 +24,28 @@ ran on every precmd.
 ## Layout & load order
 
 Entry points are in `runcoms/` (names match their `~/.*` symlink targets);
-implementation modules live at the repo root. `install.sh` symlinks
+implementation modules live in `lib/`. `install.sh` symlinks
 `~/.{zshenv,zprofile,zshrc,zlogin,zlogout}` -> `runcoms/*`, and `$KRONUZSH`
 self-resolves from `runcoms/zshrc` via `${(%):-%x}:A:h:h`.
 
 - `runcoms/zshenv` (all shells): env. `runcoms/zprofile` (login): sources
   `~/.profile` for cross-shell env. `runcoms/zshrc` (interactive): the entry that
-  sources the modules below. `runcoms/zlogin`: bg-compiles the compdump.
-- `runcoms/zshrc` order: `zshenv → options → history → completion → keybindings →
-  aliases → terminal → plugins → prompt → prompt_kronuz_setup`, then `setopt
-  PROMPT_SUBST`, then `~/.zshrc.local`.
+  sources the `lib/` modules below. `runcoms/zlogin`: bg-compiles the compdump.
+- `runcoms/zshrc` order: `zshenv → lib/options → lib/history → lib/completion →
+  lib/keybindings → lib/aliases → lib/terminal → lib/plugins → integrations/init →
+  lib/prompt → prompt_kronuz_setup`, then `setopt PROMPT_SUBST`, then
+  `~/.zshrc.local`.
 
 The bar for adding anything: keep only the **genuinely useful** part, lean and in
 an obviously-named file, and prefer zsh-native over a vendored module (that's why
 there's no `safe-paste` module, no `spectrum`, no `terminal` module — the useful
 bit of each is a few native lines). Don't re-import prezto's breadth wholesale.
 
-In `plugins.zsh` the order matters: **gitstatus first**, autosuggestions and
+In `lib/plugins.zsh` the order matters: **gitstatus first**, autosuggestions and
 history-substring-search next, **fast-syntax-highlighting LAST** (it wraps ZLE
 widgets, so anything that defines widgets must come before it).
 
-## The prompt, and how it renders (read before editing `prompt.zsh`)
+## The prompt, and how it renders (read before editing `lib/prompt.zsh`)
 
 The prompt is built from deferred strings that are evaluated at every render. Two
 things make it work; keep both intact:
@@ -61,7 +62,7 @@ things make it work; keep both intact:
 ### Colors
 
 - **Base palette**: `col[red]='%F{1}'`, `col[darkorange]='%F{#d75f00}'`, ... (name to
-  a zsh color escape). A load-time literal near the top of `prompt.zsh`. The ANSI 0..15
+  a zsh color escape). A load-time literal near the top of `lib/prompt.zsh`. The ANSI 0..15
   colors stay `%F{N}` so they track the terminal's theme; the 16..255 colors are
   **hex** `%F{#RRGGBB}` so they render at full 24-bit on a truecolor terminal. The 16
   ANSI names (`$_kronuz_basic`, name→index) are each overridable to a `#RRGGBB`/index via
@@ -203,7 +204,7 @@ icon set is a small simplification of the old prezto one.
 ```bash
 git submodule add https://github.com/owner/name plugins/name
 ```
-Then `source "$KRONUZSH/plugins/name/name.plugin.zsh"` in `plugins.zsh`, respecting
+Then `source "$KRONUZSH/plugins/name/name.plugin.zsh"` in `lib/plugins.zsh`, respecting
 the load order (fast-syntax-highlighting stays last). Bind keys after sourcing.
 
 ## Testing (no real terminal needed for most of it)

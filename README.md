@@ -7,7 +7,7 @@ with something I own end to end.
 It is deliberately small. The prompt is one file. Everything prezto used to give
 me that I actually use is either mine or a standalone plugin:
 
-- **prompt** (`prompt.zsh`) the Kronuz prompt, ported off prezto. Git status comes
+- **prompt** (`lib/prompt.zsh`) the Kronuz prompt, ported off prezto. Git status comes
   from [gitstatus](https://github.com/romkatv/gitstatus); the venv, vi/emacs keymap
   indicator, and pwd are tiny native replacements for prezto's python-info,
   editor-info, and prompt-pwd.
@@ -16,7 +16,7 @@ me that I actually use is either mine or a standalone plugin:
   [zsh-autosuggestions](https://github.com/zsh-users/zsh-autosuggestions),
   [zsh-history-substring-search](https://github.com/zsh-users/zsh-history-substring-search),
   and [gitstatus](https://github.com/romkatv/gitstatus).
-- **config**: `env.zsh`, `options.zsh`, `history.zsh`, `completion.zsh`,
+- **config** (in `lib/`): `options.zsh`, `history.zsh`, `completion.zsh`,
   `keybindings.zsh`, `aliases.zsh`, `terminal.zsh` — one named file per concern.
 
 The guiding rule: keep only the **genuinely useful** parts, lean and easy to find,
@@ -151,19 +151,20 @@ runcoms/
   zshrc            interactive entry point   (~/.zshrc)
   zlogin           login: bg-compiles the completion dump
   zlogout          logout (stub)
-options.zsh        shell options
-history.zsh        history (HISTSIZE 10M)
-completion.zsh     completion (cached compinit)
-keybindings.zsh    key bindings (emacs; word nav, Ctrl-W to last slash)
-aliases.zsh        the useful aliases (ls colors, ll, mkdir -p, ...)
-terminal.zsh       window/tab title
+lib/               modules sourced by zshrc, one per concern
+  options.zsh        shell options
+  history.zsh        history (HISTSIZE 10M)
+  completion.zsh     completion (cached compinit)
+  keybindings.zsh    key bindings (emacs; word nav, Ctrl-W to last slash)
+  aliases.zsh        the useful aliases (ls colors, ll, mkdir -p, ...)
+  terminal.zsh       window/tab title
+  plugins.zsh        plugin loader
+  prompt.zsh         the Kronuz prompt (OS glyph, gitstatus, ...; see Prompt.md)
 integrations/      optional external tools, guarded (see Integrations.md)
   init.zsh           per-shell wiring (fzf, fd, zoxide, bat, eza, ...), sourced by zshrc
   setup.sh           one-time setup: bat theme cache + git-delta gitconfig
   eza/theme.yml      Kronuz color theme for eza (loaded via $EZA_CONFIG_DIR)
   bat/themes/        Kronuz.tmTheme for bat + delta (built into bat's cache)
-prompt.zsh         the Kronuz prompt (OS glyph, gitstatus, ...; see Prompt.md)
-plugins.zsh        plugin loader
 zshrc.local.example  machine-local template (copy to ~/.zshrc.local)
 plugins/           vendored plugins (git submodules)
 ```

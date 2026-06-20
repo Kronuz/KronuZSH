@@ -1,7 +1,7 @@
 # The Prompt
 
 A reference for everything the kronuzsh prompt shows and every knob that changes
-it. It's a single self-contained theme in [`prompt.zsh`](prompt.zsh), no framework.
+it. It's a single self-contained theme in [`lib/prompt.zsh`](lib/prompt.zsh), no framework.
 For the internals (how the deferred strings render, how to add a segment), see the
 "prompt" section of [`AGENTS.md`](AGENTS.md); this file is the user-facing manual.
 
@@ -333,7 +333,7 @@ export PROMPT_KRONUZ_PWD='%1~'
 ```
 
 For deeper changes (adding a brand-new segment, reordering the line), edit
-`prompt.zsh` directly; the [`AGENTS.md`](AGENTS.md) "Add a segment" recipe walks
+`lib/prompt.zsh` directly; the [`AGENTS.md`](AGENTS.md) "Add a segment" recipe walks
 through it.
 
 ## Full option reference

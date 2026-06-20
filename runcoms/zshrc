@@ -9,15 +9,15 @@ KRONUZSH="${KRONUZSH:-${${(%):-%x}:A:h:h}}"
 export KRONUZSH
 
 source "$KRONUZSH/runcoms/zshenv"   # also sourced by ~/.zshenv; harmless to repeat
-source "$KRONUZSH/options.zsh"
-source "$KRONUZSH/history.zsh"
-source "$KRONUZSH/completion.zsh"
-source "$KRONUZSH/keybindings.zsh"
-source "$KRONUZSH/aliases.zsh"
-source "$KRONUZSH/terminal.zsh"
-source "$KRONUZSH/plugins.zsh"
+source "$KRONUZSH/lib/options.zsh"
+source "$KRONUZSH/lib/history.zsh"
+source "$KRONUZSH/lib/completion.zsh"
+source "$KRONUZSH/lib/keybindings.zsh"
+source "$KRONUZSH/lib/aliases.zsh"
+source "$KRONUZSH/lib/terminal.zsh"
+source "$KRONUZSH/lib/plugins.zsh"
 source "$KRONUZSH/integrations/init.zsh"   # optional external tools (fzf, zoxide, ...), each guarded
-source "$KRONUZSH/prompt.zsh"
+source "$KRONUZSH/lib/prompt.zsh"
 prompt_kronuz_setup
 # The prompt's segments are deferred ${(e)...} strings; PROMPT_SUBST is what makes
 # zsh expand them at display. (prezto's prompt module used to apply this from
