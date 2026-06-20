@@ -211,8 +211,11 @@ opt in by symlinking it into place (see the header in each file):
 **vim / neovim** get a real colorscheme,
 [`integrations/vim/colors/kronuz.vim`](integrations/vim/colors/kronuz.vim) — a
 railscasts-family theme on the same palette (functions gold, keywords orange, strings
-green, types red, comments grey), truecolor with xterm-256 fallbacks. Dropping a
-colorscheme into `colors/` doesn't touch your config, so here `setup.sh` *does* place
-it for you: it links the file into `~/.vim/colors/` and `~/.config/nvim/colors/`
-(guarded on vim/nvim). Turn it on with `colorscheme kronuz` in your vimrc/init.vim
-(and `set termguicolors` for truecolor).
+green, types red, comments grey), truecolor with xterm-256 fallbacks. `setup.sh` links
+the file into `~/.vim/colors/` and `~/.config/nvim/colors/` (guarded on vim/nvim), then
+**offers to turn it on**: on a terminal it asks before adding a small, clearly-marked,
+removable block to your `~/.vimrc` (or nvim's `init.vim`/`init.lua`) that runs `syntax
+on` / `set termguicolors` / `colorscheme kronuz`; off a terminal it just prints the
+snippet. It backs the rc up first, and skips an rc that already loads kronuz, so it's
+safe to re-run. Force the choice with `KRONUZ_VIM_AUTORC=1` (always add) or
+`KRONUZ_VIM_NOAUTORC=1` (never).
