@@ -1,0 +1,61 @@
+# Kronuz theme for btop (matches the bat/delta/eza palette).
+#
+# btop has no env/flag to *select* a theme (it reads color_theme from btop.conf), so
+# kronuzsh can't auto-apply this without touching your config. To enable it:
+#   mkdir -p ~/.config/btop/themes
+#   ln -sf "$KRONUZSH/integrations/btop/Kronuz.theme" ~/.config/btop/themes/
+# then in btop press Esc -> Options -> color_theme -> Kronuz (or set color_theme="Kronuz"
+# in ~/.config/btop/btop.conf).
+
+theme[main_bg]=""
+theme[main_fg]="#c8c6c5"
+theme[title]="#e8e6e5"
+theme[hi_fg]="#cc7833"
+theme[selected_bg]="#454545"
+theme[selected_fg]="#e8bf6a"
+theme[inactive_fg]="#676867"
+theme[graph_text]="#95815e"
+theme[meter_bg]="#454545"
+theme[proc_misc]="#a5c261"
+
+theme[cpu_box]="#6e9cbe"
+theme[mem_box]="#a5c261"
+theme[net_box]="#caa473"
+theme[proc_box]="#cc7833"
+theme[div_line]="#676867"
+
+theme[temp_start]="#a5c261"
+theme[temp_mid]="#e8bf6a"
+theme[temp_end]="#da4939"
+
+theme[cpu_start]="#6e9cbe"
+theme[cpu_mid]="#a5c261"
+theme[cpu_end]="#da4939"
+
+theme[free_start]="#cc7833"
+theme[free_mid]=""
+theme[free_end]="#a5c261"
+
+theme[cached_start]="#6e9cbe"
+theme[cached_mid]=""
+theme[cached_end]="#6089b4"
+
+theme[available_start]="#e8bf6a"
+theme[available_mid]=""
+theme[available_end]="#caa473"
+
+theme[used_start]="#a5c261"
+theme[used_mid]=""
+theme[used_end]="#da4939"
+
+theme[download_start]="#6e9cbe"
+theme[download_mid]=""
+theme[download_end]="#6089b4"
+
+theme[upload_start]="#cc7833"
+theme[upload_mid]=""
+theme[upload_end]="#da4939"
+
+theme[process_start]="#a5c261"
+theme[process_mid]="#e8bf6a"
+theme[process_end]="#da4939"

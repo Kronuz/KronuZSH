@@ -1,0 +1,106 @@
+# Kronuz theme for yazi (matches the bat/delta/eza palette).
+#
+# yazi reads its theme from $YAZI_CONFIG_HOME/theme.toml (default ~/.config/yazi/), so
+# kronuzsh can't auto-apply this without taking over your whole yazi config. To enable:
+#   mkdir -p ~/.config/yazi
+#   ln -sf "$KRONUZSH/integrations/yazi/theme.toml" ~/.config/yazi/theme.toml
+# (Schema follows yazi's current [mgr] layout; tweak keys if your yazi differs.)
+
+[mgr]
+cwd = { fg = "#6e9cbe" }
+
+hovered         = { fg = "#383838", bg = "#e8bf6a" }
+preview_hovered = { underline = true }
+
+find_keyword  = { fg = "#e8bf6a", bold = true, italic = true }
+find_position = { fg = "#da4939", bg = "reset", bold = true, italic = true }
+
+marker_copied   = { fg = "#a5c261", bg = "#a5c261" }
+marker_cut      = { fg = "#da4939", bg = "#da4939" }
+marker_marked   = { fg = "#6e9cbe", bg = "#6e9cbe" }
+marker_selected = { fg = "#e8bf6a", bg = "#e8bf6a" }
+
+count_copied   = { fg = "#383838", bg = "#a5c261" }
+count_cut      = { fg = "#383838", bg = "#da4939" }
+count_selected = { fg = "#383838", bg = "#e8bf6a" }
+
+border_symbol = "│"
+border_style  = { fg = "#676867" }
+
+[mode]
+normal_main = { fg = "#383838", bg = "#6e9cbe", bold = true }
+normal_alt  = { fg = "#6e9cbe", bg = "#454545" }
+select_main = { fg = "#383838", bg = "#a5c261", bold = true }
+select_alt  = { fg = "#a5c261", bg = "#454545" }
+unset_main  = { fg = "#383838", bg = "#cc7833", bold = true }
+unset_alt   = { fg = "#cc7833", bg = "#454545" }
+
+[status]
+sep_left  = { open = "", close = "" }
+sep_right = { open = "", close = "" }
+perm_type  = { fg = "#6e9cbe" }
+perm_read  = { fg = "#e8bf6a" }
+perm_write = { fg = "#da4939" }
+perm_exec  = { fg = "#a5c261" }
+perm_sep   = { fg = "#676867" }
+progress_label  = { bold = true }
+progress_normal = { fg = "#6e9cbe", bg = "#454545" }
+progress_error  = { fg = "#da4939", bg = "#454545" }
+
+[input]
+border   = { fg = "#6e9cbe" }
+title    = {}
+value    = {}
+selected = { reversed = true }
+
+[pick]
+border   = { fg = "#6e9cbe" }
+active   = { fg = "#e8bf6a", bold = true }
+inactive = {}
+
+[confirm]
+border     = { fg = "#6e9cbe" }
+title      = { fg = "#6e9cbe" }
+content    = {}
+list       = {}
+btn_yes    = { reversed = true }
+btn_no     = {}
+
+[cmp]
+border = { fg = "#6e9cbe" }
+
+[tasks]
+border  = { fg = "#6e9cbe" }
+title   = {}
+hovered = { fg = "#e8bf6a", underline = true }
+
+[which]
+mask            = { bg = "#454545" }
+cand            = { fg = "#9aedfe" }
+rest            = { fg = "#95815e" }
+desc            = { fg = "#e8bf6a" }
+separator       = "  "
+separator_style = { fg = "#676867" }
+
+[help]
+on      = { fg = "#e8bf6a" }
+run     = { fg = "#9aedfe" }
+hovered = { reversed = true, bold = true }
+footer  = { fg = "#c8c6c5", bg = "#383838" }
+
+[notify]
+title_info  = { fg = "#a5c261" }
+title_warn  = { fg = "#e8bf6a" }
+title_error = { fg = "#da4939" }
+
+[filetype]
+rules = [
+  { mime = "image/*", fg = "#e8bf6a" },
+  { mime = "{audio,video}/*", fg = "#caa473" },
+  { mime = "application/{,g}zip", fg = "#da4939" },
+  { mime = "application/x-{tar,bzip*,7z-compressed,xz,rar}", fg = "#da4939" },
+  { mime = "application/{pdf,doc,rtf}", fg = "#da4939" },
+  { name = "*", is = "orphan", fg = "#da4939" },
+  { name = "*", is = "exec", fg = "#cc7833" },
+  { name = "*/", fg = "#6e9cbe" },
+]

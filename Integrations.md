@@ -204,3 +204,11 @@ The colored tools share one **Kronuz** look (from
 
 Each of these is set only as a default (`${VAR:-...}`), so your own value in
 `~/.zshrc.local` wins.
+
+Two TUIs pick their theme from their *own* config file (no env to override), so
+kronuzsh ships the theme but can't auto-apply it without clobbering your config —
+opt in by symlinking it into place (see the header in each file):
+
+- **btop** — `integrations/btop/Kronuz.theme` → `~/.config/btop/themes/`, then set
+  `color_theme` in btop.
+- **yazi** — `integrations/yazi/theme.toml` → `~/.config/yazi/theme.toml`.
