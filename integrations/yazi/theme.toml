@@ -9,9 +9,6 @@
 [mgr]
 cwd = { fg = "#6e9cbe" }
 
-hovered         = { fg = "#383838", bg = "#e8bf6a" }
-preview_hovered = { underline = true }
-
 find_keyword  = { fg = "#e8bf6a", bold = true, italic = true }
 find_position = { fg = "#da4939", bg = "reset", bold = true, italic = true }
 
@@ -26,6 +23,13 @@ count_selected = { fg = "#383838", bg = "#e8bf6a" }
 
 border_symbol = "│"
 border_style  = { fg = "#676867" }
+
+# Indicator bar on the hovered row (per pane). Was [mgr] hovered/preview_hovered in
+# older yazi; moved to [indicator] current/parent/preview in v25+.
+[indicator]
+parent  = { fg = "#383838", bg = "#caa473" }
+current = { fg = "#383838", bg = "#e8bf6a" }
+preview = { underline = true }
 
 [mode]
 normal_main = { fg = "#383838", bg = "#6e9cbe", bold = true }
@@ -61,7 +65,7 @@ inactive = {}
 [confirm]
 border     = { fg = "#6e9cbe" }
 title      = { fg = "#6e9cbe" }
-content    = {}
+body       = {}
 list       = {}
 btn_yes    = { reversed = true }
 btn_no     = {}
@@ -100,7 +104,7 @@ rules = [
   { mime = "application/{,g}zip", fg = "#da4939" },
   { mime = "application/x-{tar,bzip*,7z-compressed,xz,rar}", fg = "#da4939" },
   { mime = "application/{pdf,doc,rtf}", fg = "#da4939" },
-  { name = "*", is = "orphan", fg = "#da4939" },
-  { name = "*", is = "exec", fg = "#cc7833" },
-  { name = "*/", fg = "#6e9cbe" },
+  { url = "*", is = "orphan", fg = "#da4939" },
+  { url = "*", is = "exec", fg = "#cc7833" },
+  { url = "*/", fg = "#6e9cbe" },
 ]
