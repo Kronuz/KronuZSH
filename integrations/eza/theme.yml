@@ -64,7 +64,7 @@ users:
 
 links:
   normal: {foreground: '#7ea4cc'}
-  multi_link_file: {foreground: '#cc7833'}
+  multi_link_file: {foreground: '#4fa8b0'}
 
 git:
   new: {foreground: '#219186'}            # teal

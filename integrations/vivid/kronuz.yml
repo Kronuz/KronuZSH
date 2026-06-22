@@ -19,7 +19,8 @@ colors:
   comment:     "95815e"
   blue:        "6e9cbe"   # constLang  -> directories
   turquoise:   "70c2ba"   # (shell-only) -> symlinks (distinct from dir blue + functional teal)
-  blue_link:   "6089b4"   # link       -> hard links / special
+  hardlink:    "4fa8b0"   # (shell-only) -> hard links (deeper teal; link-family, distinct from dir + symlink)
+  blue_link:   "6089b4"   # link       -> sticky-dir background
   green:       "a5c261"   # string     -> executables
   lime:        "c7d87b"   # regexp     -> office
   orange:      "cc7833"   # keyword    -> devices
@@ -41,7 +42,7 @@ core:
 
   directory:               {foreground: blue}
   symlink:                 {foreground: turquoise}
-  multi_hard_link:         {foreground: blue_link}
+  multi_hard_link:         {foreground: hardlink}
 
   fifo:                    {foreground: fg_dim}
   socket:                  {foreground: fg_dim}
