@@ -130,7 +130,7 @@ things make it work; keep both intact:
   (and fed to `dim`'s RGB, see the transient section).
 - **Semantic layer**: `prompt_kronuz_colors` works exactly like `prompt_kronuz_glyphs`
   (the two are intentionally symmetric): a local defaults table maps each name to a
-  palette colour (`branch '%B$col[white]'`, `host '$col[blue]'`, ...), then one loop
+  palette colour (`branch '%B$col[white]'`, `host '$col[silver]'`, ...), then one loop
   applies any `PROMPT_KRONUZ_COLOR_<NAME>` override and writes the **resolved** escape
   (`${(e)}` expands the `$col[...]` palette ref) into the same `col[]` array. Recomputed
   every precmd.
@@ -157,9 +157,11 @@ the empty string), so the **full layout still renders with zero escapes**; an ex
 set (PUA would be tofu). The keymap arrow is seeded in setup so a prompt char shows
 even where ZLE is off (Emacs `M-x shell`), where `zle-line-init` never fires.
 
-The **host** color is the `host` semantic color (blue by default). The Eternal
-Terminal cue is the separate **etctl** segment (`$ETCTL_SESSION`), not a host-color
-change. (The old prezto theme tinted the host by `$ET_VERSION`; that wasn't ported.)
+The **host** color is the `host` semantic color (a neutral silver by default, meant to
+be coloured per machine in `~/.zshrc.local` — e.g. green for a VM, blue for a laptop — so
+boxes are tellable apart at a glance). The Eternal Terminal cue is the separate **etctl**
+segment (`$ETCTL_SESSION`), not a host-color change. (The old prezto theme tinted the
+host by `$ET_VERSION`; that wasn't ported.)
 
 ### Glyphs (Nerd Font, with a plain fallback)
 

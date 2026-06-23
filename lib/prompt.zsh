@@ -277,8 +277,8 @@ function prompt_kronuz_colors {
     sep        '$col[darkgrey]'
     ip         '$col[darkgrey]'
     time       '$col[darkgrey]'
-    host       '$col[blue]'
-    pwd        '%(!.$col[tomato].$col[aqua])'
+    host       '$col[silver]'
+    pwd        '%(!.$col[tomato].$col[white])'
     user       '%(!.%B$col[tomato].%B$col[white])'
     none       '%b%u%s%f%k'
   )

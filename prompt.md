@@ -161,10 +161,10 @@ The semantic names and their defaults:
 
 | Name(s)                                   | Default            | Used for                          |
 |-------------------------------------------|--------------------|-----------------------------------|
-| `host`                                    | blue               | hostname                          |
+| `host`                                    | silver             | hostname (colour it per machine to tell boxes apart) |
 | `ip`                                      | dark grey          | LAN IP next to the host           |
 | `user`                                    | bold white         | username                          |
-| `pwd`                                     | aqua               | working directory                 |
+| `pwd`                                     | white (red as root) | working directory                |
 | `time`                                    | dark grey          | `[clock]`                         |
 | `info`, `sep`                             | dark grey          | the "at" / separators             |
 | `status_ok` / `status_err`               | green / red        | the status dot and exit code      |

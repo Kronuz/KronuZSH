@@ -16,13 +16,19 @@
 #   case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) PATH="$HOME/.local/bin:$PATH"; export PATH ;; esac
 
 # --- Prompt: tint the host name, to tell machines apart at a glance ---
-# The host segment is blue by default. Give a box its own colour (a base-palette name
-# like $col[green], or a raw zsh colour: %F{N} / %F{#RRGGBB}). This one marks a dev box:
+# The host segment is a neutral silver by default. Colour it per machine so you know
+# where you are at a glance (a base-palette name like $col[green], or a raw zsh colour
+# %F{N} / %F{#RRGGBB}). A handy convention: green = remote / VM / dev box, blue = your
+# local laptop, leave it silver for anything unlabeled (and reserve red for prod). This
+# box is a dev box:
 PROMPT_KRONUZ_COLOR_HOST='$col[green]'
 
 # --- Prompt: other colours (any semantic name from the colour table in prompt.md) ---
 # PROMPT_KRONUZ_COLOR_TIME='%F{45}'
 # PROMPT_KRONUZ_COLOR_BRANCH='%B$col[white]'
+# The pwd is white, turning red as root. Override the whole colour, reproducing the
+# %(!.root.normal) switch if you want to keep a root-distinct colour:
+# PROMPT_KRONUZ_COLOR_PWD='%(!.$col[orange].$col[lightsteelblue])'
 
 # --- Prompt: pin a base ANSI colour. Also fixes `dim`'s colours on a terminal whose
 # palette can't be queried (e.g. over SSH / Eternal Terminal). #RRGGBB or a 0-255 index.
