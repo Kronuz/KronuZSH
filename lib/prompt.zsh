@@ -473,16 +473,20 @@ function _kronuz_venv_segment {
 
 # ---- working directory ----
 # Render $PWD into _prompt_kronuz_pwd, per PROMPT_KRONUZ_PWD_STYLE:
-#   full  (default) the whole path, home as ~      ~/Development/KronuZSH/integrations/bat
-#   short fish-style: each parent shrunk to its    ~/D/k/i/bat
-#         first char (leading dots kept), tail full
-#   base  just the current directory name          bat
+#   full     (default) the whole path, home as ~      ~/Development/KronuZSH/integrations/bat
+#   short    fish-style: each parent shrunk to its    ~/D/k/i/bat
+#            first char (leading dots kept), tail full
+#   base     just the current directory name          bat
+#   absolute the full path with $HOME expanded         /Users/gmendezb/Development/.../bat
 # (literal % are doubled so print -P won't expand them.)
 function _kronuz_pwd_segment {
   local p="${(%):-%~}"
   case "${PROMPT_KRONUZ_PWD_STYLE:-full}" in
     base)
       p="${p:t}"; [[ -z "$p" ]] && p='/'
+      ;;
+    absolute)
+      p="$PWD"
       ;;
     short|abbrev|fish)
       local -a parts=("${(@s:/:)p}")

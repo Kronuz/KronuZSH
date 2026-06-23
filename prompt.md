@@ -236,9 +236,10 @@ The path segment shows the full working directory with `$HOME` abbreviated to `~
 
 | Value | Example | |
 |-------|---------|--|
-| `full` (default) | `~/Development/KronuZSH/integrations/bat` | the whole path |
+| `full` (default) | `~/Development/KronuZSH/integrations/bat` | the whole path, home as `~` |
 | `short` | `~/D/k/i/bat` | fish-style: each parent shrunk to its first character (a leading dot is kept, so `.config` → `.c`), the current directory in full |
 | `base` | `bat` | just the current directory's name |
+| `absolute` | `/Users/gmendezb/Development/KronuZSH/integrations/bat` | the whole path with `$HOME` expanded |
 
 ```zsh
 export PROMPT_KRONUZ_PWD_STYLE=short
@@ -367,7 +368,7 @@ through it.
 | `PROMPT_KRONUZ_GLYPH_<NAME>` | (per glyph) | Override one glyph; `''` hides it. Names in the glyph table. |
 | `PROMPT_KRONUZ_COLOR_<NAME>` | (per color) | Override one semantic color. Names in the color table. |
 | `PROMPT_KRONUZ_<SEGMENT>` | (built-in) | Replace a segment's whole content. Names in "Replacing a whole segment". |
-| `PROMPT_KRONUZ_PWD_STYLE` | `full` | Working-directory shortening: `full`, `short` (`~/D/k/i/bat`), or `base` (current dir name). |
+| `PROMPT_KRONUZ_PWD_STYLE` | `full` | Working-directory shortening: `full`, `short` (`~/D/k/i/bat`), `base` (current dir name), or `absolute` (`$HOME` expanded). |
 | `PROMPT_KRONUZ_CMD_DURATION_MIN` | `3` | Seconds a command must run before its duration is shown. `0` = always. |
 | `PROMPT_KRONUZ_TRANSIENT` | `pwd ❯` | The collapsed past-prompt string (default: the run directory + caret); `''` disables transience. |
 | `PROMPT_KRONUZ_TRANSIENT_STYLE` | `dim` | Restyle of the past command: `dim`, `mute`, or `keep`. |

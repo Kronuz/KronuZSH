@@ -39,7 +39,7 @@ PROMPT_KRONUZ_COLOR_HOST='$col[green]'
 
 # --- Prompt: behaviour ---
 # Shorten the working-directory path: full (default), short (fish-style ~/D/k/i/bat),
-# or base (just the current directory's name).
+# base (just the current directory's name), or absolute ($HOME expanded to its path).
 # PROMPT_KRONUZ_PWD_STYLE=short
 # Show a command's duration once it ran longer than this many seconds (default 3):
 # PROMPT_KRONUZ_CMD_DURATION_MIN=5

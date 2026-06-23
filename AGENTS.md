@@ -14,7 +14,7 @@ dependencies were replaced with small native pieces:
 | `git-info` + `async` worker | gitstatus (gitstatusd) + a direct-`git` fallback |
 | `python-info` (venv) | `_kronuz_venv_segment` ($VIRTUAL_ENV) |
 | `editor-info` (keymap) | `_kronuz_keymap_update` (zle hooks) |
-| `prompt-pwd` | `_kronuz_pwd_segment` (`${(%):-%~}`, with `PROMPT_KRONUZ_PWD_STYLE` full/short/base) |
+| `prompt-pwd` | `_kronuz_pwd_segment` (`${(%):-%~}`, with `PROMPT_KRONUZ_PWD_STYLE` full/short/base/absolute) |
 | `spectrum` ($col) | the `col` palette is defined inline in `lib/prompt.zsh` |
 
 Dropped from the prezto version: the `async` worker (gitstatusd is the async
