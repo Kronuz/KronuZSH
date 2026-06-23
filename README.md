@@ -10,7 +10,9 @@ me that I actually use is either mine or a standalone plugin:
 - **prompt** (`lib/prompt.zsh`) the Kronuz prompt, ported off prezto. Git status comes
   from [gitstatus](https://github.com/romkatv/gitstatus); the venv, vi/emacs keymap
   indicator, and pwd are tiny native replacements for prezto's python-info,
-  editor-info, and prompt-pwd.
+  editor-info, and prompt-pwd. Past prompts collapse to a compact, configurable
+  `path ❯` line (the [transient prompt](prompt.md#transient-prompt)), and a slow or
+  failed command leaves a one-line status marker behind in scrollback.
 - **plugins** (git submodules under `plugins/`):
   [fast-syntax-highlighting](https://github.com/zdharma-continuum/fast-syntax-highlighting),
   [zsh-autosuggestions](https://github.com/zsh-users/zsh-autosuggestions),

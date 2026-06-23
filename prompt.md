@@ -62,6 +62,9 @@ export PROMPT_KRONUZ_CMD_DURATION_MIN=1
 export PROMPT_KRONUZ_TRANSIENT_STYLE=mute
 export PROMPT_KRONUZ_TRANSIENT=''
 
+# Swap just the collapsed caret for an emoji (the pwd stays; symmetric to the live caret):
+export PROMPT_KRONUZ_TRANSIENT_CARET='🚀'
+
 # Recolor a segment (any name from the color table below):
 export PROMPT_KRONUZ_COLOR_HOST='$col[chartreuse]'
 
