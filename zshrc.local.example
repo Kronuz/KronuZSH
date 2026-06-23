@@ -5,8 +5,9 @@
 #
 #   cp <path-to-kronuzsh>/zshrc.local.example ~/.zshrc.local
 #
-# As shipped it just tints the host name; uncomment the rest you want. This is an
-# interactive-shell file (sourced near the end of .zshrc), so it's the place for
+# As shipped it tints the host name and shortens the working-directory path, to show the
+# kind of thing you can do; uncomment the rest you want. This is an interactive-shell file
+# (sourced near the end of .zshrc), so it's the place for
 # PROMPT_KRONUZ_* overrides, zstyles, and tool hooks. It is NOT the place for anything
 # that puts a tool on PATH (cargo, ~/.local/bin, pyenv, ...): that has to happen before
 # .zshrc runs, or integrations/init.zsh won't detect the tool. Put PATH in ~/.profile
@@ -40,10 +41,10 @@ PROMPT_KRONUZ_COLOR_HOST='$col[green]'
 # --- Prompt: behaviour ---
 # Shorten the working-directory path: full (default), short (fish-style ~/D/k/i/bat),
 # base (just the current directory's name), or absolute ($HOME expanded to its path).
-# PROMPT_KRONUZ_PWD_STYLE=short
+PROMPT_KRONUZ_PWD_STYLE=short
 # Show a command's duration once it ran longer than this many seconds (default 3):
 # PROMPT_KRONUZ_CMD_DURATION_MIN=5
-# Transient prompt: past prompts collapse to a faded caret; '' turns it off.
+# Transient prompt: past prompts collapse to the run directory + a caret; '' turns it off.
 # PROMPT_KRONUZ_TRANSIENT=''
 # How the just-run command is restyled in the collapsed line: dim (default), mute, keep.
 # PROMPT_KRONUZ_TRANSIENT_STYLE=mute
