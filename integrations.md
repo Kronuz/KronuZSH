@@ -205,8 +205,11 @@ palette wiring:
   `theme.yml`'s filekinds, so the two are kept in sync.
 - **grep / man / BSD `ls`** — `lib/colors.zsh` also sets `$GREP_COLORS`, `$LESS_TERMCAP`
   (man pages), and `$LSCOLORS`/`$CLICOLOR` (macOS/BSD `ls`) in Kronuz tones.
-- **glow** — `integrations/glow/kronuz.json` glamour style, wired via
-  `$GLAMOUR_STYLE`.
+- **glow** — the bundled `integrations/glow/kronuz.json` glamour style, written into
+  glow's own config (`style:`) by `setup.sh`, only when your style is still the default.
+  glow the CLI never reads `$GLAMOUR_STYLE` (only the glamour *library* does) and themes
+  nothing until its config or a `-s` flag names a style, so the env var alone does nothing
+  — override with `glow -s <style>` or by editing `glow config`.
 
 Each of these is set only as a default (`${VAR:-...}`), so your own value in
 `~/.zshrc.local` wins.
