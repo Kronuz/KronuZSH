@@ -19,13 +19,7 @@
     "color": "#e8bf6a",
     "bold": true
   },
-  "h1": {
-    "prefix": " ",
-    "suffix": " ",
-    "color": "#383838",
-    "background_color": "#e8bf6a",
-    "bold": true
-  },
+  "h1": { "prefix": "# ", "color": "#e8bf6a", "bold": true },
   "h2": { "prefix": "## ", "color": "#e8bf6a", "bold": true },
   "h3": { "prefix": "### ", "color": "#cc7833", "bold": true },
   "h4": { "prefix": "#### ", "color": "#cc7833" },
@@ -46,7 +40,7 @@
     "prefix": " ",
     "suffix": " ",
     "color": "#a5c261",
-    "background_color": "#383838"
+    "background_color": "#222222"
   },
   "code_block": {
     "color": "#c8c6c5",
