@@ -1,6 +1,6 @@
 # KronuZSH
 
-**KronuZSH** is a thin, prezto-free zsh setup: my prompt, three plugins, and a small
+**KronuZSH** is a thin, prezto-free zsh setup: my prompt, four plugins, and a small
 amount of config, with no framework underneath. It replaces a 7-years-behind prezto
 fork with something I own end to end.
 
@@ -18,8 +18,9 @@ me that I actually use is either mine or a standalone plugin:
   [zsh-autosuggestions](https://github.com/zsh-users/zsh-autosuggestions),
   [zsh-history-substring-search](https://github.com/zsh-users/zsh-history-substring-search),
   and [gitstatus](https://github.com/romkatv/gitstatus).
-- **config** (in `lib/`): `options.zsh`, `history.zsh`, `completion.zsh`,
-  `keybindings.zsh`, `aliases.zsh`, `terminal.zsh` — one named file per concern.
+- **config** (in `lib/`): `options.zsh`, `history.zsh`, `colors.zsh`,
+  `completion.zsh`, `keybindings.zsh`, `aliases.zsh`, `terminal.zsh` — one named
+  file per concern.
 
 The guiding rule: keep only the **genuinely useful** parts, lean and easy to find,
 and prefer zsh-native over a vendored module (e.g. bracketed paste is built in, so
@@ -158,6 +159,7 @@ runcoms/
 lib/               modules sourced by zshrc, one per concern
   options.zsh        shell options
   history.zsh        history (HISTSIZE 10M)
+  colors.zsh         canonical $LS_COLORS (sourced before completion, which reads it)
   completion.zsh     completion (cached compinit)
   keybindings.zsh    key bindings (emacs; word nav, Ctrl-W to last slash)
   aliases.zsh        the useful aliases (ls colors, ll, mkdir -p, ...)
