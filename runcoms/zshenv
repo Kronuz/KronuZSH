@@ -6,8 +6,10 @@ export EDITOR=vim
 export VISUAL=vim
 export PAGER=less
 
-# less: stay in the terminal, no wrap, case-insensitive search, keep colors.
-export LESS='-F -g -i -M -R -S -w -X -z-4'
+# less: stay in the terminal, no wrap, case-insensitive search, keep colors. No -w
+# (--hilite-unread): it reverse-video-highlights the first new line after each page,
+# a grey bar that also rides through bat/git/man, since they all page through less.
+export LESS='-F -g -i -M -R -S -X -z-4'
 
 # Default locale only if the terminal didn't set one.
 [[ -z "$LANG" ]] && export LANG='en_US.UTF-8'

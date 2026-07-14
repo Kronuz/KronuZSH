@@ -52,3 +52,10 @@ fi
 autoload -Uz edit-command-line
 zle -N edit-command-line
 bindkey '^X^E' edit-command-line
+
+# --- ZLE appearance ----------------------------------------------------------
+# Don't reverse-video (standout) pasted text. zsh's default zle_highlight highlights
+# the bracketed-paste region until the next keypress, which flashes the pasted text as
+# a background block; German prefers to see the real syntax-highlighted colors right
+# away. Other contexts (region, isearch, special, suffix) keep their defaults.
+zle_highlight=(paste:none)
