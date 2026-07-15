@@ -6,3 +6,14 @@
   zdump="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump"
   [[ -s "$zdump" && ( ! -s "$zdump.zwc" || "$zdump" -nt "$zdump.zwc" ) ]] && zcompile "$zdump"
 } &!
+
+# Execute code only if STDERR is bound to a TTY.
+[[ -o INTERACTIVE && -t 2 ]] && {
+
+  # Print a random, hopefully interesting, adage.
+  if (( $+commands[fortune] )); then
+    fortune -s
+    print
+  fi
+
+} >&2
