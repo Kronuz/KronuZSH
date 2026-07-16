@@ -15,5 +15,6 @@ if [[ -n $_kronuz_bat ]]; then
     export BAT_THEME="${BAT_THEME:-Kronuz}"
   export MANPAGER="sh -c 'col -bx | $_kronuz_bat -l man -p --paging=always'"
   export MANROFFOPT='-c'
+  alias cat='bat --style=plain --paging=never'
 fi
 unset _kronuz_bat
