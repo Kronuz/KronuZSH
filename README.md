@@ -181,10 +181,9 @@ sudo apt install fd-find bat fzf zoxide ripgrep git-delta
 sudo dnf install fd-find bat fzf zoxide ripgrep git-delta
 ```
 
-On a minimal or locked-down distro that lacks them (e.g. the CBL-Mariner dev VM,
-which only ships `ripgrep`), install via Rust (`cargo install --locked fd-find
-bat zoxide git-delta eza`) and grab fzf's prebuilt Go binary; the exact commands
-are in [integrations.md](integrations.md#installing-them).
+On a minimal or locked-down distro that lacks them, install via Rust
+(`cargo install --locked fd-find bat zoxide git-delta eza`) and grab fzf's prebuilt
+Go binary; the exact commands are in [integrations.md](integrations.md#installing-them).
 
 The colored tools (eza, bat, delta, fzf) share one **Kronuz** look, bundled under
 `integrations/` (`eza/theme.yml`, `themes/Kronuz.tmTheme`, and fzf's
