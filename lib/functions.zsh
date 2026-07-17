@@ -16,8 +16,8 @@ function mkdcd {
 # and keep the plain man fallback when the main function is unavailable.
 typeset -a _kronuz_run_help_files
 _kronuz_run_help_files=(${^fpath}/run-help(N[1]))
+unalias run-help 2>/dev/null
 if (( $#_kronuz_run_help_files )); then
-  unalias run-help 2>/dev/null
   autoload -Uz run-help
 
   for _kronuz_run_help in run-help-{git,ip,openssl,sudo}; do
@@ -26,6 +26,25 @@ if (( $#_kronuz_run_help_files )); then
   done
   unset _kronuz_run_help
 else
-  alias run-help=man
+  function run-help { command man "$@" }
 fi
 unset _kronuz_run_help_files
+
+# Show local function source directly; let native run-help resolve everything
+# else (builtins, aliases, reserved words, and external commands).
+function help {
+  emulate -L zsh
+
+  if (( $# == 1 && $+functions[$1] )); then
+    local bat_command=${commands[bat]:-${commands[batcat]:-}}
+    if [[ -n $bat_command ]]; then
+      builtin functions "$1" |
+        "$bat_command" --language=zsh --style=plain --paging=auto
+    else
+      local -a pager=(${(z)${PAGER:-cat}})
+      builtin functions "$1" | "${pager[@]}"
+    fi
+  else
+    run-help "$@"
+  fi
+}

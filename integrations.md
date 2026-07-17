@@ -64,9 +64,9 @@ interactively. The real `cd` and `AUTO_CD` are left untouched.
 ### [bat](https://github.com/sharkdp/bat) — a `cat` with syntax highlighting
 
 Line numbers, a git change gutter, and language detection. When available,
-KronuZSH uses it for `cat`, the **man pager**, and fzf's file preview; without it,
-the native tools stay untouched. Themed with Kronuz: `setup.sh` builds bat's cache
-with the bundled theme
+KronuZSH uses it for `cat`, the **man pager**, local-function output from `help`,
+and fzf's file preview; without it, the native tools stay untouched. Themed with
+Kronuz: `setup.sh` builds bat's cache with the bundled theme
 ([`integrations/themes/Kronuz.tmTheme`](integrations/themes/Kronuz.tmTheme))
 and init.zsh sets `BAT_THEME=Kronuz`. Debian ships it as `batcat`; init.zsh
 accepts either name.
