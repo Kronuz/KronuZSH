@@ -3,8 +3,15 @@
 
 # Creates one directory (including missing parents), then enters it.
 function mkdcd {
+  if [[ ${1:-} == (-h|--help) ]]; then
+    print 'usage: mkdcd [--] directory'
+    return 0
+  elif [[ ${1:-} == -- ]]; then
+    shift
+  fi
+
   (( $# == 1 )) || {
-    print -u2 'usage: mkdcd directory'
+    print -u2 'usage: mkdcd [--] directory'
     return 64
   }
 
