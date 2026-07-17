@@ -12,7 +12,7 @@ dependencies were replaced with small native pieces:
 | prezto gave | replaced by |
 | --- | --- |
 | `git-info` + `async` worker | gitstatus (gitstatusd) + a direct-`git` fallback |
-| `python-info` (venv) | `_kronuz_venv_segment` ($VIRTUAL_ENV) |
+| `python-info` (venv) | `_kronuz_venv_segment` (`$VIRTUAL_ENV`) |
 | `editor-info` (keymap) | `_kronuz_keymap_update` (zle hooks) |
 | `prompt-pwd` | `_kronuz_pwd_segment` (`${(%):-%~}`, with `PROMPT_KRONUZ_PWD_STYLE` full/short/base/absolute) |
 | `spectrum` ($col) | the `col` palette is defined inline in `lib/prompt.zsh` |
@@ -191,7 +191,7 @@ char in a comment.
 Each segment is a deferred string `kronuz[x]="${(e)PROMPT_KRONUZ_X:-$DEFAULT_PROMPT_KRONUZ_X}"`,
 and `PROMPT`/`RPROMPT` splice the `$kronuz[...]` together. Dynamic data is computed
 in `prompt_kronuz_precmd` (pwd, venv, git) into vars the deferred strings read
-(`_prompt_kronuz_pwd`, `_kronuz_venv`, `_prompt_kronuz_git`).
+(`_prompt_kronuz_pwd`, `_prompt_kronuz_venv`, `_prompt_kronuz_git`).
 
 Current layout:
 `PROMPT = status err info context etctl git venv jobs \n time pwd prompt`
@@ -200,7 +200,7 @@ Current layout:
 built in `_kronuz_status_segment`) is the last command's exit code (`⏎<code>` when
 nonzero) and duration (when slow) on their own line above the info row, and renders
 nothing (no line) on a quick, clean command. Its exit code comes from
-`_kronuz_last_exit`, captured first thing in `_kronuz_osc_precmd` (which runs first
+`_prompt_kronuz_last_exit`, captured first thing in `_kronuz_osc_precmd` (which runs first
 among the precmd hooks). `err` is the always-on `●` success/failure dot.
 
 Beyond the deferred segments, a few features hook the line lifecycle:
@@ -297,7 +297,7 @@ the load order (fast-syntax-highlighting stays last). Bind keys after sourcing.
   the fallback runs; test the real daemon in a terminal (or an etctl VM pty).
 - The **vi/emacs keymap arrow** (`❯`) is updated by a `zle-line-init` hook in live
   ZLE. To preview it without ZLE, resolve `PROMPT_KRONUZ_KEYMAP_PRIMARY` (or its
-  `DEFAULT_` counterpart) into `_kronuz_keymap` and re-render.
+  `DEFAULT_` counterpart) into `_prompt_kronuz_keymap` and re-render.
 
 ## gitstatusd deployment
 

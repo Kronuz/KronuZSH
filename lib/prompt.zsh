@@ -458,12 +458,12 @@ function _kronuz_git_segment {
 }
 
 # ---- venv ----
-typeset -g _kronuz_venv=''
+typeset -g _prompt_kronuz_venv=''
 function _kronuz_venv_segment {
   if [[ -n "$VIRTUAL_ENV" ]]; then
-    _kronuz_venv=" ${(e)col[info]}${glyph[venv]}${(e)col[none]} ${(e)col[venv]}${VIRTUAL_ENV:t}${(e)col[none]}"
+    _prompt_kronuz_venv=" ${(e)col[info]}${glyph[venv]}${(e)col[none]} ${(e)col[venv]}${VIRTUAL_ENV:t}${(e)col[none]}"
   else
-    _kronuz_venv=''
+    _prompt_kronuz_venv=''
   fi
 }
 
@@ -536,7 +536,7 @@ function _kronuz_duration_segment {
 # $_prompt_kronuz_last_exit is captured by the OSC precmd (it runs first). The line
 # is built twice: full colour for the live prompt, and dimmed for the copy the
 # transient prompt leaves in scrollback.
-typeset -g _prompt_kronuz_status='' _prompt_kronuz_status_dim='' _kronuz_last_exit=0
+typeset -g _prompt_kronuz_status='' _prompt_kronuz_status_dim='' _prompt_kronuz_last_exit=0
 
 # Dim one colour spec (name / index / #hex) toward black by $PROMPT_KRONUZ_TRANSIENT_DIM,
 # returning #rrggbb in $REPLY. Returns 1 (and leaves $REPLY untouched) if the spec can't
@@ -576,7 +576,7 @@ function _kronuz_status_segment {
   # re-show (and, via the transient copy, re-keep) the previous command's exit code.
   (( ${_kronuz_cmd_ran:-0} )) || return
   local out='' dim='' body item sp REPLY
-  if (( ${_kronuz_last_exit:-0} != 0 )); then
+  if (( ${_prompt_kronuz_last_exit:-0} != 0 )); then
     body="${(e)PROMPT_KRONUZ_ERROR-$DEFAULT_PROMPT_KRONUZ_ERROR}"
     if [[ -n "$body" ]]; then
       item="${(e)col[status_err]}${body}${(e)col[none]}"
@@ -600,20 +600,20 @@ function _kronuz_status_segment {
 # Editor keymap indicator
 # ============================================================================
 
-# Update the vi/emacs keymap caret ($_kronuz_keymap) and overwrite mark
-# ($_kronuz_overwrite) from zle state, then redraw. The three public format parameters
+# Update the vi/emacs keymap caret ($_prompt_kronuz_keymap) and overwrite mark
+# ($_prompt_kronuz_overwrite) from zle state, then redraw. The three public format parameters
 # are evaluated here so palette/glyph changes remain live. Driven by the widgets below.
-typeset -g _kronuz_keymap='' _kronuz_overwrite=''
+typeset -g _prompt_kronuz_keymap='' _prompt_kronuz_overwrite=''
 function _kronuz_keymap_update {
   if [[ "$KEYMAP" == 'vicmd' ]]; then
-    _kronuz_keymap="${(e)PROMPT_KRONUZ_KEYMAP_ALTERNATE-$DEFAULT_PROMPT_KRONUZ_KEYMAP_ALTERNATE}"
+    _prompt_kronuz_keymap="${(e)PROMPT_KRONUZ_KEYMAP_ALTERNATE-$DEFAULT_PROMPT_KRONUZ_KEYMAP_ALTERNATE}"
   else
-    _kronuz_keymap="${(e)PROMPT_KRONUZ_KEYMAP_PRIMARY-$DEFAULT_PROMPT_KRONUZ_KEYMAP_PRIMARY}"
+    _prompt_kronuz_keymap="${(e)PROMPT_KRONUZ_KEYMAP_PRIMARY-$DEFAULT_PROMPT_KRONUZ_KEYMAP_PRIMARY}"
   fi
   if [[ "$ZLE_STATE" == *overwrite* ]]; then
-    _kronuz_overwrite="${(e)PROMPT_KRONUZ_KEYMAP_OVERWRITE-$DEFAULT_PROMPT_KRONUZ_KEYMAP_OVERWRITE}"
+    _prompt_kronuz_overwrite="${(e)PROMPT_KRONUZ_KEYMAP_OVERWRITE-$DEFAULT_PROMPT_KRONUZ_KEYMAP_OVERWRITE}"
   else
-    _kronuz_overwrite=''
+    _prompt_kronuz_overwrite=''
   fi
   # reset-prompt redraws in place, which needs cursor addressing; skip it on dumb
   # terminals (it would reprint the multi-line prompt). The seed in setup means the
@@ -642,7 +642,7 @@ function _kronuz_osc_preexec {
 }
 function _kronuz_osc_precmd {
   local ret=$?
-  typeset -g _kronuz_last_exit=$ret    # this hook runs first, so $? is the command's
+  typeset -g _prompt_kronuz_last_exit=$ret # this hook runs first, so $? is the command's
   if ! _kronuz_osc_active; then _kronuz_osc_b=''; return; fi
   print -n "\e]133;D;${ret}\a\e]133;A\a"
   print -Pn '\e]7;file://%M%d\a'
@@ -725,8 +725,8 @@ function prompt_kronuz_precmd {
   prompt_kronuz_glyphs
   # Resolve the initial/primary caret here, after ~/.zshrc.local has loaded. ZLE's
   # line-init/keymap-select widgets take over while the user is editing a command.
-  _kronuz_keymap="${(e)PROMPT_KRONUZ_KEYMAP_PRIMARY-$DEFAULT_PROMPT_KRONUZ_KEYMAP_PRIMARY}"
-  _kronuz_overwrite=''
+  _prompt_kronuz_keymap="${(e)PROMPT_KRONUZ_KEYMAP_PRIMARY-$DEFAULT_PROMPT_KRONUZ_KEYMAP_PRIMARY}"
+  _prompt_kronuz_overwrite=''
   # Load the dim palette once, here rather than in setup, so any PROMPT_KRONUZ_PALETTE_*
   # override / TTL / timeout from ~/.zshrc.local (sourced after setup) is in effect.
   if (( ! ${_kronuz_pal_loaded:-0} )); then
@@ -777,7 +777,7 @@ function prompt_kronuz_setup {
 
   # Seed the keymap caret so a prompt char shows even where zle-line-init never fires
   # (e.g. Emacs `M-x shell`). precmd resolves it again after ~/.zshrc.local loads.
-  _kronuz_keymap="${(e)DEFAULT_PROMPT_KRONUZ_KEYMAP_PRIMARY}"
+  _prompt_kronuz_keymap="${(e)DEFAULT_PROMPT_KRONUZ_KEYMAP_PRIMARY}"
 
   _prompt_kronuz_git=''
   _prompt_kronuz_pwd=''
@@ -792,7 +792,7 @@ function prompt_kronuz_setup {
   DEFAULT_PROMPT_KRONUZ_OS="\${glyph[os]:+\"\${col[host]}\${glyph[os]}\${col[none]} \"}"
   DEFAULT_PROMPT_KRONUZ_CONTEXT="\${_kronuz_is_container:+\" \${col[container]}\${glyph[container]}\${col[none]}\"}\${_kronuz_is_ssh:+\" \${col[ssh]}\${glyph[ssh]}\${col[none]}\"}"
   DEFAULT_PROMPT_KRONUZ_ERR="%(?.\${col[status_ok]}\${glyph[dot]}\${col[none]}.\${col[status_err]}\${glyph[dot]}\${col[none]})"
-  DEFAULT_PROMPT_KRONUZ_ERROR="\${glyph[return]} \${_kronuz_last_exit}"
+  DEFAULT_PROMPT_KRONUZ_ERROR="\${glyph[return]} \${_prompt_kronuz_last_exit}"
   DEFAULT_PROMPT_KRONUZ_VIM="\${VIM:+\" \${col[vim]}\${glyph[vim]}\${col[none]}\"}"
   DEFAULT_PROMPT_KRONUZ_EMACS="\${INSIDE_EMACS:+\" \${col[emacs]}\${glyph[emacs]}\${col[none]}\"}"
   DEFAULT_PROMPT_KRONUZ_ETCTL="\${ETCTL_SESSION:+\" \${col[info]}etctl\${col[none]}:\${col[etctl]}\${ETCTL_SESSION}\${col[none]}\"}"
@@ -801,9 +801,9 @@ function prompt_kronuz_setup {
   DEFAULT_PROMPT_KRONUZ_USER="%n"
   DEFAULT_PROMPT_KRONUZ_IP="\${_prompt_kronuz_ip}"
   DEFAULT_PROMPT_KRONUZ_GIT="\${_prompt_kronuz_git:+\${(e)_prompt_kronuz_git}}"
-  DEFAULT_PROMPT_KRONUZ_VENV="\${(e)_kronuz_venv}"
-  DEFAULT_PROMPT_KRONUZ_OVERWRITE="\${(e)_kronuz_overwrite}"
-  DEFAULT_PROMPT_KRONUZ_PROMPT="\${(e)_kronuz_keymap}"
+  DEFAULT_PROMPT_KRONUZ_VENV="\${(e)_prompt_kronuz_venv}"
+  DEFAULT_PROMPT_KRONUZ_OVERWRITE="\${(e)_prompt_kronuz_overwrite}"
+  DEFAULT_PROMPT_KRONUZ_PROMPT="\${(e)_prompt_kronuz_keymap}"
   DEFAULT_PROMPT_KRONUZ_TIME="[%*]"
   DEFAULT_PROMPT_KRONUZ_PWD="\${_prompt_kronuz_pwd:+\${(e)_prompt_kronuz_pwd}}"
 

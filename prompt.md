@@ -435,7 +435,7 @@ PROMPT_KRONUZ_USER='dev:%n'
 PROMPT_KRONUZ_ERR='%(?.${col[status_ok]}OK.${col[status_err]}ERR)${col[none]}'
 
 # Spell out failures, or omit the duration glyph while keeping the formatted time:
-PROMPT_KRONUZ_ERROR='exit ${_kronuz_last_exit}'
+PROMPT_KRONUZ_ERROR='exit ${_prompt_kronuz_last_exit}'
 PROMPT_KRONUZ_DURATION='${_prompt_kronuz_duration}'
 
 # Use one fixed caret and ignore editor-keymap changes:
