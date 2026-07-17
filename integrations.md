@@ -123,8 +123,7 @@ aren't in init.zsh; install any and it works. Roughly ranked by daily payoff:
 6. **[sd](https://github.com/chmln/sd)** — `sed`-style find/replace with sane
    syntax (literal strings or real regex, no escaping minefield).
 7. **[tealdeer](https://github.com/tealdeer-rs/tealdeer)** (`tldr`) —
-   example-first man pages; when installed, `help <command>` tries these concise
-   examples before falling back to `run-help`/`man` (`help -t` forces tldr).
+   example-first man pages; what you actually wanted from `man`.
 8. **[tokei](https://github.com/XAMPPRocky/tokei)** — count lines of code per
    language, fast.
 9. **[glow](https://github.com/charmbracelet/glow)** — render Markdown in the

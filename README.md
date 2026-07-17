@@ -96,15 +96,11 @@ automatic directory stack, `1`–`9` jump through it, and `-` returns to the pre
 directory. `mkdcd <directory>` creates one directory (including parents) and enters
 it. `http-serve` starts Python 3's HTTP server when `python3` is installed.
 
-`help <command>` is the normal help entry point. Shell constructs go to zsh's
-context-aware `run-help`; external commands try concise `tldr` examples when tealdeer
-is installed, then fall back to `run-help`/`man` when a page is unavailable. Use
-`help -m <command>` to force the full manual or `help -t <command>` to force tldr.
-Native `run-help` remains available directly, including its Git, `ip`, OpenSSL, and
-`sudo` helpers; minimal zsh installations fall back to `man`.
-
-The completion menu matches case and `.`, `_`, or `-` boundaries flexibly, keeps
-private functions out of normal results, and includes the directory stack for `cd`.
+`run-help <command>` uses zsh's context-aware help function when the host ships it,
+including its Git, `ip`, OpenSSL, and `sudo` helpers; minimal installations fall back
+to `man`. The completion menu matches case and `.`, `_`, or `-` boundaries flexibly,
+keeps private functions out of normal results, and includes the directory stack for
+`cd`.
 
 ## gitstatusd (the git prompt engine)
 
