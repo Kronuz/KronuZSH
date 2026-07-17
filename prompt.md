@@ -389,7 +389,55 @@ shell-integration escape sequences so the terminal can do more for you:
 - **OSC 1337** (iTerm2 only): also reports host and directory to iTerm2's own
   integration, on top of the cross-terminal OSC 133 marks.
 
-There's nothing to configure; it activates wherever the terminal understands it.
+### Why keep the iTerm2 integration enabled?
+
+The metadata is invisible until iTerm2 uses it, and several small conveniences add up:
+
+- **Jump between commands:** press **Command-Shift-Up** or **Command-Shift-Down** to
+  move to the previous or next prompt mark instead of scrolling and hunting.
+- **Spot failures:** with mark indicators visible, a failed command gets a red mark.
+  Right-click its mark to inspect information such as the exit status.
+- **Select clean output:** press **Command-Shift-A**, or choose **Edit → Select Output
+  of Last Command**, to select only what the last command printed, without its prompt
+  or command line.
+- **Search one command's output:** click a past command, then Find and Filter operate on
+  that command's output rather than the whole scrollback buffer.
+- **Keep directory context:** new terminal tabs and splits can start in the current
+  working directory, while iTerm2 also knows the current host and directory for features
+  such as automatic profile switching.
+
+iTerm2's [Shell Integration documentation](https://iterm2.com/documentation-shell-integration.html)
+describes the complete feature set, including command history, recent directories,
+alerts when long commands finish, automatic profile switching, and file transfer.
+
+To verify command tracking, run `false`. The next prompt should show KronuZSH's
+`⏎1` status, and—with **Show mark indicators** enabled—the mark beside that command
+should turn red. Then run `printf 'hello\n'` and press **Command-Shift-A**; only
+`hello` should be selected. If neither feature works, ensure
+`PROMPT_KRONUZ_TERMINAL_INTEGRATION` is not disabled and test outside ordinary
+`tmux`/`screen`, which can swallow shell-integration sequences.
+
+### iTerm2 preferences
+
+iTerm2 uses the OSC 133 command marks for a couple of UI behaviors that are useful but
+can feel intrusive. You can disable either behavior without losing the rest of the
+integration:
+
+- Hide the blue/red gutter marks: turn off **Settings → Profiles → Terminal → Show
+  mark indicators** for the profile.
+- Stop a click on an old command from dimming everything else and restricting Find and
+  Filter to that command's output: turn off **Settings → General → Selection → Clicking
+  on a command selects it to restrict Find and Filter**.
+
+To opt out of terminal integration entirely, add this to `~/.zshrc.local`:
+
+```zsh
+PROMPT_KRONUZ_TERMINAL_INTEGRATION=0
+```
+
+That disables all terminal metadata emitted by the prompt: OSC 7 current-directory
+reporting, OSC 133 prompt/command marks, and iTerm2's OSC 1337 host/directory updates.
+Values `0`, `no`, `off`, and `false` disable it; the default is `1`.
 
 ## Replacing a whole segment
 
@@ -475,6 +523,7 @@ fully enumerated in the linked table or directly in the description.
 | `PROMPT_KRONUZ_TRANSIENT_HL` | `fg=8` | `mute` color, as a `region_highlight` spec. |
 | `PROMPT_KRONUZ_PALETTE_TTL` | `86400` | Seconds the queried palette is cached on disk (per terminal); `0` disables the cache. |
 | `PROMPT_KRONUZ_PALETTE_TIMEOUT` | `0.6` | Seconds to wait for the OSC 4 palette answer; bump it for a slow/remote terminal. |
+| `PROMPT_KRONUZ_TERMINAL_INTEGRATION` | `1` | `0`/`no`/`off`/`false` disables OSC 7 cwd reporting, OSC 133 command marks, and iTerm2 OSC 1337 metadata. |
 | `PROMPT_KRONUZ_KEYMAP_PRIMARY` | `❯❯❯` | The live caret in the primary keymap (emacs / vi-insert), as a prompt string. `''` hides it. |
 | `PROMPT_KRONUZ_KEYMAP_ALTERNATE` | `❮❮❮` | The live caret in the vi-command keymap. `''` hides it. |
 | `PROMPT_KRONUZ_KEYMAP_OVERWRITE` | red `❯❯❯` | The complete live caret used in overwrite mode. It stays three cells wide by default. |

@@ -210,7 +210,9 @@ into `_prompt_kronuz_duration` when it tops `PROMPT_KRONUZ_CMD_DURATION_MIN`),
 `_kronuz_osc_precmd` / `_kronuz_osc_preexec`, with the OSC precmd ordered first in
 `precmd_functions` so the `D` mark carries the real `$?`; in iTerm2,
 `$_kronuz_is_iterm`, it also emits the proprietary OSC 1337 ShellIntegrationVersion
-/ RemoteHost / CurrentDir), and the **transient prompt** (an accept-line
+/ RemoteHost / CurrentDir; all three protocols are gated by
+`PROMPT_KRONUZ_TERMINAL_INTEGRATION`, and iTerm detection/announcement happens on the
+first enabled precmd so `~/.zshrc.local` can opt out), and the **transient prompt** (an accept-line
 widget on `^M`/`^J` that swaps `$PROMPT` to the resolved
 `${(e)PROMPT_KRONUZ_TRANSIENT-$DEFAULT_PROMPT_KRONUZ_TRANSIENT}` and `reset-prompt`s,
 restored in precmd; configured symmetrically to the live prompt — `PROMPT_KRONUZ_TRANSIENT`
