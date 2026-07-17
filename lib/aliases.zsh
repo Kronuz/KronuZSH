@@ -15,6 +15,22 @@ alias grep='grep --color=auto'
 alias mkdir='mkdir -p'        # make parents as needed
 alias _='sudo'
 alias e='${(z)VISUAL:-${(z)EDITOR}}'   # `e file` opens $EDITOR
+alias b='${(z)BROWSER}'                 # `b URL` opens $BROWSER
+alias p='${(z)PAGER}'                   # explicit pager, normally less
+
+# Open a file or URL in the desktop environment.
+if [[ "$OSTYPE" == darwin* ]]; then
+  alias o='open'
+elif (( $+commands[xdg-open] )); then
+  alias o='xdg-open'
+elif (( $+commands[termux-open] )); then
+  alias o='termux-open'
+fi
+
+alias df='df -kh'                       # human-readable filesystem usage
+alias du='du -kh'                       # human-readable directory usage
+alias diffu='diff --unified'
+alias http-serve='python3 -m http.server'
 alias po='popd'
 alias pu='pushd'
 
@@ -28,3 +44,4 @@ unset _index
 alias rmi='rm -i'
 alias mvi='mv -i'
 alias cpi='cp -i'
+alias lni='ln -i'
