@@ -55,6 +55,22 @@ kz_info() { printf '  %s%s%s\n' "$_kz_d" "$1" "$_kz_rs"; }
 # kz_tilde <path>: print PATH with a leading $HOME collapsed to ~ (for tidy messages).
 kz_tilde() { case "$1" in "$HOME"/*) printf '~%s' "${1#"$HOME"}" ;; *) printf '%s' "$1" ;; esac; }
 
+# kz_backup [--move] <file>: copy FILE (preserving metadata), or move it with --move,
+# to the shared timestamped backup convention. Prints the backup path for reporting.
+kz_backup() {
+  local mode=copy
+  if [ "${1:-}" = --move ]; then mode=move; shift; fi
+  local src="$1" backup stamp
+  stamp="$(date +%Y%m%d%H%M%S)"
+  backup="$src.$stamp.kronuzsh.bak"
+  if [ "$mode" = move ]; then
+    mv "$src" "$backup" || return
+  else
+    cp -p "$src" "$backup" || return
+  fi
+  printf '%s' "$backup"
+}
+
 # kz_done <text>: the closing success line.
 kz_done() { printf '\n%s%s %s%s%s\n' "$_kz_g" "$(_kz_em '✨' '✓')" "$_kz_b" "$1" "$_kz_rs"; }
 

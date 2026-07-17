@@ -60,8 +60,8 @@ _kronuz_vim_wire() {
   fi
   mkdir -p "$(dirname "$_kronuz_rc")"
   if [ -f "$_kronuz_rc" ]; then
-    cp -p "$_kronuz_rc" "$_kronuz_rc.kronuz.bak"
-    kz_info "backed up $(kz_tilde "$_kronuz_rc") -> $(kz_tilde "$_kronuz_rc").kronuz.bak"
+    _kronuz_vbak="$(kz_backup "$_kronuz_rc")"
+    kz_info "backed up $(kz_tilde "$_kronuz_rc") -> $(kz_tilde "$_kronuz_vbak")"
   fi
   _kronuz_vim_block "$_kronuz_lang" >> "$_kronuz_rc"
   kz_ok "$_kronuz_ed" "colorscheme enabled in $(kz_tilde "$_kronuz_rc")"
@@ -87,4 +87,4 @@ if command -v nvim >/dev/null 2>&1; then
 fi
 
 unset -f _kronuz_vim_block _kronuz_vim_wire 2>/dev/null
-unset _kronuz_vim_dir _kronuz_vim_src _kronuz_rc _kronuz_lang _kronuz_ed _kronuz_yes 2>/dev/null
+unset _kronuz_vim_dir _kronuz_vim_src _kronuz_rc _kronuz_lang _kronuz_ed _kronuz_vbak _kronuz_yes 2>/dev/null

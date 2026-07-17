@@ -39,7 +39,8 @@ if command -v tldr >/dev/null 2>&1; then
     fi
 
     if [ "$_kronuz_tldr_apply" -eq 1 ]; then
-      cp -p "$_kronuz_tldr_cfg" "$_kronuz_tldr_cfg.kronuz.bak"
+      _kronuz_tldr_bak="$(kz_backup "$_kronuz_tldr_cfg")"
+      kz_info "backed up $(kz_tilde "$_kronuz_tldr_cfg") -> $(kz_tilde "$_kronuz_tldr_bak")"
       _kronuz_tldr_rest="$(mktemp)"
       _kronuz_tldr_new="$(mktemp)"
       # Drop only [style.*] tables and enable auto_update inside [updates]. Preserve
@@ -79,6 +80,6 @@ if command -v tldr >/dev/null 2>&1; then
       kz_ok "tldr" "Kronuz theme set in $(kz_tilde "$_kronuz_tldr_cfg")"
     fi
   fi
-  unset _kronuz_tldr_apply _kronuz_tldr_cfg _kronuz_tldr_new _kronuz_tldr_rest
+  unset _kronuz_tldr_apply _kronuz_tldr_bak _kronuz_tldr_cfg _kronuz_tldr_new _kronuz_tldr_rest
 fi
 unset _kronuz_tldr_dir _kronuz_tldr_theme

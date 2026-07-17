@@ -37,7 +37,8 @@ if command -v glow >/dev/null 2>&1; then
     mkdir -p "$(dirname "$_kronuz_glow_cfg")"
     _kronuz_glow_tmp="$(mktemp)"
     if [ -f "$_kronuz_glow_cfg" ]; then
-      cp -p "$_kronuz_glow_cfg" "$_kronuz_glow_cfg.kronuz.bak"
+      _kronuz_glow_bak="$(kz_backup "$_kronuz_glow_cfg")"
+      kz_info "backed up $(kz_tilde "$_kronuz_glow_cfg") -> $(kz_tilde "$_kronuz_glow_bak")"
       grep -v -E '^[[:space:]]*style:' "$_kronuz_glow_cfg" > "$_kronuz_glow_tmp" || true
     else
       printf 'mouse: false\npager: false\nwidth: 80\nall: false\n' > "$_kronuz_glow_tmp"
@@ -46,6 +47,6 @@ if command -v glow >/dev/null 2>&1; then
     mv "$_kronuz_glow_tmp" "$_kronuz_glow_cfg"
     kz_ok "glow" "Kronuz style set in $(kz_tilde "$_kronuz_glow_cfg")"
   fi
-  unset _kronuz_glow_cfg _kronuz_glow_cur _kronuz_glow_tmp
+  unset _kronuz_glow_bak _kronuz_glow_cfg _kronuz_glow_cur _kronuz_glow_tmp
 fi
 unset _kronuz_glow_dir _kronuz_glow_style

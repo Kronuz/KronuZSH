@@ -11,7 +11,6 @@ set -euo pipefail
 
 here="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 runcoms=(zshenv zprofile zshrc zlogin zlogout)
-stamp="$(date +%Y%m%d%H%M%S)"
 
 # shellcheck source=install.lib.sh
 source "$here/install.lib.sh"
@@ -68,7 +67,7 @@ install() {
   fi
 
   kz_head "Shell config" "🔗"
-  local rc target link
+  local rc target link bak
   for rc in "${runcoms[@]}"; do
     target="$here/runcoms/$rc"
     link="$HOME/.$rc"
@@ -77,8 +76,8 @@ install() {
       continue
     fi
     if [[ -e "$link" || -L "$link" ]]; then
-      mv "$link" "$link.kronuzsh-bak.$stamp"
-      kz_info "backed up ~/.$rc -> ~/.$rc.kronuzsh-bak.$stamp"
+      bak="$(kz_backup --move "$link")"
+      kz_info "backed up $(kz_tilde "$link") -> $(kz_tilde "$bak")"
     fi
     ln -s "$target" "$link"
     kz_ok "$(kz_tilde "$link")" "linked"
@@ -105,9 +104,9 @@ uninstall() {
       kz_ok "removed ~/.$rc"
     fi
   done
-  for bak in "$HOME"/.z*.kronuzsh-bak.*; do
+  for bak in "$HOME"/.z*.*.kronuzsh.bak; do
     [[ -e "$bak" ]] || continue
-    orig="${bak%.kronuzsh-bak.*}"
+    orig="${bak%.*.kronuzsh.bak}"
     mv -f "$bak" "$orig"
     kz_ok "restored $orig"
   done

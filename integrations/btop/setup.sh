@@ -14,7 +14,8 @@ if command -v btop >/dev/null 2>&1; then
     mkdir -p "$_kronuz_bcfg/themes"
     ln -sf "$_kronuz_btop_dir/Kronuz.theme" "$_kronuz_bcfg/themes/Kronuz.theme"
     if [ -f "$_kronuz_bconf" ]; then
-      cp -p "$_kronuz_bconf" "$_kronuz_bconf.kronuz.bak"
+      _kronuz_bbak="$(kz_backup "$_kronuz_bconf")"
+      kz_info "backed up $(kz_tilde "$_kronuz_bconf") -> $(kz_tilde "$_kronuz_bbak")"
       if grep -q '^color_theme *=' "$_kronuz_bconf"; then
         _kronuz_btmp="$(mktemp)"
         sed 's#^color_theme *=.*#color_theme = "Kronuz"#' "$_kronuz_bconf" > "$_kronuz_btmp"
@@ -30,6 +31,6 @@ if command -v btop >/dev/null 2>&1; then
     kz_skip "btop" "not themed"
     kz_info "enable later: re-run install, or set color_theme=\"Kronuz\" in btop.conf"
   fi
-  unset _kronuz_bcfg _kronuz_bconf _kronuz_btmp
+  unset _kronuz_bbak _kronuz_bcfg _kronuz_bconf _kronuz_btmp
 fi
 unset _kronuz_btop_dir

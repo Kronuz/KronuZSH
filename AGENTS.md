@@ -279,6 +279,17 @@ git submodule add https://github.com/owner/name plugins/name
 Then `source "$KRONUZSH/plugins/name/name.plugin.zsh"` in `lib/plugins.zsh`, respecting
 the load order (fast-syntax-highlighting stays last). Bind keys after sourcing.
 
+## Backing up user files
+
+Any installer or integration that modifies a user-owned file must use `kz_backup <file>`
+from `install.lib.sh`; use `kz_backup --move <file>` when the original must be removed,
+as with runcoms replaced by symlinks. It creates a sibling backup named
+`<file>.YYYYMMDDhhmmss.kronuzsh.bak`, preserving metadata in copy mode; report the
+returned path with `kz_info`. The stable suffix makes every backup discoverable with
+`*.kronuzsh.bak`. Never introduce a fixed `.bak` or `.kronuz.bak` filename: a later
+setup run would overwrite the user's previous recovery point. Uninstall can restore the
+runcom files because their backups use the helper's `--move` mode.
+
 ## Testing (no real terminal needed for most of it)
 
 - **Syntax**: `zsh -n <file>`.
