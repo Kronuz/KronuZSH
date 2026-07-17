@@ -62,23 +62,20 @@ _kronuz_vim_wire() {
   fi
   mkdir -p "$(dirname "$_kronuz_rc")"
   if [ -f "$_kronuz_rc" ]; then
-    _kronuz_vbak="$(kz_backup "$_kronuz_rc")"
-    kz_backup_info "$_kronuz_rc" "$_kronuz_vbak"
+    kz_backup_file "$_kronuz_rc"
   fi
   _kronuz_vim_block "$_kronuz_lang" >> "$_kronuz_rc"
   kz_ok "$_kronuz_ed" "colorscheme enabled in $(kz_tilde "$_kronuz_rc")"
 }
 
 if command -v vim >/dev/null 2>&1; then
-  mkdir -p "$HOME/.vim/colors"
-  ln -sf "$_kronuz_vim_src" "$HOME/.vim/colors/kronuz.vim"
+  kz_link "$_kronuz_vim_src" "$HOME/.vim/colors/kronuz.vim"
   _kronuz_vim_wire "$HOME/.vimrc" vim vim
 fi
 
 if command -v nvim >/dev/null 2>&1; then
   _kronuz_nvim="${XDG_CONFIG_HOME:-$HOME/.config}/nvim"
-  mkdir -p "$_kronuz_nvim/colors"
-  ln -sf "$_kronuz_vim_src" "$_kronuz_nvim/colors/kronuz.vim"
+  kz_link "$_kronuz_vim_src" "$_kronuz_nvim/colors/kronuz.vim"
   # nvim loads init.lua OR init.vim (both at once is an error) — wire whichever is in play
   if [ -f "$_kronuz_nvim/init.lua" ]; then
     _kronuz_vim_wire "$_kronuz_nvim/init.lua" lua neovim
@@ -89,4 +86,4 @@ if command -v nvim >/dev/null 2>&1; then
 fi
 
 unset -f _kronuz_vim_block _kronuz_vim_wire 2>/dev/null
-unset _kronuz_vim_dir _kronuz_vim_src _kronuz_rc _kronuz_lang _kronuz_ed _kronuz_vbak _kronuz_yes 2>/dev/null
+unset _kronuz_vim_dir _kronuz_vim_src _kronuz_rc _kronuz_lang _kronuz_ed _kronuz_yes 2>/dev/null

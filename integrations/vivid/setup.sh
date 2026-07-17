@@ -10,20 +10,15 @@ _kronuz_vivid_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]:-$0}")" && pwd -P)"
 if command -v vivid >/dev/null 2>&1; then
   _kronuz_vdir="${XDG_CONFIG_HOME:-$HOME/.config}/vivid/themes"
   _kronuz_vlink="$_kronuz_vdir/kronuz.yml"
-  if [ -L "$_kronuz_vlink" ] && [ "$(readlink "$_kronuz_vlink")" = "$_kronuz_vivid_dir/kronuz.yml" ]; then
+  if kz_is_link "$_kronuz_vivid_dir/kronuz.yml" "$_kronuz_vlink"; then
     kz_ok "vivid" "Kronuz theme already available"
   elif { [ ! -e "$_kronuz_vlink" ] && [ ! -L "$_kronuz_vlink" ]; } \
     || kz_confirm "Replace $(kz_tilde "$_kronuz_vlink") with the Kronuz theme"; then
-    mkdir -p "$_kronuz_vdir"
-    if [ -e "$_kronuz_vlink" ] || [ -L "$_kronuz_vlink" ]; then
-      _kronuz_vbak="$(kz_backup --move "$_kronuz_vlink")"
-      kz_backup_info "$_kronuz_vlink" "$_kronuz_vbak"
-    fi
-    ln -s "$_kronuz_vivid_dir/kronuz.yml" "$_kronuz_vlink"
+    kz_link "$_kronuz_vivid_dir/kronuz.yml" "$_kronuz_vlink"
     kz_ok "vivid" "Kronuz theme available ($(kz_tilde "$_kronuz_vlink"))"
-    kz_info "regenerate after editing the theme: vivid generate kronuz > $(kz_tilde "$_kronuz_vivid_dir/ls_colors")"
+    kz_info "after editing: vivid generate kronuz > $(kz_tilde "$_kronuz_vivid_dir/ls_colors")"
   else
     kz_skip "vivid" "respecting existing theme at $(kz_tilde "$_kronuz_vlink")"
   fi
 fi
-unset _kronuz_vbak _kronuz_vdir _kronuz_vivid_dir _kronuz_vlink
+unset _kronuz_vdir _kronuz_vivid_dir _kronuz_vlink

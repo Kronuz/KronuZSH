@@ -92,6 +92,31 @@ kz_backup_info() {
   [ -n "$2" ] && kz_info "backed up $(kz_tilde "$1") -> $(kz_tilde "$2")"
 }
 
+# kz_backup_file <file>: copy a user file to a backup and report it.
+kz_backup_file() {
+  local backup
+  backup="$(kz_backup "$1")" || return
+  kz_backup_info "$1" "$backup"
+}
+
+# kz_is_link <source> <destination>: whether destination already links to source.
+kz_is_link() {
+  [ -L "$2" ] && [ "$(readlink "$2")" = "$1" ]
+}
+
+# kz_link <source> <destination>: install an absolute symlink, safely moving any
+# conflicting destination through the shared backup policy first.
+kz_link() {
+  local source="$1" destination="$2" backup
+  kz_is_link "$source" "$destination" && return 0
+  mkdir -p "$(dirname "$destination")"
+  if [ -e "$destination" ] || [ -L "$destination" ]; then
+    backup="$(kz_backup --move "$destination")" || return
+    kz_backup_info "$destination" "$backup"
+  fi
+  ln -s "$source" "$destination"
+}
+
 # kz_done <text>: the closing success line.
 kz_done() { printf '\n%s%s %s%s%s\n' "$_kz_g" "$(_kz_em '✨' '✓')" "$_kz_b" "$1" "$_kz_rs"; }
 

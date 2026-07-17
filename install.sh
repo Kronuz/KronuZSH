@@ -69,19 +69,15 @@ install() {
   fi
 
   kz_head "Shell config" "🔗"
-  local rc target link bak
+  local rc target link
   for rc in "${runcoms[@]}"; do
     target="$here/runcoms/$rc"
     link="$HOME/.$rc"
-    if [[ -L "$link" && "$(readlink "$link")" == "$target" ]]; then
+    if kz_is_link "$target" "$link"; then
       kz_ok "$(kz_tilde "$link")" "already linked"
       continue
     fi
-    if [[ -e "$link" || -L "$link" ]]; then
-      bak="$(kz_backup --move "$link")"
-      kz_backup_info "$link" "$bak"
-    fi
-    ln -s "$target" "$link"
+    kz_link "$target" "$link"
     kz_ok "$(kz_tilde "$link")" "linked"
   done
 
