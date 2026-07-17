@@ -1,3 +1,5 @@
+.DS_Store
+
 # Per-machine runtime state.
 /.zhistory
 .zcompdump*
