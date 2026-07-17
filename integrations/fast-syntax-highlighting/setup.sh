@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # fast-syntax-highlighting: apply the Kronuz theme. fsh's `fast-theme` resolves the
 # .ini and writes the styles to its work dir ($FAST_WORK_DIR/current_theme.zsh, under
 # ~/.cache), which fsh auto-loads at every shell start. Needs zsh + the fsh plugin,

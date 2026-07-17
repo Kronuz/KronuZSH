@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # btop: opt-in Kronuz theming. btop has no env/flag to select a theme — it reads
 # color_theme from btop.conf and themes from <config>/themes/ — so enabling means
 # placing the theme and setting the key. We ask first (kz_confirm), then symlink

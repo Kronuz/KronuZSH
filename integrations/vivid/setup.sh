@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # vivid: the generator behind our rich $LS_COLORS. Runtime needs no vivid — lib/colors.zsh
 # loads the committed integrations/vivid/ls_colors. This step only makes the Kronuz theme
 # available to vivid (symlink into its config dir) so you can REGENERATE after editing

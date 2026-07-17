@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # vim / neovim: (1) link the bundled Kronuz colorscheme (./colors/kronuz.vim) into the
 # dir each looks in, and (2) offer to turn it on in your rc. We never silently rewrite
 # your config: if the rc already loads kronuz we leave it; otherwise, on a real terminal

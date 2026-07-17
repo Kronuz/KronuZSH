@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # install.lib.sh — shared output + prompt helpers for the KronuZSH installer and the
 # integrations' install-time setup steps. One small, consistent style: a title, bold
 # section headings, and ✓/· status lines, plus a y/N prompt (kz_confirm). Everything

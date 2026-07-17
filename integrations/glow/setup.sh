@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # glow: theme its Markdown rendering with the bundled Kronuz glamour style
 # (./kronuz.json). The catch that wastes everyone's afternoon: glow the CLI does NOT read
 # $GLAMOUR_STYLE — only the glamour *library* does, and glow bypasses that path. glow only

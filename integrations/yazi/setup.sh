@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # yazi: opt-in Kronuz theming. yazi reads its theme from its config dir
 # ($YAZI_CONFIG_HOME, else $XDG_CONFIG_HOME/yazi, else ~/.config/yazi), so enabling it
 # means placing files there. We ask first (kz_confirm), then symlink this theme.toml

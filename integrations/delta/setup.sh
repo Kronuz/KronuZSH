@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # git-delta: use it as git's diff pager and `git add -p` highlighter, guarded with
 # `command -v delta` so a box without delta falls back to less/cat. Set in the global
 # gitconfig (the env can't carry interactive.diffFilter), idempotent: re-running just

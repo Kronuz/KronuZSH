@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # bat (+ delta): build bat's theme cache so the bundled Kronuz themes
 # (../themes/Kronuz.tmTheme + Kronuz-Light.tmTheme) register; delta reads the same
 # cache, so both pick them up. Debian ships bat as `batcat`; accept either. Sourced by

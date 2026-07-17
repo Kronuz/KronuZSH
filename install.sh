@@ -73,7 +73,7 @@ install() {
     target="$here/runcoms/$rc"
     link="$HOME/.$rc"
     if [[ -L "$link" && "$(readlink "$link")" == "$target" ]]; then
-      kz_skip "~/.$rc" "already linked"
+      kz_skip "$(kz_tilde "$link")" "already linked"
       continue
     fi
     if [[ -e "$link" || -L "$link" ]]; then
@@ -81,7 +81,7 @@ install() {
       kz_info "backed up ~/.$rc -> ~/.$rc.kronuzsh-bak.$stamp"
     fi
     ln -s "$target" "$link"
-    kz_ok "~/.$rc" "linked"
+    kz_ok "$(kz_tilde "$link")" "linked"
   done
 
   # External-tool integrations' install-time setup (theme caches, opt-in wiring). Lives
