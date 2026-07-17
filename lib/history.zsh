@@ -1,4 +1,5 @@
 # History. HISTSIZE bumped to 10M (German's VM tweak, generalized).
+# Adapted from Prezto (MIT); see LICENSE for copyright and license notices.
 
 # Force the history file rather than deferring to the system default (macOS
 # /etc/zshrc presets HISTFILE=~/.zsh_history before us), so it's the same file

@@ -1,4 +1,5 @@
 # Completion. A lean version of prezto's completion module.
+# Adapted from Prezto (MIT); see LICENSE for copyright and license notices.
 
 zmodload -i zsh/complist
 

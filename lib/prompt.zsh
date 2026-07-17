@@ -1,7 +1,11 @@
 #
-# Kronuz prompt — a thin, framework-free zsh prompt (ported off a prezto theme).
+# Kronuz prompt — a thin, framework-free zsh prompt, evolved from the Kronuz
+# theme for Prezto and incorporating ideas and code from Prezto prompt themes.
 #
-# Author: German M. Bravo (Kronuz) <german.mb@gmail.com>
+# Copyright (c) 2014-2026 Germán Méndez Bravo
+# Portions copyright (c) 2009-2017 the Prezto contributors
+# SPDX-License-Identifier: MIT
+# See LICENSE for the full copyright and license notice.
 #
 # Architecture
 # ------------

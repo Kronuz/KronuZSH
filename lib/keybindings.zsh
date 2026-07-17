@@ -1,5 +1,6 @@
 # Key bindings: emacs keymap with a faithful, terminal-agnostic word/line set.
 # Ported from prezto's editor module, trimmed to the parts worth keeping.
+# Adapted from Prezto (MIT); see LICENSE for copyright and license notices.
 
 bindkey -e
 

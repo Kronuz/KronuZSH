@@ -1,4 +1,5 @@
 # terminal.zsh: set the window and tab titles (zsh-native, replaces prezto's terminal module).
+# Adapted from Prezto (MIT); see LICENSE for copyright and license notices.
 
 if [[ "$TERM" == (xterm*|rxvt*|screen*|tmux*|alacritty*|wezterm*|vte*|konsole*) ]]; then
   autoload -Uz add-zsh-hook

@@ -2,12 +2,13 @@
 
 **KronuZSH** is a thin, prezto-free zsh setup: my prompt, four plugins, and a small
 amount of config, with no framework underneath. It replaces a 7-years-behind prezto
-fork with something I own end to end.
+fork with something I maintain end to end.
 
-It is deliberately small. The prompt is one file. Everything prezto used to give
-me that I actually use is either mine or a standalone plugin:
+It is deliberately small. The prompt is one file. Everything Prezto used to give
+me that I actually use is now maintained here or supplied by a standalone plugin:
 
-- **prompt** (`lib/prompt.zsh`) the Kronuz prompt, ported off prezto. Git status comes
+- **prompt** (`lib/prompt.zsh`) the Kronuz prompt, evolved from the theme I maintained
+  in Prezto and incorporating ideas and code from Prezto prompt themes. Git status comes
   from [gitstatus](https://github.com/romkatv/gitstatus); the venv, vi/emacs keymap
   indicator, and pwd are tiny native replacements for prezto's python-info,
   editor-info, and prompt-pwd. Past prompts collapse to a compact, configurable
@@ -26,6 +27,9 @@ The guiding rule: keep only the **genuinely useful** parts, lean and easy to fin
 and prefer zsh-native over a vendored module (e.g. bracketed paste is built in, so
 there's no `safe-paste`). No cryptic framework magic; if you want to change
 something, the file it lives in is obvious.
+
+For the story behind the move away from Prezto—and the small conveniences I only
+noticed after removing it—read [“Molting: Down to the core”](https://kronuz.github.io/blog/molting/).
 
 ## Fonts (Nerd Font)
 
@@ -200,3 +204,10 @@ plugins/           vendored plugins (git submodules)
 Topic docs: **[prompt.md](prompt.md)** (the full prompt manual: every segment and
 option), **[integrations.md](integrations.md)** (the external-tool catalog) and
 **[nerd_fonts.md](nerd_fonts.md)** (font rankings + setup).
+
+## License
+
+KronuZSH is released under the [MIT License](LICENSE). Portions adapted from
+[Prezto](https://github.com/sorin-ionescu/prezto) retain its copyright notices.
+The plugins under `plugins/` are git submodules and remain under their respective
+upstream licenses.

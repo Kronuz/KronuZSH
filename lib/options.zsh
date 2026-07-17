@@ -1,4 +1,5 @@
 # Shell options. Mirrors the prezto defaults worth keeping plus German's tweaks.
+# Adapted from Prezto (MIT); see LICENSE for copyright and license notices.
 
 # Directory
 setopt AUTO_CD              # `cd` by typing a directory name.

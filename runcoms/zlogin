@@ -1,4 +1,5 @@
 # Login-shell setup, sourced after zshrc.
+# Adapted from Prezto (MIT); see LICENSE for copyright and license notices.
 #
 # Background-compile the completion dump so the next shell starts a touch faster.
 # Runs in a backgrounded subshell so it never delays your prompt.
