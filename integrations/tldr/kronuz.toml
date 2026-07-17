@@ -1,0 +1,33 @@
+# Kronuz theme for tealdeer (tldr).
+# This fragment is merged into tealdeer's config.toml by setup.sh; the remaining
+# display, update, directory, and search settings stay user-owned.
+
+[style.description]
+foreground = { rgb = { r = 200, g = 198, b = 197 } } # #c8c6c5 foreground
+underline = false
+bold = false
+italic = false
+
+[style.command_name]
+foreground = { rgb = { r = 232, g = 191, b = 106 } } # #e8bf6a gold
+underline = false
+bold = true
+italic = false
+
+[style.example_text]
+foreground = { rgb = { r = 202, g = 164, b = 115 } } # #caa473 tan
+underline = false
+bold = false
+italic = false
+
+[style.example_code]
+foreground = { rgb = { r = 165, g = 194, b = 97 } } # #a5c261 green
+underline = false
+bold = false
+italic = false
+
+[style.example_variable]
+foreground = { rgb = { r = 110, g = 156, b = 190 } } # #6e9cbe blue
+underline = true
+bold = false
+italic = false

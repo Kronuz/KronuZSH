@@ -37,10 +37,12 @@ sed         →  sd                find/replace without the regex pain
 (none)      →  yazi              full-screen terminal file manager
 ```
 
-## Wired in
+## Integrated with KronuZSH
 
-These get real shell integration in `integrations/init.zsh` (key bindings,
-aliases, env, or git config). Install any and it activates on the next shell.
+These receive either runtime shell wiring (`init.zsh`: key bindings, aliases, or
+environment) or install-time configuration (`setup.sh`: themes, caches, or tool-owned
+config). Runtime integrations activate in the next shell; setup integrations are
+applied by `install.sh` or `bash integrations/setup.sh`.
 
 ### [fzf](https://github.com/junegunn/fzf) — fuzzy finder
 
@@ -103,12 +105,30 @@ Kronuz UI theme
 
 A fast, full-screen file browser with previews and bulk operations. `y` opens it
 and cd's to wherever you quit (yazi's official wrapper); plain `yazi` still works
-without the cd.
+without the cd. Its setup integration also installs the Kronuz UI and code-preview
+themes.
+
+### [tealdeer](https://github.com/tealdeer-rs/tealdeer) (`tldr`) — practical command examples
+
+Example-first command documentation. Its setup integration seeds a missing config,
+applies the Kronuz palette, and enables automatic cache updates. Existing configs are
+backed up and changed only after confirmation; non-style preferences stay intact.
+
+### [glow](https://github.com/charmbracelet/glow) — Markdown in the terminal
+
+Renders Markdown with the bundled Kronuz glamour style. Its setup integration writes
+the style path into glow's own config when the current style is still the default,
+leaving an existing custom style alone.
+
+### [btop](https://github.com/aristocratos/btop) — process monitor
+
+A polished, mouse-capable replacement for `top`. Its opt-in setup links the bundled
+Kronuz theme and selects it in `btop.conf`, with confirmation and backup protection.
 
 ## Worth adding (just commands)
 
-These need no shell wiring (they're plain commands you run directly), so they
-aren't in init.zsh; install any and it works. Roughly ranked by daily payoff:
+These have no KronuZSH runtime or setup integration; install any and it works as a
+plain command. Roughly ranked by daily payoff:
 
 1. **[lazygit](https://github.com/jesseduffield/lazygit)** — a terminal git UI
    for staging, rebasing, and stashing; uses your delta config.
@@ -119,17 +139,12 @@ aren't in init.zsh; install any and it works. Roughly ranked by daily payoff:
 4. **[dust](https://github.com/bootandy/dust)** (`du`) and
    **[duf](https://github.com/muesli/duf)** (`df`) — readable disk usage and
    mounts at a glance.
-5. **[btop](https://github.com/aristocratos/btop)** (`top`) and
-   **[procs](https://github.com/dalance/procs)** (`ps`) — nicer process views.
+5. **[procs](https://github.com/dalance/procs)** — a colored, searchable `ps` replacement.
 6. **[sd](https://github.com/chmln/sd)** — `sed`-style find/replace with sane
    syntax (literal strings or real regex, no escaping minefield).
-7. **[tealdeer](https://github.com/tealdeer-rs/tealdeer)** (`tldr`) —
-   example-first man pages; what you actually wanted from `man`.
-8. **[tokei](https://github.com/XAMPPRocky/tokei)** — count lines of code per
+7. **[tokei](https://github.com/XAMPPRocky/tokei)** — count lines of code per
    language, fast.
-9. **[glow](https://github.com/charmbracelet/glow)** — render Markdown in the
-   terminal, nicely.
-10. **[xh](https://github.com/ducaale/xh)** — a fast HTTPie/`curl` for poking at
+8. **[xh](https://github.com/ducaale/xh)** — a fast HTTPie/`curl` for poking at
     HTTP APIs.
 
 ## Installing them
@@ -211,21 +226,29 @@ palette wiring:
   glow the CLI never reads `$GLAMOUR_STYLE` (only the glamour *library* does) and themes
   nothing until its config or a `-s` flag names a style, so the env var alone does nothing
   — override with `glow -s <style>` or by editing `glow config`.
+- **tealdeer / tldr** — `integrations/tldr/kronuz.toml` maps descriptions, command
+  names, example prose, code, and variables to the Kronuz foreground, gold, tan, green,
+  and blue. Its setup uses `tldr --seed-config` when needed, replaces only `[style.*]`
+  tables, and enables tealdeer's built-in automatic cache updates.
 
 Each of these is set only as a default (`${VAR:-...}`), so your own value in
 `~/.zshrc.local` wins.
 
-Three tools pick their theme from their *own* config file (no env to override), so
-KronuZSH can't theme them through the environment. Instead `setup.sh` **offers to wire
-them up** at install (a `[y/N]` prompt each, like vim; default No, honoring
-`KRONUZ_YES` / `KRONUZ_NO`), placing files non-destructively (backing up anything it
-replaces, idempotent):
+Four tools pick their theme from their *own* config file (no env to override), so
+KronuZSH can't theme them through the environment. Instead `setup.sh` wires them up
+non-destructively (backing up anything it replaces, idempotent). Existing configs are
+changed only after a `[y/N]` prompt (default No, honoring `KRONUZ_YES` / `KRONUZ_NO`);
+tealdeer can create and theme its standard seed config automatically when none exists:
 
 - **btop** — links `integrations/btop/Kronuz.theme` into `~/.config/btop/themes/` and
   sets `color_theme = "Kronuz"` in `btop.conf`.
 - **yazi** — links `integrations/yazi/theme.toml` into the yazi config dir, plus the
   shared `integrations/themes/Kronuz.tmTheme` so yazi's **code preview** highlights with
   the same Kronuz theme bat uses (`syntect_theme`).
+- **tealdeer / tldr** — seeds a missing config automatically; for an existing config,
+  asks before backing it up, replacing only its style tables, and setting
+  `updates.auto_update = true`. Its interval, archive source, TLS backend, display,
+  language, and directory settings remain untouched.
 
 **vim / neovim** get a real colorscheme,
 [`integrations/vim/colors/kronuz.vim`](integrations/vim/colors/kronuz.vim) — a
