@@ -18,6 +18,12 @@ alias e='${(z)VISUAL:-${(z)EDITOR}}'   # `e file` opens $EDITOR
 alias po='popd'
 alias pu='pushd'
 
+# AUTO_PUSHD keeps this stack populated: `d` shows it, and 1..9 jump to an
+# entry by the number printed at its left.
+alias d='dirs -v'
+for _index ({1..9}) alias "$_index"="cd +$_index"
+unset _index
+
 # Interactive-safe variants, opt-in (they do NOT shadow rm/mv/cp).
 alias rmi='rm -i'
 alias mvi='mv -i'
