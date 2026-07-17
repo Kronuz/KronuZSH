@@ -108,8 +108,11 @@ kz_manage_file() {
 # timestamped KronuZSH backup. Missing managed paths are omitted.
 kz_show_managed_files() {
   [ -n "$KRONUZ_FILES" ] || return 0
+  [ "${#_kz_managed_paths[@]}" -gt 0 ] || return 0
 
   local i label path backup
+
+  kz_head "Managed files" "📁"
 
   for ((i = 0; i < ${#_kz_managed_paths[@]}; i++)); do
     label="${_kz_managed_labels[i]}"
