@@ -45,8 +45,8 @@ PROMPT_KRONUZ_COLOR_HOST='$col[green]'
 # PROMPT_KRONUZ_GLYPH_OS=''            # hide the OS logo next to the hostname
 # Replace or hide the complete live keymap indicators (prompt strings may reference
 # the semantic palette and glyph arrays):
-# PROMPT_KRONUZ_KEYMAP_PRIMARY='${col[primary1]}${glyph[caret]}${col[none]}'
-# PROMPT_KRONUZ_KEYMAP_ALTERNATE='${col[primary1]}${glyph[caret_alt]}${col[none]}'
+# PROMPT_KRONUZ_KEYMAP_PRIMARY='${col[caret1]}${glyph[caret]}${col[none]}'
+# PROMPT_KRONUZ_KEYMAP_ALTERNATE='${col[caret1]}${glyph[caret_alt]}${col[none]}'
 # PROMPT_KRONUZ_KEYMAP_OVERWRITE=''
 
 # --- Prompt: behaviour ---

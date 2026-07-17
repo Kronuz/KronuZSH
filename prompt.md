@@ -90,8 +90,8 @@ The complete indicators can be replaced or hidden independently. Values are prom
 strings, so palette and glyph references remain deferred:
 
 ```zsh
-PROMPT_KRONUZ_KEYMAP_PRIMARY='${col[primary1]}${glyph[caret]}${col[none]}'
-PROMPT_KRONUZ_KEYMAP_ALTERNATE='${col[primary1]}${glyph[caret_alt]}${col[none]}'
+PROMPT_KRONUZ_KEYMAP_PRIMARY='${col[caret1]}${glyph[caret]}${col[none]}'
+PROMPT_KRONUZ_KEYMAP_ALTERNATE='${col[caret1]}${glyph[caret_alt]}${col[none]}'
 PROMPT_KRONUZ_KEYMAP_OVERWRITE=''   # hide the overwrite marker
 ```
 
@@ -211,11 +211,10 @@ The semantic names and their defaults:
 | `etctl`                                   | bold magenta       | the `etctl:<name>` tag            |
 | `vim` / `emacs`                           | bold green         | editor keymap indicators          |
 | `overwrite`                               | red                | overwrite-mode mark               |
-| `insert` / `completing`                   | dark grey / black  | caret keymap states               |
 | `transient`                               | dark grey          | the collapsed transient caret     |
-| `primary1/2/3`                            | red/yellow/green   | the three carets of `❯❯❯`         |
+| `caret1/2/3`                              | red/yellow/green   | the three carets of `❯❯❯`         |
 
-(`primary1/2/3` are also swapped to all-red when running as root, via a `%(!..)`
+(`caret1/2/3` are also swapped to all-red when running as root, via a `%(!..)`
 test, as are `pwd` and `user`.)
 
 ### No-color mode

@@ -240,9 +240,9 @@ function prompt_kronuz_colors {
   done
 
   local -A d=(
-    primary1   '%(!.%B$col[red].%B$col[red])'
-    primary2   '%(!.%B$col[red].%B$col[yellow])'
-    primary3   '%(!.$col[red].%B$col[green])'
+    caret1     '%(!.%B$col[red].%B$col[red])'
+    caret2     '%(!.%B$col[red].%B$col[yellow])'
+    caret3     '%(!.$col[red].%B$col[green])'
     status_err '$col[red]'
     status_ok  '$col[green]'
     venv       '$col[white]'
@@ -250,8 +250,6 @@ function prompt_kronuz_colors {
     emacs      '%B$col[green]'
     etctl      '%B$col[magenta]'
     overwrite  '$col[red]'
-    insert     '$col[darkgrey]'
-    completing '%B$col[black]'
     jobs       '$col[gold]'
     duration   '$col[goldenrod]'
     ssh        '$col[mediumpurple]'
@@ -774,8 +772,8 @@ function prompt_kronuz_setup {
   zle -N zle-line-init
   zle -N overwrite-mode _kronuz_overwrite_toggle
 
-  DEFAULT_PROMPT_KRONUZ_KEYMAP_PRIMARY="\${col[primary1]}\${glyph[caret]}\${col[none]}\${col[primary2]}\${glyph[caret]}\${col[none]}\${col[primary3]}\${glyph[caret]}\${col[none]}"
-  DEFAULT_PROMPT_KRONUZ_KEYMAP_ALTERNATE="\${col[primary3]}\${glyph[caret_alt]}\${col[none]}\${col[primary2]}\${glyph[caret_alt]}\${col[none]}\${col[primary1]}\${glyph[caret_alt]}\${col[none]}"
+  DEFAULT_PROMPT_KRONUZ_KEYMAP_PRIMARY="\${col[caret1]}\${glyph[caret]}\${col[none]}\${col[caret2]}\${glyph[caret]}\${col[none]}\${col[caret3]}\${glyph[caret]}\${col[none]}"
+  DEFAULT_PROMPT_KRONUZ_KEYMAP_ALTERNATE="\${col[caret3]}\${glyph[caret_alt]}\${col[none]}\${col[caret2]}\${glyph[caret_alt]}\${col[none]}\${col[caret1]}\${glyph[caret_alt]}\${col[none]}"
   DEFAULT_PROMPT_KRONUZ_KEYMAP_OVERWRITE=" \${col[overwrite]}\${glyph[overwrite]}\${col[none]}"
 
   # Seed the keymap caret so a prompt char shows even where zle-line-init never fires
