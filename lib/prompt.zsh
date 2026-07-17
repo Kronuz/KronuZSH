@@ -611,7 +611,8 @@ function _kronuz_keymap_update {
     _prompt_kronuz_keymap="${(e)PROMPT_KRONUZ_KEYMAP_PRIMARY-$DEFAULT_PROMPT_KRONUZ_KEYMAP_PRIMARY}"
   fi
   if [[ "$ZLE_STATE" == *overwrite* ]]; then
-    _prompt_kronuz_overwrite="${(e)PROMPT_KRONUZ_KEYMAP_OVERWRITE-$DEFAULT_PROMPT_KRONUZ_KEYMAP_OVERWRITE}"
+    _prompt_kronuz_keymap="${(e)PROMPT_KRONUZ_KEYMAP_OVERWRITE-$DEFAULT_PROMPT_KRONUZ_KEYMAP_OVERWRITE}"
+    _prompt_kronuz_overwrite=" ${(e)col[overwrite]}${glyph[overwrite]}${(e)col[none]}"
   else
     _prompt_kronuz_overwrite=''
   fi
@@ -622,8 +623,9 @@ function _kronuz_keymap_update {
 }
 function zle-keymap-select { _kronuz_keymap_update }
 function zle-line-init { _kronuz_keymap_update }
-# The stock emacs binding ^X^O invokes `overwrite-mode` without changing keymaps,
-# so zle-keymap-select does not fire. Wrap the builtin to refresh RPROMPT immediately.
+# Toggling overwrite mode does not change keymaps, so zle-keymap-select does not fire.
+# Wrap the standard widget, as Prezto does, so inherited and explicit bindings both
+# refresh the caret and RPROMPT after invoking the builtin.
 function _kronuz_overwrite_toggle {
   zle .overwrite-mode
   _kronuz_keymap_update
@@ -746,6 +748,7 @@ function prompt_kronuz_setup {
   unsetopt XTRACE KSH_ARRAYS
   zmodload -i zsh/parameter 2>/dev/null  # $parameters, for the no-colour path
   zmodload -i zsh/datetime 2>/dev/null   # $EPOCHSECONDS, for the cached IP segment
+  zmodload -i zsh/terminfo 2>/dev/null   # $terminfo, including the terminal's Insert key
 
   # The palette's 16..255 entries are hex (%F{#RRGGBB}); zsh/nearcolor maps them to
   # the nearest 256-colour (or the default fg on 8/16-colour terminals) so one palette
@@ -770,10 +773,16 @@ function prompt_kronuz_setup {
   zle -N zle-keymap-select
   zle -N zle-line-init
   zle -N overwrite-mode _kronuz_overwrite_toggle
+  # Match Prezto's convenient Insert-key binding when the terminal advertises one.
+  # Emacs mode also retains Zsh's inherited ^X^O binding to `overwrite-mode`.
+  if [[ -n "${terminfo[kich1]-}" ]]; then
+    bindkey -M emacs "$terminfo[kich1]" overwrite-mode
+    bindkey -M viins "$terminfo[kich1]" overwrite-mode
+  fi
 
   DEFAULT_PROMPT_KRONUZ_KEYMAP_PRIMARY="\${col[caret1]}\${glyph[caret]}\${col[none]}\${col[caret2]}\${glyph[caret]}\${col[none]}\${col[caret3]}\${glyph[caret]}\${col[none]}"
   DEFAULT_PROMPT_KRONUZ_KEYMAP_ALTERNATE="\${col[caret3]}\${glyph[caret_alt]}\${col[none]}\${col[caret2]}\${glyph[caret_alt]}\${col[none]}\${col[caret1]}\${glyph[caret_alt]}\${col[none]}"
-  DEFAULT_PROMPT_KRONUZ_KEYMAP_OVERWRITE=" \${col[overwrite]}\${glyph[overwrite]}\${col[none]}"
+  DEFAULT_PROMPT_KRONUZ_KEYMAP_OVERWRITE="\${col[overwrite]}\${glyph[caret]}\${glyph[caret]}\${glyph[caret]}\${col[none]}"
 
   # Seed the keymap caret so a prompt char shows even where zle-line-init never fires
   # (e.g. Emacs `M-x shell`). precmd resolves it again after ~/.zshrc.local loads.
@@ -813,9 +822,11 @@ function prompt_kronuz_setup {
   typeset -gA kronuz
   kronuz[nl]=$'%E\n'
   local seg
-  for seg in os err vim emacs etctl context jobs git venv overwrite prompt; do
+  for seg in os err vim emacs etctl context jobs git venv prompt; do
     kronuz[$seg]="\${(e)PROMPT_KRONUZ_${seg:u}:-\$DEFAULT_PROMPT_KRONUZ_${seg:u}}"
   done
+  # Unlike the older segments, an explicit empty value hides the overwrite marker.
+  kronuz[overwrite]="\${(e)PROMPT_KRONUZ_OVERWRITE-\$DEFAULT_PROMPT_KRONUZ_OVERWRITE}"
   # The rest wrap a segment in its own colour, or compose other segments.
   kronuz[user]="\${col[user]}\${(e)PROMPT_KRONUZ_USER:-\$DEFAULT_PROMPT_KRONUZ_USER}\${col[none]}"
   kronuz[time]="\${col[time]}\${(e)PROMPT_KRONUZ_TIME:-\$DEFAULT_PROMPT_KRONUZ_TIME}\${col[none]}"

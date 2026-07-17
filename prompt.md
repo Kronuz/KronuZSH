@@ -83,10 +83,16 @@ so palette query, timeout, and cache changes require a new shell.
 ## Editing modes and carets
 
 KronuZSH uses Zsh's Emacs editing map by default (`bindkey -e`), so ordinary command
-entry is the **primary** mode and shows the right-pointing `❯❯❯` caret. Press
-`Ctrl-X Ctrl-O` to toggle **overwrite** mode: typed characters replace the ones under
-the cursor, and the overwrite glyph appears in `RPROMPT`; press it again to return to
-inserting characters.
+entry is the **primary** mode and shows the right-pointing `❯❯❯` caret. Press the
+`Insert` key to toggle **overwrite** mode; KronuZSH reads its terminal-specific sequence
+from terminfo, as Prezto does, and binds it in both Emacs and vi-insert maps. In the
+default Emacs map, Zsh's inherited `Ctrl-X Ctrl-O` sequence also works (hold Ctrl, press
+X, then O). Typed characters now replace the ones under the cursor; use the same
+shortcut again to return to inserting characters.
+
+In overwrite mode the primary caret keeps the same three `❯` cells but turns entirely
+red, so toggling modes does not move the command line. A separate red overwrite glyph
+also appears at the right edge in `RPROMPT`.
 
 The **alternate** `❮❮❮` caret is for vi command mode. It is relevant only if you opt
 into vi keybindings with `bindkey -v` in `~/.zshrc.local`: press `Esc` to enter command
@@ -99,7 +105,8 @@ strings, so palette and glyph references remain deferred:
 ```zsh
 PROMPT_KRONUZ_KEYMAP_PRIMARY='${col[caret1]}${glyph[caret]}${col[none]}'
 PROMPT_KRONUZ_KEYMAP_ALTERNATE='${col[caret1]}${glyph[caret_alt]}${col[none]}'
-PROMPT_KRONUZ_KEYMAP_OVERWRITE=''   # hide the overwrite marker
+PROMPT_KRONUZ_KEYMAP_OVERWRITE='${col[overwrite]}>>>${col[none]}' # overwrite caret
+PROMPT_KRONUZ_OVERWRITE=''   # hide only the RPROMPT marker
 ```
 
 Direct assignments take effect on the next prompt or keymap transition; no export is
@@ -409,7 +416,7 @@ deferred so it is resolved whenever the prompt is drawn.
 | `PROMPT_KRONUZ_ETCTL` | Eternal Terminal session label |
 | `PROMPT_KRONUZ_VIM` | right-prompt Vim indicator |
 | `PROMPT_KRONUZ_EMACS` | right-prompt Emacs indicator |
-| `PROMPT_KRONUZ_OVERWRITE` | right-prompt overwrite indicator |
+| `PROMPT_KRONUZ_OVERWRITE` | right-prompt overwrite indicator; `''` hides it |
 | `PROMPT_KRONUZ_PROMPT` | complete live input caret; replacing it bypasses the primary/alternate keymap carets |
 
 There is no `PROMPT_KRONUZ_HOST`: the host display is composed from the OS, hostname,
@@ -470,7 +477,7 @@ fully enumerated in the linked table or directly in the description.
 | `PROMPT_KRONUZ_PALETTE_TIMEOUT` | `0.6` | Seconds to wait for the OSC 4 palette answer; bump it for a slow/remote terminal. |
 | `PROMPT_KRONUZ_KEYMAP_PRIMARY` | `❯❯❯` | The live caret in the primary keymap (emacs / vi-insert), as a prompt string. `''` hides it. |
 | `PROMPT_KRONUZ_KEYMAP_ALTERNATE` | `❮❮❮` | The live caret in the vi-command keymap. `''` hides it. |
-| `PROMPT_KRONUZ_KEYMAP_OVERWRITE` | (overwrite glyph) | The `RPROMPT` marker shown while overwrite mode is on. `''` hides it. |
+| `PROMPT_KRONUZ_KEYMAP_OVERWRITE` | red `❯❯❯` | The complete live caret used in overwrite mode. It stays three cells wide by default. |
 | `COLORTERM` | (terminal) | `24bit`/`truecolor` keeps the hex palette at 24-bit; otherwise colors degrade to 256/16 via `zsh/nearcolor`. |
 | `TERM` | (terminal) | `dumb`/`unknown`/empty forces the plain-glyph set and no color (see no-color mode). |
 | `NO_COLOR` | (unset) | Standard env var; when set, renders with no color escapes. |

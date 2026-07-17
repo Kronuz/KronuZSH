@@ -47,7 +47,8 @@ PROMPT_KRONUZ_COLOR_HOST='$col[green]'
 # the semantic palette and glyph arrays):
 # PROMPT_KRONUZ_KEYMAP_PRIMARY='${col[caret1]}${glyph[caret]}${col[none]}'
 # PROMPT_KRONUZ_KEYMAP_ALTERNATE='${col[caret1]}${glyph[caret_alt]}${col[none]}'
-# PROMPT_KRONUZ_KEYMAP_OVERWRITE=''
+# PROMPT_KRONUZ_KEYMAP_OVERWRITE='${col[overwrite]}>>>${col[none]}'
+# PROMPT_KRONUZ_OVERWRITE=''            # hide only the RPROMPT overwrite marker
 
 # --- Prompt: behaviour ---
 # Shorten the working-directory path: full (default), short (fish-style ~/D/k/i/bat),
