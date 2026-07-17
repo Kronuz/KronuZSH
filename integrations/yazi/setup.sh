@@ -11,7 +11,7 @@ if command -v yazi >/dev/null 2>&1; then
   _kronuz_ytoml="$_kronuz_yazi_dir/theme.toml"
   _kronuz_ytm="$(cd -- "$_kronuz_yazi_dir/../themes" && pwd -P)/Kronuz.tmTheme"
   if [ -L "$_kronuz_ycfg/theme.toml" ] && [ "$(readlink "$_kronuz_ycfg/theme.toml")" = "$_kronuz_ytoml" ]; then
-    kz_skip "yazi" "already themed in $(kz_tilde "$_kronuz_ycfg")"
+    kz_ok "yazi" "already themed in $(kz_tilde "$_kronuz_ycfg")"
   elif kz_confirm "Enable the Kronuz theme for yazi in $(kz_tilde "$_kronuz_ycfg")"; then
     mkdir -p "$_kronuz_ycfg"
     if [ -e "$_kronuz_ycfg/theme.toml" ] && [ ! -L "$_kronuz_ycfg/theme.toml" ]; then

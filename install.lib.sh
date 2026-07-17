@@ -40,7 +40,7 @@ kz_ok() {
   fi
 }
 
-# kz_skip <label> [detail]: an already-done / no-op step (dim · and text).
+# kz_skip <label> [detail]: a skipped / unavailable step (dim · and text).
 kz_skip() {
   if [ -n "${2:-}" ]; then
     printf '  %s·%s %s%s  %s%s\n' "$_kz_d" "$_kz_rs" "$_kz_d" "$1" "$2" "$_kz_rs"

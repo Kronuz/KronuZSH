@@ -21,7 +21,7 @@ if command -v tldr >/dev/null 2>&1; then
   if [ -f "$_kronuz_tldr_cfg" ] \
     && grep -q '^# Kronuz theme for tealdeer' "$_kronuz_tldr_cfg" \
     && awk '/^\[updates\]/{s=1; next} /^\[/{s=0} s && /^auto_update[[:space:]]*=[[:space:]]*true/{ok=1} END{exit !ok}' "$_kronuz_tldr_cfg"; then
-    kz_skip "tldr" "already themed"
+    kz_ok "tldr" "already themed"
   else
     _kronuz_tldr_apply=0
     if [ ! -f "$_kronuz_tldr_cfg" ]; then

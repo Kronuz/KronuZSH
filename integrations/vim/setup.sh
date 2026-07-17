@@ -42,7 +42,7 @@ _kronuz_vim_wire() {
   _kronuz_rc="$1"; _kronuz_lang="$2"; _kronuz_ed="$3"
   # already loads kronuz? leave it untouched (idempotent)
   if [ -f "$_kronuz_rc" ] && grep -qi kronuz "$_kronuz_rc" 2>/dev/null; then
-    kz_skip "$_kronuz_ed" "already enabled in $(kz_tilde "$_kronuz_rc")"
+    kz_ok "$_kronuz_ed" "already enabled in $(kz_tilde "$_kronuz_rc")"
     return 0
   fi
   _kronuz_yes=0

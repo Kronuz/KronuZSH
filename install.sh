@@ -72,7 +72,7 @@ install() {
     target="$here/runcoms/$rc"
     link="$HOME/.$rc"
     if [[ -L "$link" && "$(readlink "$link")" == "$target" ]]; then
-      kz_skip "$(kz_tilde "$link")" "already linked"
+      kz_ok "$(kz_tilde "$link")" "already linked"
       continue
     fi
     if [[ -e "$link" || -L "$link" ]]; then

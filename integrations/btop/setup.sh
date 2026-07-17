@@ -9,7 +9,7 @@ if command -v btop >/dev/null 2>&1; then
   _kronuz_bcfg="${XDG_CONFIG_HOME:-$HOME/.config}/btop"
   _kronuz_bconf="$_kronuz_bcfg/btop.conf"
   if [ -f "$_kronuz_bconf" ] && grep -q '^color_theme *= *"Kronuz"' "$_kronuz_bconf" 2>/dev/null; then
-    kz_skip "btop" "already themed"
+    kz_ok "btop" "already themed"
   elif kz_confirm "Enable the Kronuz theme for btop"; then
     mkdir -p "$_kronuz_bcfg/themes"
     ln -sf "$_kronuz_btop_dir/Kronuz.theme" "$_kronuz_bcfg/themes/Kronuz.theme"

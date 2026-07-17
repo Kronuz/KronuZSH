@@ -29,7 +29,7 @@ if command -v glow >/dev/null 2>&1; then
     _kronuz_glow_cur="${_kronuz_glow_cur%\'}"; _kronuz_glow_cur="${_kronuz_glow_cur#\'}"
   fi
   if [ "$_kronuz_glow_cur" = "$_kronuz_glow_style" ]; then
-    kz_skip "glow" "already themed"
+    kz_ok "glow" "already themed"
   elif [ -n "$_kronuz_glow_cur" ] && [ "$_kronuz_glow_cur" != auto ]; then
     kz_skip "glow" "respecting your style: \"$_kronuz_glow_cur\""
     kz_info "enable later: set style to $(kz_tilde "$_kronuz_glow_style") via \`glow config\`"
