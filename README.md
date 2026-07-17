@@ -160,7 +160,7 @@ lib/               modules sourced by zshrc, one per concern
   options.zsh        shell options
   history.zsh        history (HISTSIZE 10M)
   colors.zsh         canonical $LS_COLORS (sourced before completion, which reads it)
-  completion.zsh     completion (cached compinit)
+  completion.zsh     cached, case-flexible completion (including the directory stack)
   keybindings.zsh    key bindings (emacs; word nav, Ctrl-W to last slash)
   aliases.zsh        the useful aliases (ls colors, ll, mkdir -p, ...)
   functions.zsh      small, generally useful shell functions
