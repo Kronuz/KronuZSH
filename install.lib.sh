@@ -10,6 +10,7 @@
 # and always used; colour and the wider emoji are gated on an interactive colour TTY.
 
 : "${KRONUZ_FORCE:=}"
+: "${KRONUZ_HINTS:=}"
 : "${KRONUZ_NO_BACKUP:=}"
 
 if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
@@ -55,6 +56,9 @@ kz_skip() {
 # kz_info <text>: a dim, indented note.
 kz_info() { printf '  %s%s%s\n' "$_kz_d" "$1" "$_kz_rs"; }
 
+# kz_hint <text>: an optional usage hint, shown only with --hints.
+kz_hint() { [ -n "$KRONUZ_HINTS" ] && kz_info "$1"; }
+
 # kz_tilde <path>: print PATH with a leading $HOME collapsed to ~ (for tidy messages).
 kz_tilde() { case "$1" in "$HOME"/*) printf '~%s' "${1#"$HOME"}" ;; *) printf '%s' "$1" ;; esac; }
 
@@ -62,6 +66,7 @@ kz_tilde() { case "$1" in "$HOME"/*) printf '~%s' "${1#"$HOME"}" ;; *) printf '%
 kz_option() {
   case "$1" in
     -f|--force)     KRONUZ_FORCE=1 ;;
+    --hints)        KRONUZ_HINTS=1 ;;
     --no-backup)    KRONUZ_NO_BACKUP=1 ;;
     *)              return 1 ;;
   esac

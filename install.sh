@@ -6,6 +6,7 @@
 #
 #   ./install.sh              install / refresh
 #   ./install.sh --force      replace conflicting integration settings
+#   ./install.sh --hints      show optional usage and maintenance hints
 #   ./install.sh --no-backup  modify files without keeping recovery copies
 #   ./install.sh --uninstall  remove our symlinks and restore the backups
 #
@@ -121,6 +122,6 @@ for arg in "$@"; do
 done
 case "$action" in
   uninstall) uninstall ;;
-  help) sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//' ;;
+  help) sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//' ;;
   install) install ;;
 esac

@@ -43,8 +43,9 @@ These receive either runtime shell wiring (`init.zsh`: key bindings, aliases, or
 environment) or install-time configuration (`setup.sh`: themes, caches, or tool-owned
 config). Runtime integrations activate in the next shell; setup integrations are
 applied by `install.sh` or `bash integrations/setup.sh`. Both accept `--force` to
-replace a conflicting tool theme without prompting and `--no-backup` to suppress
-recovery copies (only advisable when your configuration is already versioned).
+replace a conflicting tool theme without prompting, `--hints` to show optional usage
+and maintenance notes, and `--no-backup` to suppress recovery copies (only advisable
+when your configuration is already versioned).
 
 ### [fzf](https://github.com/junegunn/fzf) — fuzzy finder
 
