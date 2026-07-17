@@ -46,7 +46,9 @@ _kronuz_vim_wire() {
     return 0
   fi
   _kronuz_yes=0
-  if [ -n "${KRONUZ_VIM_NOAUTORC:-}" ]; then
+  if [ -n "$KRONUZ_FORCE" ]; then
+    _kronuz_yes=1
+  elif [ -n "${KRONUZ_VIM_NOAUTORC:-}" ]; then
     _kronuz_yes=0
   elif [ -n "${KRONUZ_VIM_AUTORC:-}" ]; then
     _kronuz_yes=1
@@ -61,7 +63,7 @@ _kronuz_vim_wire() {
   mkdir -p "$(dirname "$_kronuz_rc")"
   if [ -f "$_kronuz_rc" ]; then
     _kronuz_vbak="$(kz_backup "$_kronuz_rc")"
-    kz_info "backed up $(kz_tilde "$_kronuz_rc") -> $(kz_tilde "$_kronuz_vbak")"
+    kz_backup_info "$_kronuz_rc" "$_kronuz_vbak"
   fi
   _kronuz_vim_block "$_kronuz_lang" >> "$_kronuz_rc"
   kz_ok "$_kronuz_ed" "colorscheme enabled in $(kz_tilde "$_kronuz_rc")"

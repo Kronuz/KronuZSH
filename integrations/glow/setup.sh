@@ -30,7 +30,7 @@ if command -v glow >/dev/null 2>&1; then
   fi
   if [ "$_kronuz_glow_cur" = "$_kronuz_glow_style" ]; then
     kz_ok "glow" "already themed"
-  elif [ -n "$_kronuz_glow_cur" ] && [ "$_kronuz_glow_cur" != auto ]; then
+  elif [ -z "$KRONUZ_FORCE" ] && [ -n "$_kronuz_glow_cur" ] && [ "$_kronuz_glow_cur" != auto ]; then
     kz_skip "glow" "respecting your style: \"$_kronuz_glow_cur\""
     kz_info "enable later: set style to $(kz_tilde "$_kronuz_glow_style") via \`glow config\`"
   else
@@ -38,7 +38,7 @@ if command -v glow >/dev/null 2>&1; then
     _kronuz_glow_tmp="$(mktemp)"
     if [ -f "$_kronuz_glow_cfg" ]; then
       _kronuz_glow_bak="$(kz_backup "$_kronuz_glow_cfg")"
-      kz_info "backed up $(kz_tilde "$_kronuz_glow_cfg") -> $(kz_tilde "$_kronuz_glow_bak")"
+      kz_backup_info "$_kronuz_glow_cfg" "$_kronuz_glow_bak"
       grep -v -E '^[[:space:]]*style:' "$_kronuz_glow_cfg" > "$_kronuz_glow_tmp" || true
     else
       printf 'mouse: false\npager: false\nwidth: 80\nall: false\n' > "$_kronuz_glow_tmp"

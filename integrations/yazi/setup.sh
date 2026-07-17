@@ -16,7 +16,7 @@ if command -v yazi >/dev/null 2>&1; then
     mkdir -p "$_kronuz_ycfg"
     if [ -e "$_kronuz_ycfg/theme.toml" ] && [ ! -L "$_kronuz_ycfg/theme.toml" ]; then
       _kronuz_ybak="$(kz_backup "$_kronuz_ycfg/theme.toml")"
-      kz_info "backed up $(kz_tilde "$_kronuz_ycfg/theme.toml") -> $(kz_tilde "$_kronuz_ybak")"
+      kz_backup_info "$_kronuz_ycfg/theme.toml" "$_kronuz_ybak"
     fi
     ln -sf "$_kronuz_ytoml" "$_kronuz_ycfg/theme.toml"
     ln -sf "$_kronuz_ytm" "$_kronuz_ycfg/Kronuz.tmTheme"

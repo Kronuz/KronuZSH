@@ -40,7 +40,7 @@ if command -v tldr >/dev/null 2>&1; then
 
     if [ "$_kronuz_tldr_apply" -eq 1 ]; then
       _kronuz_tldr_bak="$(kz_backup "$_kronuz_tldr_cfg")"
-      kz_info "backed up $(kz_tilde "$_kronuz_tldr_cfg") -> $(kz_tilde "$_kronuz_tldr_bak")"
+      kz_backup_info "$_kronuz_tldr_cfg" "$_kronuz_tldr_bak"
       _kronuz_tldr_rest="$(mktemp)"
       _kronuz_tldr_new="$(mktemp)"
       # Drop only [style.*] tables and enable auto_update inside [updates]. Preserve

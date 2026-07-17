@@ -9,6 +9,9 @@
 # Targets bash (install.sh is bash and sources this first). ✓ and · are plain Unicode
 # and always used; colour and the wider emoji are gated on an interactive colour TTY.
 
+: "${KRONUZ_FORCE:=}"
+: "${KRONUZ_NO_BACKUP:=}"
+
 if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
   _kz_b=$'\033[1m'; _kz_d=$'\033[2m'; _kz_g=$'\033[32m'; _kz_c=$'\033[36m'
   _kz_rs=$'\033[0m'; _kz_fancy=1
@@ -55,12 +58,25 @@ kz_info() { printf '  %s%s%s\n' "$_kz_d" "$1" "$_kz_rs"; }
 # kz_tilde <path>: print PATH with a leading $HOME collapsed to ~ (for tidy messages).
 kz_tilde() { case "$1" in "$HOME"/*) printf '~%s' "${1#"$HOME"}" ;; *) printf '%s' "$1" ;; esac; }
 
+# kz_option <option>: apply one shared installer option. Returns 1 if unknown.
+kz_option() {
+  case "$1" in
+    -f|--force)     KRONUZ_FORCE=1 ;;
+    --no-backup)    KRONUZ_NO_BACKUP=1 ;;
+    *)              return 1 ;;
+  esac
+}
+
 # kz_backup [--move] <file>: copy FILE (preserving metadata), or move it with --move,
 # to the shared timestamped backup convention. Prints the backup path for reporting.
 kz_backup() {
   local mode=copy
   if [ "${1:-}" = --move ]; then mode=move; shift; fi
   local src="$1" backup stamp
+  if [ -n "$KRONUZ_NO_BACKUP" ]; then
+    if [ "$mode" = move ]; then rm -f "$src" || return; fi
+    return 0
+  fi
   stamp="$(date +%Y%m%d%H%M%S)"
   backup="$src.$stamp.kronuzsh.bak"
   if [ "$mode" = move ]; then
@@ -71,6 +87,11 @@ kz_backup() {
   printf '%s' "$backup"
 }
 
+# kz_backup_info <source> <backup>: report a backup unless --no-backup suppressed it.
+kz_backup_info() {
+  [ -n "$2" ] && kz_info "backed up $(kz_tilde "$1") -> $(kz_tilde "$2")"
+}
+
 # kz_done <text>: the closing success line.
 kz_done() { printf '\n%s%s %s%s%s\n' "$_kz_g" "$(_kz_em '✨' '✓')" "$_kz_b" "$1" "$_kz_rs"; }
 
@@ -78,6 +99,7 @@ kz_done() { printf '\n%s%s %s%s%s\n' "$_kz_g" "$(_kz_em '✨' '✓')" "$_kz_b" "
 # for non-interactive installs; off a TTY (no answer possible) it defaults to No.
 # Returns 0 for yes, 1 for no.
 kz_confirm() {
+  if [ -n "$KRONUZ_FORCE" ]; then return 0; fi
   if [ -n "${KRONUZ_YES:-}" ]; then return 0; fi
   if [ -n "${KRONUZ_NO:-}" ];  then return 1; fi
   if [ -t 0 ] && [ -t 1 ]; then

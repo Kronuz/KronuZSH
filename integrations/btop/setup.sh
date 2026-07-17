@@ -15,7 +15,7 @@ if command -v btop >/dev/null 2>&1; then
     ln -sf "$_kronuz_btop_dir/Kronuz.theme" "$_kronuz_bcfg/themes/Kronuz.theme"
     if [ -f "$_kronuz_bconf" ]; then
       _kronuz_bbak="$(kz_backup "$_kronuz_bconf")"
-      kz_info "backed up $(kz_tilde "$_kronuz_bconf") -> $(kz_tilde "$_kronuz_bbak")"
+      kz_backup_info "$_kronuz_bconf" "$_kronuz_bbak"
       if grep -q '^color_theme *=' "$_kronuz_bconf"; then
         _kronuz_btmp="$(mktemp)"
         sed 's#^color_theme *=.*#color_theme = "Kronuz"#' "$_kronuz_bconf" > "$_kronuz_btmp"

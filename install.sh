@@ -5,6 +5,8 @@
 # to re-run.
 #
 #   ./install.sh              install / refresh
+#   ./install.sh --force      replace conflicting integration settings
+#   ./install.sh --no-backup  modify files without keeping recovery copies
 #   ./install.sh --uninstall  remove our symlinks and restore the backups
 #
 set -euo pipefail
@@ -77,7 +79,7 @@ install() {
     fi
     if [[ -e "$link" || -L "$link" ]]; then
       bak="$(kz_backup --move "$link")"
-      kz_info "backed up $(kz_tilde "$link") -> $(kz_tilde "$bak")"
+      kz_backup_info "$link" "$bak"
     fi
     ln -s "$target" "$link"
     kz_ok "$(kz_tilde "$link")" "linked"
@@ -113,8 +115,16 @@ uninstall() {
   kz_done "Uninstalled. Open a new shell."
 }
 
-case "${1:-}" in
-  --uninstall|-u) uninstall ;;
-  -h|--help) sed -n '2,9p' "$0" | sed 's/^# \{0,1\}//' ;;
-  *) install ;;
+action=install
+for arg in "$@"; do
+  case "$arg" in
+    --uninstall|-u) action=uninstall ;;
+    -h|--help)      action=help ;;
+    *) kz_option "$arg" || { printf 'Unknown option: %s\n' "$arg" >&2; exit 2; } ;;
+  esac
+done
+case "$action" in
+  uninstall) uninstall ;;
+  help) sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//' ;;
+  install) install ;;
 esac

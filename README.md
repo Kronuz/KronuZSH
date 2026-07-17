@@ -103,6 +103,10 @@ replaces, and inits the plugin submodules. It's idempotent; `./install.sh
 --uninstall` restores the backups. Symlinks mean editing `~/.zshrc` edits the
 tracked `runcoms/zshrc` directly, and `$KRONUZSH` self-resolves through them.
 
+Use `./install.sh --force` to apply the Kronuz theme over conflicting tool
+preferences without prompting. `--no-backup` suppresses recovery copies when
+replacing user files; use it only when those files are already safely versioned.
+
 ## Machine-local config
 
 Two tiers, by language:

@@ -288,7 +288,9 @@ as with runcoms replaced by symlinks. It creates a sibling backup named
 returned path with `kz_info`. The stable suffix makes every backup discoverable with
 `*.kronuzsh.bak`. Never introduce a fixed `.bak` or `.kronuz.bak` filename: a later
 setup run would overwrite the user's previous recovery point. Uninstall can restore the
-runcom files because their backups use the helper's `--move` mode.
+runcom files because their backups use the helper's `--move` mode. The shared
+`--no-backup` option sets `KRONUZ_NO_BACKUP`; `kz_backup` must remain the one place that
+implements its behavior so integrations do not duplicate that policy.
 
 ## Testing (no real terminal needed for most of it)
 
