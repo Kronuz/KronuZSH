@@ -3,7 +3,7 @@
 # Existing files are preserved through the shared managed-link backup policy.
 
 _kronuz_setup_yazi() {
-  command -v yazi >/dev/null 2>&1 || return
+  command -v yazi >/dev/null 2>&1 || return 0
 
   local here config_dir active=0
   local -a theme preview_theme

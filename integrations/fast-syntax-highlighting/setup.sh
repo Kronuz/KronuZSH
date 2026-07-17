@@ -3,7 +3,7 @@
 # theme cache. The plugin and zsh must both be available.
 
 _kronuz_setup_fsh() {
-  command -v zsh >/dev/null 2>&1 || return
+  command -v zsh >/dev/null 2>&1 || return 0
 
   local here plugin cache
 
@@ -11,7 +11,7 @@ _kronuz_setup_fsh() {
   plugin="$here/../../plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
   cache="$(dirname "$plugin")/current_theme.zsh"
 
-  [ -r "$plugin" ] || return
+  [ -r "$plugin" ] || return 0
 
   if zsh -fc "source '$plugin'; fast-theme '$here/Kronuz.ini' -q" >/dev/null 2>&1; then
     kz_ok "fast-syntax-highlighting" "Kronuz theme applied"

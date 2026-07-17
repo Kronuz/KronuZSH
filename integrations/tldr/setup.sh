@@ -44,7 +44,7 @@ _kronuz_tldr_merge() {
 }
 
 _kronuz_setup_tldr() {
-  command -v tldr >/dev/null 2>&1 || return
+  command -v tldr >/dev/null 2>&1 || return 0
 
   local here theme config_path replacement apply=0
   local -a config

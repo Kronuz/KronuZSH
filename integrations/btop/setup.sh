@@ -3,7 +3,7 @@
 # every unrelated setting and follows the shared backup policy.
 
 _kronuz_setup_btop() {
-  command -v btop >/dev/null 2>&1 || return
+  command -v btop >/dev/null 2>&1 || return 0
 
   local here config_dir config temp
   local -a config_file theme

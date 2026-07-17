@@ -28,4 +28,12 @@ if grep -En '\bmv[[:space:]]' "${files[@]}"; then
   failed=1
 fi
 
+# A bare return preserves the preceding failure status. Because install.sh uses
+# `set -e`, optional-tool guards and declined setup paths must return success explicitly.
+if grep -En '(\|\|[[:space:]]+return[[:space:]]*$|^[[:space:]]*return[[:space:]]*$)' \
+  "${files[@]}"; then
+  printf 'integration early exits must use an explicit return status\n' >&2
+  failed=1
+fi
+
 exit "$failed"

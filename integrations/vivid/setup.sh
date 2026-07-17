@@ -3,7 +3,7 @@
 # so vivid itself is needed only when regenerating that file after a theme edit.
 
 _kronuz_setup_vivid() {
-  command -v vivid >/dev/null 2>&1 || return
+  command -v vivid >/dev/null 2>&1 || return 0
 
   local here destination hint active=0
   local -a theme

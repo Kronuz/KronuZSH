@@ -46,7 +46,7 @@ _kronuz_vim_wire() {
   if [ "$enable" -eq 0 ]; then
     kz_skip "$editor" "colorscheme linked, not enabled"
     kz_info "enable later: add 'silent! colorscheme kronuz' to $(kz_tilde "$path")"
-    return
+    return 0
   fi
 
   if ! grep -qi kronuz "$path" 2>/dev/null; then

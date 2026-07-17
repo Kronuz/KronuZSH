@@ -10,7 +10,7 @@ _kronuz_setup_bat() {
   elif command -v batcat >/dev/null 2>&1; then
     bat=batcat
   else
-    return
+    return 0
   fi
 
   integration_dir="$(cd -- "$(kz_script_dir "${BASH_SOURCE[0]:-$0}")/.." && pwd -P)"

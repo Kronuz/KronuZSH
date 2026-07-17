@@ -3,7 +3,7 @@
 # machines where the binary is absent. The settings are idempotent.
 
 _kronuz_setup_delta() {
-  command -v git >/dev/null 2>&1 || return
+  command -v git >/dev/null 2>&1 || return 0
 
   local config_origin
 
