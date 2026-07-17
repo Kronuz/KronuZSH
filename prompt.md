@@ -5,10 +5,11 @@ it. It's a single self-contained theme in [`lib/prompt.zsh`](lib/prompt.zsh), no
 For the internals (how the deferred strings render, how to add a segment), see the
 "prompt" section of [`AGENTS.md`](AGENTS.md); this file is the user-facing manual.
 
-Every option is an environment variable you set in `~/.zshrc.local` (in your home
-dir, never committed). All
-of them are optional: out of the box the prompt auto-detects your terminal, font,
-OS, and session and does the right thing.
+Every option is an ordinary Zsh parameter that you set in `~/.zshrc.local` (in your
+home directory, never committed). Do not `export` prompt options: they only affect the
+current shell and its prompt. All of them are optional; out of the box the prompt
+auto-detects your terminal, OS, and session. Nerd Font glyphs are enabled by default,
+with a plain-Unicode set available for terminals using another font.
 
 ## What you see
 
@@ -38,9 +39,10 @@ venv myproj  venv         the active Python virtualenv ($VIRTUAL_ENV)
 The **top line is conditional**: it shows only when the last command failed or was
 slow, and is absent entirely on a quick, clean command (so a normal prompt is just
 the info line and the input line). Bottom line: `[time]`, the working directory, and
-the caret (`❯❯❯`) you type at. On the **right** (RPROMPT): the vi/emacs keymap
-indicator and an overwrite-mode mark. Segments that have nothing to show (no git
-repo, no venv) simply don't render, so the prompt stays as short as the moment allows.
+the caret (`❯❯❯`) you type at. On the **right** (RPROMPT), an overwrite-mode mark
+appears while overwrite mode is active; Vim/Emacs indicators appear when the shell is
+running inside either editor. Segments that have nothing to show (no git repo, no venv)
+simply don't render, so the prompt stays as short as the moment allows.
 
 Other segments that appear when relevant: a background-jobs count, an SSH or
 container badge, and an `etctl:<name>` tag inside an Eternal Terminal session.
@@ -72,6 +74,11 @@ PROMPT_KRONUZ_COLOR_HOST='$col[chartreuse]'
 PROMPT_KRONUZ_GLYPH_MODIFIED='*'
 PROMPT_KRONUZ_GLYPH_OS=''
 ```
+
+Start a new shell after editing the file. For a quick preview in the current shell,
+run `source ~/.zshrc.local`; most display options take effect on the next prompt. The
+terminal-palette query is the exception: it runs once per shell, on the first prompt,
+so palette query, timeout, and cache changes require a new shell.
 
 ## Editing modes and carets
 
@@ -174,6 +181,8 @@ evaluated, so you can reference a base-palette name or write a raw escape:
 PROMPT_KRONUZ_COLOR_HOST='$col[chartreuse]'   # by palette name
 PROMPT_KRONUZ_COLOR_TIME='%F{45}'             # by raw zsh color
 PROMPT_KRONUZ_COLOR_BRANCH='%B$col[white]'    # %B = bold
+PROMPT_KRONUZ_COLOR_TRANSCARET='$col[cyan]'   # collapsed caret
+PROMPT_KRONUZ_COLOR_TRANSMUTED='$col[grey]'   # mute-style prompt text
 ```
 
 You can also override a **base** ANSI color with `PROMPT_KRONUZ_PALETTE_<NAME>` (a
@@ -197,11 +206,11 @@ The semantic names and their defaults:
 | `time`                                    | dark grey          | `[clock]`                         |
 | `info`, `sep`                             | dark grey          | the "at" / separators             |
 | `status_ok` / `status_err`               | green / red        | the status dot and exit code      |
-| `branch`, `remote`, `commit`, `position`  | white              | git ref names                     |
+| `branch`, `remote`, `commit`              | white              | git ref names                     |
 | `clean` / `dirty`                         | forest green / brown | worktree state icon             |
 | `ahead` / `behind`                        | chartreuse / deep pink | upstream distance             |
-| `added`/`indexed`/`renamed`/`action`      | dark orange        | staged-side git counts            |
-| `modified`/`deleted`/`unindexed`/`unmerged` | red              | unstaged-side git counts          |
+| `added` / `action`                        | dark orange        | staged changes / in-progress operation |
+| `modified` / `unmerged`                   | red                | unstaged changes / conflicts      |
 | `untracked`                               | dark grey          | untracked count                   |
 | `stashed`                                 | light steel blue   | stash count                       |
 | `venv`                                    | white              | virtualenv name                   |
@@ -209,9 +218,10 @@ The semantic names and their defaults:
 | `duration`                                | goldenrod          | command duration                  |
 | `ssh` / `container`                       | medium purple / deep sky blue | session badge          |
 | `etctl`                                   | bold magenta       | the `etctl:<name>` tag            |
-| `vim` / `emacs`                           | bold green         | editor keymap indicators          |
+| `vim` / `emacs`                           | bold green         | shell-running-inside-editor indicators |
 | `overwrite`                               | red                | overwrite-mode mark               |
-| `transient`                               | dark grey          | the collapsed transient caret     |
+| `transcaret`                              | bold white         | the collapsed transient caret     |
+| `transmuted`                              | dark grey          | flat prompt color used by the `mute` transient style |
 | `caret1/2/3`                              | red/yellow/green   | the three carets of `❯❯❯`         |
 
 (`caret1/2/3` are also swapped to all-red when running as root, via a `%(!..)`
@@ -304,7 +314,8 @@ restyled together by `PROMPT_KRONUZ_TRANSIENT_STYLE`.
 ⏎ 2          ← make failed; its outcome line stays, dimmed
 ~/project/src ❯ ./run --watch
 3.4s         ← slow; the dimmed duration stays
-● gmendezb at host (10.0.0.5)  ⎇ main ❯❯❯        ← the live prompt, full color
+● gmendezb at host (10.0.0.5)  ⎇ main             ← live prompt, full color
+[16:26:02] ~/project/src ❯❯❯
 ```
 
 These variables control it (the palette knobs `dim` relies on are described under the
@@ -377,12 +388,37 @@ There's nothing to configure; it activates wherever the terminal understands it.
 
 Beyond colors and glyphs, you can override a segment's entire content with
 `PROMPT_KRONUZ_<SEGMENT>`. The value is a prompt string (zsh `%`-escapes and
-`$col[...]` / `$glyph[...]` references work). Available segments: `OS`, `ERR`,
-`USER`, `IP`, `TIME`, `PWD`, `GIT`, `VENV`, `JOBS`, `CONTEXT`, `ETCTL`, `VIM`,
-`EMACS`, `OVERWRITE`, `PROMPT`. (`HOST` is composed from `USER` + `IP` and isn't
-overridable on its own — change those two, or the `host` color. The exit code and
-duration aren't their own overridable segments either; they're built into the
-status line on top, formatted by `_kronuz_status_segment`.)
+`$col[...]` / `$glyph[...]` references work). Use single quotes in
+`~/.zshrc.local` when the value contains `$col` or `$glyph`; that keeps the reference
+deferred so it is resolved whenever the prompt is drawn.
+
+| Segment option | Built-in content |
+|----------------|------------------|
+| `PROMPT_KRONUZ_OS` | OS glyph before the hostname |
+| `PROMPT_KRONUZ_ERR` | green/red status dot for the previous command |
+| `PROMPT_KRONUZ_ERROR` | nonzero exit-code item on the conditional outcome line |
+| `PROMPT_KRONUZ_DURATION` | elapsed-time item on the conditional outcome line |
+| `PROMPT_KRONUZ_USER` | username (`%n`) |
+| `PROMPT_KRONUZ_IP` | cached LAN address inside the hostname's parentheses |
+| `PROMPT_KRONUZ_TIME` | current time (`[%*]`) |
+| `PROMPT_KRONUZ_PWD` | working directory generated according to `PROMPT_KRONUZ_PWD_STYLE` |
+| `PROMPT_KRONUZ_GIT` | generated git status |
+| `PROMPT_KRONUZ_VENV` | active Python virtualenv |
+| `PROMPT_KRONUZ_JOBS` | background-job glyph and count |
+| `PROMPT_KRONUZ_CONTEXT` | container and SSH badges |
+| `PROMPT_KRONUZ_ETCTL` | Eternal Terminal session label |
+| `PROMPT_KRONUZ_VIM` | right-prompt Vim indicator |
+| `PROMPT_KRONUZ_EMACS` | right-prompt Emacs indicator |
+| `PROMPT_KRONUZ_OVERWRITE` | right-prompt overwrite indicator |
+| `PROMPT_KRONUZ_PROMPT` | complete live input caret; replacing it bypasses the primary/alternate keymap carets |
+
+There is no `PROMPT_KRONUZ_HOST`: the host display is composed from the OS, hostname,
+and IP pieces. Change `PROMPT_KRONUZ_OS` or `PROMPT_KRONUZ_IP`, or recolor the hostname
+with `PROMPT_KRONUZ_COLOR_HOST`. The outcome line itself owns the conditional layout:
+`PROMPT_KRONUZ_ERROR` is used only for a nonzero exit, and `PROMPT_KRONUZ_DURATION`
+only after the duration threshold is reached. Their values control the contents of
+those items; the status line supplies their default colors, spacing, newline, and
+transient dimming. Set either to `''` to hide that item without disabling the other.
 
 ```zsh
 # A 24-hour clock with seconds instead of the default [%*]:
@@ -391,6 +427,19 @@ PROMPT_KRONUZ_TIME='[%D{%H:%M:%S}]'
 # Just the basename of the cwd (or simpler: PROMPT_KRONUZ_PWD_STYLE=base; for the
 # fish-style ~/D/k/i/bat, PROMPT_KRONUZ_PWD_STYLE=short):
 PROMPT_KRONUZ_PWD='%1~'
+
+# Add a label before the normal username:
+PROMPT_KRONUZ_USER='dev:%n'
+
+# Replace the status dot with literal text, colored by the result:
+PROMPT_KRONUZ_ERR='%(?.${col[status_ok]}OK.${col[status_err]}ERR)${col[none]}'
+
+# Spell out failures, or omit the duration glyph while keeping the formatted time:
+PROMPT_KRONUZ_ERROR='exit ${_kronuz_last_exit}'
+PROMPT_KRONUZ_DURATION='${_prompt_kronuz_duration}'
+
+# Use one fixed caret and ignore editor-keymap changes:
+PROMPT_KRONUZ_PROMPT='${col[caret3]}›${col[none]}'
 ```
 
 For deeper changes (adding a brand-new segment, reordering the line), edit
@@ -399,12 +448,17 @@ through it.
 
 ## Full option reference
 
+These are all of the public KronuZSH prompt parameters, followed by the standard
+terminal environment signals the prompt reads. Names represented by `<NAME>` are
+fully enumerated in the linked table or directly in the description.
+
 | Variable | Default | What it does |
 |----------|---------|--------------|
 | `PROMPT_KRONUZ_NERD_FONT` | `1` | `0`/`no`/`off`/`false` switches to the plain-Unicode glyph set. |
-| `PROMPT_KRONUZ_GLYPH_<NAME>` | (per glyph) | Override one glyph; `''` hides it. Names in the glyph table. |
-| `PROMPT_KRONUZ_COLOR_<NAME>` | (per color) | Override one semantic color. Names in the color table. |
-| `PROMPT_KRONUZ_<SEGMENT>` | (built-in) | Replace a segment's whole content. Names in "Replacing a whole segment". |
+| `PROMPT_KRONUZ_GLYPH_<NAME>` | per glyph | Override one glyph; `''` hides it. All names are in the [glyph table](#glyphs). |
+| `PROMPT_KRONUZ_COLOR_<NAME>` | per color | Override one semantic color. All public names are in the [color table](#colors). |
+| `PROMPT_KRONUZ_PALETTE_<NAME>` | terminal palette | Override one ANSI base color with `#RRGGBB` or a 0–255 index. Names: `BLACK`, `RED`, `GREEN`, `YELLOW`, `BLUE`, `MAGENTA`, `CYAN`, `GREY`, `DARKGREY`, `LIGHTRED`, `LIGHTGREEN`, `LIGHTYELLOW`, `LIGHTBLUE`, `LIGHTMAGENTA`, `LIGHTCYAN`, `LIGHTGREY`. This changes display colors and the RGB used by `dim`. |
+| `PROMPT_KRONUZ_<SEGMENT>` | built in | Replace one complete segment or outcome item. Names: `OS`, `ERR`, `ERROR`, `DURATION`, `USER`, `IP`, `TIME`, `PWD`, `GIT`, `VENV`, `JOBS`, `CONTEXT`, `ETCTL`, `VIM`, `EMACS`, `OVERWRITE`, `PROMPT`; see [Replacing a whole segment](#replacing-a-whole-segment). |
 | `PROMPT_KRONUZ_PWD_STYLE` | `full` | Working-directory shortening: `full`, `short` (`~/D/k/i/bat`), `base` (current dir name), or `absolute` (`$HOME` expanded). |
 | `PROMPT_KRONUZ_CMD_DURATION_MIN` | `3` | Seconds a command must run before its duration is shown. `0` = always. |
 | `PROMPT_KRONUZ_TRANSIENT` | `pwd ❯` | The whole collapsed past-prompt string (default: the run directory + caret), built like `PROMPT`; `''` disables transience. |
@@ -412,7 +466,6 @@ through it.
 | `PROMPT_KRONUZ_TRANSIENT_STYLE` | `dim` | Restyle of the collapsed line (pwd, caret, command): `dim`, `mute`, or `keep`. |
 | `PROMPT_KRONUZ_TRANSIENT_DIM` | `0.7` | `dim` darkness factor (`0` black .. `1` unchanged). |
 | `PROMPT_KRONUZ_TRANSIENT_HL` | `fg=8` | `mute` color, as a `region_highlight` spec. |
-| `PROMPT_KRONUZ_PALETTE_<NAME>` | (per color) | Override one of the 16 ANSI base colors (`RED`, `LIGHTBLUE`, ...) to a `#RRGGBB` or 0-255 index; sets the displayed color and `dim`'s RGB. |
 | `PROMPT_KRONUZ_PALETTE_TTL` | `86400` | Seconds the queried palette is cached on disk (per terminal); `0` disables the cache. |
 | `PROMPT_KRONUZ_PALETTE_TIMEOUT` | `0.6` | Seconds to wait for the OSC 4 palette answer; bump it for a slow/remote terminal. |
 | `PROMPT_KRONUZ_KEYMAP_PRIMARY` | `❯❯❯` | The live caret in the primary keymap (emacs / vi-insert), as a prompt string. `''` hides it. |
@@ -422,6 +475,9 @@ through it.
 | `TERM` | (terminal) | `dumb`/`unknown`/empty forces the plain-glyph set and no color (see no-color mode). |
 | `NO_COLOR` | (unset) | Standard env var; when set, renders with no color escapes. |
 
-Anything not set falls back to the built-in default, and every parameter is read
-live, so editing `~/.zshrc.local` and starting a new shell is all it takes. These are
-shell parameters, not environment settings; they do not need `export`.
+Anything not set falls back to its built-in default. These are shell parameters, not
+environment settings, so they do not need `export`. Most are recomputed on each prompt
+or keymap transition and can be previewed by assigning them directly. The palette used
+to dim transient prompts is loaded only once, on a shell's first prompt; start a new
+shell after changing `PROMPT_KRONUZ_PALETTE_*`, `PROMPT_KRONUZ_PALETTE_TTL`, or
+`PROMPT_KRONUZ_PALETTE_TIMEOUT` when you need the dimmed colors to be recalculated.

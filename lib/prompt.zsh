@@ -265,14 +265,9 @@ function prompt_kronuz_colors {
     branch     '%B$col[white]'
     remote     '$col[white]'
     commit     '$col[white]'
-    deleted    '$col[red]'
     modified   '$col[red]'
-    position   '$col[white]'
-    renamed    '$col[darkorange]'
     stashed    '$col[lightsteelblue]'
     unmerged   '$col[red]'
-    indexed    '$col[darkorange]'
-    unindexed  '$col[red]'
     untracked  '$col[darkgrey]'
     info       '$col[darkgrey]'
     sep        '$col[darkgrey]'
@@ -575,23 +570,27 @@ function _kronuz_dim_string {
   done
   REPLY="$out"
 }
-# Restyle one palette colour by name (convenience wrapper; used by the status line).
-function _kronuz_dim_col { _kronuz_dim_string "${(e)col[$1]}"; }
 function _kronuz_status_segment {
   _prompt_kronuz_status='' _prompt_kronuz_status_dim=''
   # Only after a real command ran: a blank Enter leaves $? unchanged and must not
   # re-show (and, via the transient copy, re-keep) the previous command's exit code.
   (( ${_kronuz_cmd_ran:-0} )) || return
-  local out='' dim='' body sp REPLY
+  local out='' dim='' body item sp REPLY
   if (( ${_kronuz_last_exit:-0} != 0 )); then
-    body="${glyph[return]} ${_kronuz_last_exit}"
-    out+="${(e)col[status_err]}${body}${(e)col[none]}"
-    _kronuz_dim_col status_err; dim+="${REPLY}${body}${(e)col[none]}"
+    body="${(e)PROMPT_KRONUZ_ERROR-$DEFAULT_PROMPT_KRONUZ_ERROR}"
+    if [[ -n "$body" ]]; then
+      item="${(e)col[status_err]}${body}${(e)col[none]}"
+      out+="$item"
+      _kronuz_dim_string "$item"; dim+="$REPLY"
+    fi
   fi
   if [[ -n "$_prompt_kronuz_duration" ]]; then
-    sp="${out:+ }"; body="${glyph[duration]}${glyph_pad[duration]}${_prompt_kronuz_duration}"
-    out+="${sp}${(e)col[duration]}${body}${(e)col[none]}"
-    _kronuz_dim_col duration; dim+="${sp}${REPLY}${body}${(e)col[none]}"
+    body="${(e)PROMPT_KRONUZ_DURATION-$DEFAULT_PROMPT_KRONUZ_DURATION}"
+    if [[ -n "$body" ]]; then
+      sp="${out:+ }"; item="${(e)col[duration]}${body}${(e)col[none]}"
+      out+="${sp}${item}"
+      _kronuz_dim_string "$item"; dim+="${sp}${REPLY}"
+    fi
   fi
   [[ -n "$out" ]] && { _prompt_kronuz_status="${out}%E"$'\n'; _prompt_kronuz_status_dim="${dim}%E"$'\n'; }
   _kronuz_cmd_ran=0
@@ -793,12 +792,12 @@ function prompt_kronuz_setup {
   DEFAULT_PROMPT_KRONUZ_OS="\${glyph[os]:+\"\${col[host]}\${glyph[os]}\${col[none]} \"}"
   DEFAULT_PROMPT_KRONUZ_CONTEXT="\${_kronuz_is_container:+\" \${col[container]}\${glyph[container]}\${col[none]}\"}\${_kronuz_is_ssh:+\" \${col[ssh]}\${glyph[ssh]}\${col[none]}\"}"
   DEFAULT_PROMPT_KRONUZ_ERR="%(?.\${col[status_ok]}\${glyph[dot]}\${col[none]}.\${col[status_err]}\${glyph[dot]}\${col[none]})"
-  DEFAULT_PROMPT_KRONUZ_ERROR="%(?.. \${col[status_err]}\${glyph[return]} %?\${col[none]})"
+  DEFAULT_PROMPT_KRONUZ_ERROR="\${glyph[return]} \${_kronuz_last_exit}"
   DEFAULT_PROMPT_KRONUZ_VIM="\${VIM:+\" \${col[vim]}\${glyph[vim]}\${col[none]}\"}"
   DEFAULT_PROMPT_KRONUZ_EMACS="\${INSIDE_EMACS:+\" \${col[emacs]}\${glyph[emacs]}\${col[none]}\"}"
   DEFAULT_PROMPT_KRONUZ_ETCTL="\${ETCTL_SESSION:+\" \${col[info]}etctl\${col[none]}:\${col[etctl]}\${ETCTL_SESSION}\${col[none]}\"}"
   DEFAULT_PROMPT_KRONUZ_JOBS="%(1j. \${col[jobs]}\${glyph[jobs]}\${glyph_pad[jobs]}%j\${col[none]}.)"
-  DEFAULT_PROMPT_KRONUZ_DURATION="\${_prompt_kronuz_duration:+\" \${col[duration]}\${glyph[duration]}\${glyph_pad[duration]}\${_prompt_kronuz_duration}\${col[none]}\"}"
+  DEFAULT_PROMPT_KRONUZ_DURATION="\${glyph[duration]}\${glyph_pad[duration]}\${_prompt_kronuz_duration}"
   DEFAULT_PROMPT_KRONUZ_USER="%n"
   DEFAULT_PROMPT_KRONUZ_IP="\${_prompt_kronuz_ip}"
   DEFAULT_PROMPT_KRONUZ_GIT="\${_prompt_kronuz_git:+\${(e)_prompt_kronuz_git}}"
@@ -814,7 +813,7 @@ function prompt_kronuz_setup {
   typeset -gA kronuz
   kronuz[nl]=$'%E\n'
   local seg
-  for seg in os err error vim emacs etctl context jobs duration git venv overwrite prompt; do
+  for seg in os err vim emacs etctl context jobs git venv overwrite prompt; do
     kronuz[$seg]="\${(e)PROMPT_KRONUZ_${seg:u}:-\$DEFAULT_PROMPT_KRONUZ_${seg:u}}"
   done
   # The rest wrap a segment in its own colour, or compose other segments.
