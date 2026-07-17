@@ -35,7 +35,7 @@ there's no `safe-paste`). No cryptic framework magic; if you want to change
 something, the file it lives in is obvious.
 
 For the story behind the move away from Prezto—and the small conveniences I only
-noticed after removing it—read [“Molting: Down to the core”](https://kronuz.github.io/blog/molting/).
+noticed after removing it—read ["Molting: Down to the core"](https://kronuz.github.io/blog/molting/).
 
 ## Contents
 
