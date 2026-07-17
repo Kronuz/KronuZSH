@@ -37,6 +37,7 @@ alias pu='pushd'
 # AUTO_PUSHD keeps this stack populated: `d` shows it, and 1..9 jump to an
 # entry by the number printed at its left.
 alias d='dirs -v'
+alias -- -='cd -'   # toggle back to the previous directory
 for _index ({1..9}) alias "$_index"="cd +$_index"
 unset _index
 
