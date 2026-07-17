@@ -208,7 +208,9 @@ Beyond the deferred segments, a few features hook the line lifecycle:
 into `_prompt_kronuz_duration` when it tops `PROMPT_KRONUZ_CMD_DURATION_MIN`),
 **terminal integration** (cross-terminal OSC 7 cwd + OSC 133 marks from
 `_kronuz_osc_precmd` / `_kronuz_osc_preexec`, with the OSC precmd ordered first in
-`precmd_functions` so the `D` mark carries the real `$?`; in iTerm2,
+`precmd_functions` so the `D` mark carries the real `$?`; a separate
+`$_kronuz_osc_command_active` flag ensures a blank Enter emits a fresh prompt mark but
+not a spurious `D;0` command completion; in iTerm2,
 `$_kronuz_is_iterm`, it also emits the proprietary OSC 1337 ShellIntegrationVersion
 / RemoteHost / CurrentDir; all three protocols are gated by
 `PROMPT_KRONUZ_TERMINAL_INTEGRATION`, and iTerm detection/announcement happens on the

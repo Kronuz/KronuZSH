@@ -637,13 +637,14 @@ function _kronuz_overwrite_toggle {
 # Lets capable terminals open new tabs/splits in $PWD and jump between prompts /
 # show per-command status. The B (input start) mark rides at the end of $PROMPT via
 # $_kronuz_osc_b. Skipped on dumb/unknown terminals.
-typeset -g _kronuz_osc_b='' _kronuz_is_iterm=0
+typeset -g _kronuz_osc_b='' _kronuz_is_iterm=0 _kronuz_osc_command_active=0
 function _kronuz_osc_active {
   [[ "${PROMPT_KRONUZ_TERMINAL_INTEGRATION:-1}" != (0|no|off|false) \
     && -n "$TERM" && "$TERM" != (dumb|unknown) ]]
 }
 function _kronuz_osc_preexec {
   _kronuz_osc_active || return
+  _kronuz_osc_command_active=1
   # Match iTerm2's own Zsh integration exactly there; the carriage return keeps the
   # command boundary correct for its screen-scraping command capture. Other terminals
   # receive the parameter-free OSC 133 form from the shared protocol.
@@ -655,8 +656,14 @@ function _kronuz_osc_preexec {
 }
 function _kronuz_osc_precmd {
   local ret=$?
-  typeset -g _prompt_kronuz_last_exit=$ret # this hook runs first, so $? is the command's
-  if ! _kronuz_osc_active; then _kronuz_osc_b=''; return; fi
+  # A blank Enter runs precmd without preexec. Preserve the preceding command's status
+  # and, more importantly, do not close a command boundary that was never opened.
+  (( _kronuz_osc_command_active )) && typeset -g _prompt_kronuz_last_exit=$ret
+  if ! _kronuz_osc_active; then
+    _kronuz_osc_b=''
+    _kronuz_osc_command_active=0
+    return
+  fi
   # Detect and announce iTerm2 here, after ~/.zshrc.local has had a chance to disable
   # terminal integration. Once announced, the flag also gates its host/cwd updates.
   if (( ! _kronuz_is_iterm )) \
@@ -664,7 +671,11 @@ function _kronuz_osc_precmd {
     _kronuz_is_iterm=1
     print -n '\e]1337;ShellIntegrationVersion=14;shell=zsh\a'
   fi
-  print -n "\e]133;D;${ret}\a\e]133;A\a"
+  if (( _kronuz_osc_command_active )); then
+    print -n "\e]133;D;${ret}\a"
+    _kronuz_osc_command_active=0
+  fi
+  print -n '\e]133;A\a'
   print -Pn '\e]7;file://%M%d\a'
   (( _kronuz_is_iterm )) && print -Pn "\e]1337;RemoteHost=${USER}@%M\a\e]1337;CurrentDir=%d\a"
   _kronuz_osc_b=$'%{\e]133;B\a%}'
