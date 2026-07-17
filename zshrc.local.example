@@ -8,8 +8,8 @@
 # As shipped it tints the host name and shortens the working-directory path, to show the
 # kind of thing you can do; uncomment the rest you want. This is an interactive-shell file
 # (sourced near the end of .zshrc), so it's the place for
-# PROMPT_KRONUZ_* overrides, zstyles, and tool hooks. It is NOT the place for anything
-# that puts a tool on PATH (cargo, ~/.local/bin, pyenv, ...): that has to happen before
+# PROMPT_KRONUZ_* overrides, completion zstyles, and tool hooks. It is NOT the place
+# for anything that puts a tool on PATH (cargo, ~/.local/bin, pyenv, ...): that has to happen before
 # .zshrc runs, or integrations/init.zsh won't detect the tool. Put PATH in ~/.profile
 # instead (sourced at login, before .zshrc):
 #   [ -r "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
@@ -43,6 +43,11 @@ PROMPT_KRONUZ_COLOR_HOST='$col[green]'
 # ssh container dot return overwrite caret caret_alt.
 # PROMPT_KRONUZ_GLYPH_MODIFIED='*'
 # PROMPT_KRONUZ_GLYPH_OS=''            # hide the OS logo next to the hostname
+# Replace or hide the complete live keymap indicators (prompt strings may reference
+# the semantic palette and glyph arrays):
+# PROMPT_KRONUZ_KEYMAP_PRIMARY='${col[primary1]}${glyph[caret]}${col[none]}'
+# PROMPT_KRONUZ_KEYMAP_ALTERNATE='${col[primary1]}${glyph[caret_alt]}${col[none]}'
+# PROMPT_KRONUZ_KEYMAP_OVERWRITE=''
 
 # --- Prompt: behaviour ---
 # Shorten the working-directory path: full (default), short (fish-style ~/D/k/i/bat),

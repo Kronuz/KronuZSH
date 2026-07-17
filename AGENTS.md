@@ -295,9 +295,9 @@ the load order (fast-syntax-highlighting stays last). Bind keys after sourcing.
   only as a quick structural check, never as proof it works.
 - **gitstatusd needs a tty** (job control). In a no-tty `zsh -ic` it won't start and
   the fallback runs; test the real daemon in a terminal (or an etctl VM pty).
-- The **vi/emacs keymap arrow** (`❯`) is set by a `zle-line-init` hook, so it only
-  shows in a live ZLE. To preview it: set `_kronuz_keymap` from the
-  `:kronuz:editor:keymap:primary` zstyle and re-render.
+- The **vi/emacs keymap arrow** (`❯`) is updated by a `zle-line-init` hook in live
+  ZLE. To preview it without ZLE, resolve `PROMPT_KRONUZ_KEYMAP_PRIMARY` (or its
+  `DEFAULT_` counterpart) into `_kronuz_keymap` and re-render.
 
 ## gitstatusd deployment
 

@@ -52,26 +52,52 @@ The tweaks people reach for first, all in `~/.zshrc.local`:
 
 ```zsh
 # No Nerd Font installed? Flip the whole prompt to plain-Unicode glyphs:
-export PROMPT_KRONUZ_NERD_FONT=0
+PROMPT_KRONUZ_NERD_FONT=0
 
 # Show a command's duration sooner (default: only when it ran 3s+):
-export PROMPT_KRONUZ_CMD_DURATION_MIN=1
+PROMPT_KRONUZ_CMD_DURATION_MIN=1
 
 # Past commands collapse to a faded caret. Make the faded command grey instead
 # of dimmed, or turn the whole transient behavior off:
-export PROMPT_KRONUZ_TRANSIENT_STYLE=mute
-export PROMPT_KRONUZ_TRANSIENT=''
+PROMPT_KRONUZ_TRANSIENT_STYLE=mute
+PROMPT_KRONUZ_TRANSIENT=''
 
 # Swap just the collapsed caret for an emoji (the pwd stays; symmetric to the live caret):
-export PROMPT_KRONUZ_TRANSIENT_CARET='🚀'
+PROMPT_KRONUZ_TRANSIENT_CARET='🚀'
 
 # Recolor a segment (any name from the color table below):
-export PROMPT_KRONUZ_COLOR_HOST='$col[chartreuse]'
+PROMPT_KRONUZ_COLOR_HOST='$col[chartreuse]'
 
 # Swap or hide a single glyph:
-export PROMPT_KRONUZ_GLYPH_MODIFIED='*'
-export PROMPT_KRONUZ_GLYPH_OS=''
+PROMPT_KRONUZ_GLYPH_MODIFIED='*'
+PROMPT_KRONUZ_GLYPH_OS=''
 ```
+
+## Editing modes and carets
+
+KronuZSH uses Zsh's Emacs editing map by default (`bindkey -e`), so ordinary command
+entry is the **primary** mode and shows the right-pointing `❯❯❯` caret. Press
+`Ctrl-X Ctrl-O` to toggle **overwrite** mode: typed characters replace the ones under
+the cursor, and the overwrite glyph appears in `RPROMPT`; press it again to return to
+inserting characters.
+
+The **alternate** `❮❮❮` caret is for vi command mode. It is relevant only if you opt
+into vi keybindings with `bindkey -v` in `~/.zshrc.local`: press `Esc` to enter command
+mode, then `i` (or another vi insertion command such as `a`) to return to primary
+vi-insert mode.
+
+The complete indicators can be replaced or hidden independently. Values are prompt
+strings, so palette and glyph references remain deferred:
+
+```zsh
+PROMPT_KRONUZ_KEYMAP_PRIMARY='${col[primary1]}${glyph[caret]}${col[none]}'
+PROMPT_KRONUZ_KEYMAP_ALTERNATE='${col[primary1]}${glyph[caret_alt]}${col[none]}'
+PROMPT_KRONUZ_KEYMAP_OVERWRITE=''   # hide the overwrite marker
+```
+
+Direct assignments take effect on the next prompt or keymap transition; no export is
+required. Put persistent choices in `~/.zshrc.local`, then start a new shell or source
+that file once to apply an edit to the current shell.
 
 ## Glyphs
 
@@ -145,9 +171,9 @@ Override any semantic color with `PROMPT_KRONUZ_COLOR_<NAME>`. The value is
 evaluated, so you can reference a base-palette name or write a raw escape:
 
 ```zsh
-export PROMPT_KRONUZ_COLOR_HOST='$col[chartreuse]'   # by palette name
-export PROMPT_KRONUZ_COLOR_TIME='%F{45}'             # by raw zsh color
-export PROMPT_KRONUZ_COLOR_BRANCH='%B$col[white]'    # %B = bold
+PROMPT_KRONUZ_COLOR_HOST='$col[chartreuse]'   # by palette name
+PROMPT_KRONUZ_COLOR_TIME='%F{45}'             # by raw zsh color
+PROMPT_KRONUZ_COLOR_BRANCH='%B$col[white]'    # %B = bold
 ```
 
 You can also override a **base** ANSI color with `PROMPT_KRONUZ_PALETTE_<NAME>` (a
@@ -157,7 +183,7 @@ real RGB, which is the clean way to match a terminal whose palette can't be quer
 [Transient prompt](#transient-prompt)):
 
 ```zsh
-export PROMPT_KRONUZ_PALETTE_RED='#ff5c57'   # fixed red, instead of the theme's %F{1}
+PROMPT_KRONUZ_PALETTE_RED='#ff5c57'   # fixed red, instead of the theme's %F{1}
 ```
 
 The semantic names and their defaults:
@@ -245,7 +271,7 @@ The path segment shows the full working directory with `$HOME` abbreviated to `~
 | `absolute` | `/Users/gmendezb/Development/KronuZSH/integrations/bat` | the whole path with `$HOME` expanded |
 
 ```zsh
-export PROMPT_KRONUZ_PWD_STYLE=short
+PROMPT_KRONUZ_PWD_STYLE=short
 ```
 
 For full control of the segment (a fixed prompt string, `%`-escapes), override
@@ -361,11 +387,11 @@ status line on top, formatted by `_kronuz_status_segment`.)
 
 ```zsh
 # A 24-hour clock with seconds instead of the default [%*]:
-export PROMPT_KRONUZ_TIME='[%D{%H:%M:%S}]'
+PROMPT_KRONUZ_TIME='[%D{%H:%M:%S}]'
 
 # Just the basename of the cwd (or simpler: PROMPT_KRONUZ_PWD_STYLE=base; for the
 # fish-style ~/D/k/i/bat, PROMPT_KRONUZ_PWD_STYLE=short):
-export PROMPT_KRONUZ_PWD='%1~'
+PROMPT_KRONUZ_PWD='%1~'
 ```
 
 For deeper changes (adding a brand-new segment, reordering the line), edit
@@ -390,12 +416,13 @@ through it.
 | `PROMPT_KRONUZ_PALETTE_<NAME>` | (per color) | Override one of the 16 ANSI base colors (`RED`, `LIGHTBLUE`, ...) to a `#RRGGBB` or 0-255 index; sets the displayed color and `dim`'s RGB. |
 | `PROMPT_KRONUZ_PALETTE_TTL` | `86400` | Seconds the queried palette is cached on disk (per terminal); `0` disables the cache. |
 | `PROMPT_KRONUZ_PALETTE_TIMEOUT` | `0.6` | Seconds to wait for the OSC 4 palette answer; bump it for a slow/remote terminal. |
-| `zstyle :kronuz:editor:keymap:primary` | `❯❯❯` | The live caret in the primary keymap (emacs / vi-insert), as a zstyle `format` string. |
-| `zstyle :kronuz:editor:keymap:alternate` | `❮❮❮` | The live caret in the vi-command keymap. |
-| `zstyle :kronuz:editor:keymap:overwrite` | (overwrite glyph) | The `RPROMPT` marker shown while overwrite mode is on. |
+| `PROMPT_KRONUZ_KEYMAP_PRIMARY` | `❯❯❯` | The live caret in the primary keymap (emacs / vi-insert), as a prompt string. `''` hides it. |
+| `PROMPT_KRONUZ_KEYMAP_ALTERNATE` | `❮❮❮` | The live caret in the vi-command keymap. `''` hides it. |
+| `PROMPT_KRONUZ_KEYMAP_OVERWRITE` | (overwrite glyph) | The `RPROMPT` marker shown while overwrite mode is on. `''` hides it. |
 | `COLORTERM` | (terminal) | `24bit`/`truecolor` keeps the hex palette at 24-bit; otherwise colors degrade to 256/16 via `zsh/nearcolor`. |
 | `TERM` | (terminal) | `dumb`/`unknown`/empty forces the plain-glyph set and no color (see no-color mode). |
 | `NO_COLOR` | (unset) | Standard env var; when set, renders with no color escapes. |
 
-Anything not set falls back to the built-in default, and every variable is read
-live, so editing `~/.zshrc.local` and starting a new shell is all it takes.
+Anything not set falls back to the built-in default, and every parameter is read
+live, so editing `~/.zshrc.local` and starting a new shell is all it takes. These are
+shell parameters, not environment settings; they do not need `export`.

@@ -604,19 +604,17 @@ function _kronuz_status_segment {
 # ============================================================================
 
 # Update the vi/emacs keymap caret ($_kronuz_keymap) and overwrite mark
-# ($_kronuz_overwrite) from zle state, then redraw. Driven by the zle widgets below.
+# ($_kronuz_overwrite) from zle state, then redraw. The three public format parameters
+# are evaluated here so palette/glyph changes remain live. Driven by the widgets below.
 typeset -g _kronuz_keymap='' _kronuz_overwrite=''
 function _kronuz_keymap_update {
-  local REPLY
   if [[ "$KEYMAP" == 'vicmd' ]]; then
-    zstyle -s ':kronuz:editor:keymap:alternate' format 'REPLY'
+    _kronuz_keymap="${(e)PROMPT_KRONUZ_KEYMAP_ALTERNATE-$DEFAULT_PROMPT_KRONUZ_KEYMAP_ALTERNATE}"
   else
-    zstyle -s ':kronuz:editor:keymap:primary' format 'REPLY'
+    _kronuz_keymap="${(e)PROMPT_KRONUZ_KEYMAP_PRIMARY-$DEFAULT_PROMPT_KRONUZ_KEYMAP_PRIMARY}"
   fi
-  _kronuz_keymap="$REPLY"
   if [[ "$ZLE_STATE" == *overwrite* ]]; then
-    zstyle -s ':kronuz:editor:keymap:overwrite' format 'REPLY'
-    _kronuz_overwrite="$REPLY"
+    _kronuz_overwrite="${(e)PROMPT_KRONUZ_KEYMAP_OVERWRITE-$DEFAULT_PROMPT_KRONUZ_KEYMAP_OVERWRITE}"
   else
     _kronuz_overwrite=''
   fi
@@ -627,6 +625,12 @@ function _kronuz_keymap_update {
 }
 function zle-keymap-select { _kronuz_keymap_update }
 function zle-line-init { _kronuz_keymap_update }
+# The stock emacs binding ^X^O invokes `overwrite-mode` without changing keymaps,
+# so zle-keymap-select does not fire. Wrap the builtin to refresh RPROMPT immediately.
+function _kronuz_overwrite_toggle {
+  zle .overwrite-mode
+  _kronuz_keymap_update
+}
 
 # ============================================================================
 # Terminal integration  (OSC 7 cwd, OSC 133 prompt marks, OSC 1337 iTerm2)
@@ -722,6 +726,10 @@ function prompt_kronuz_precmd {
   [[ -n "${NO_COLOR-}" ]] && _kronuz_nocolor=1
   prompt_kronuz_colors
   prompt_kronuz_glyphs
+  # Resolve the initial/primary caret here, after ~/.zshrc.local has loaded. ZLE's
+  # line-init/keymap-select widgets take over while the user is editing a command.
+  _kronuz_keymap="${(e)PROMPT_KRONUZ_KEYMAP_PRIMARY-$DEFAULT_PROMPT_KRONUZ_KEYMAP_PRIMARY}"
+  _kronuz_overwrite=''
   # Load the dim palette once, here rather than in setup, so any PROMPT_KRONUZ_PALETTE_*
   # override / TTL / timeout from ~/.zshrc.local (sourced after setup) is in effect.
   if (( ! ${_kronuz_pal_loaded:-0} )); then
@@ -764,16 +772,15 @@ function prompt_kronuz_setup {
   fi
   zle -N zle-keymap-select
   zle -N zle-line-init
+  zle -N overwrite-mode _kronuz_overwrite_toggle
 
-  zstyle ':kronuz:editor:keymap:primary' format "\${col[primary1]}\${glyph[caret]}\${col[none]}\${col[primary2]}\${glyph[caret]}\${col[none]}\${col[primary3]}\${glyph[caret]}\${col[none]}"
-  zstyle ':kronuz:editor:keymap:alternate' format "\${col[primary3]}\${glyph[caret_alt]}\${col[none]}\${col[primary2]}\${glyph[caret_alt]}\${col[none]}\${col[primary1]}\${glyph[caret_alt]}\${col[none]}"
-  zstyle ':kronuz:editor:keymap:overwrite' format " \${col[overwrite]}\${glyph[overwrite]}\${col[none]}"
+  DEFAULT_PROMPT_KRONUZ_KEYMAP_PRIMARY="\${col[primary1]}\${glyph[caret]}\${col[none]}\${col[primary2]}\${glyph[caret]}\${col[none]}\${col[primary3]}\${glyph[caret]}\${col[none]}"
+  DEFAULT_PROMPT_KRONUZ_KEYMAP_ALTERNATE="\${col[primary3]}\${glyph[caret_alt]}\${col[none]}\${col[primary2]}\${glyph[caret_alt]}\${col[none]}\${col[primary1]}\${glyph[caret_alt]}\${col[none]}"
+  DEFAULT_PROMPT_KRONUZ_KEYMAP_OVERWRITE=" \${col[overwrite]}\${glyph[overwrite]}\${col[none]}"
 
   # Seed the keymap caret so a prompt char shows even where zle-line-init never fires
-  # (e.g. Emacs `M-x shell`).
-  local REPLY
-  zstyle -s ':kronuz:editor:keymap:primary' format 'REPLY'
-  _kronuz_keymap="$REPLY"
+  # (e.g. Emacs `M-x shell`). precmd resolves it again after ~/.zshrc.local loads.
+  _kronuz_keymap="${(e)DEFAULT_PROMPT_KRONUZ_KEYMAP_PRIMARY}"
 
   _prompt_kronuz_git=''
   _prompt_kronuz_pwd=''
