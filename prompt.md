@@ -20,8 +20,8 @@ on top, then the info line, then the line you type on:
 
 ```
 ⏎ 1  3.2s
-● gmendezb at host.example.com (10.0.0.5)  ⎇ main ⇡1 ✛2 ✴3  venv myproj
-[16:26:02] ~/Development/KronuZSH ❯❯❯
+● kronuz at host.example.com (10.0.0.5)  ⎇ main ⇡1 ✛2 ✴3  venv myproj
+[16:26:02] ~/.config/KronuZSH ❯❯❯
 ```
 
 Read top to bottom:
@@ -30,7 +30,7 @@ Read top to bottom:
 ⏎ 1          exit code    the nonzero exit status (only when the last command failed)
 3.2s         duration     how long it ran (only past a threshold); shares the top line
 ●            status dot   green if the last command succeeded, red if it failed
-gmendezb     user         %n
+kronuz       user         %n
 at host…     host         OS logo (Nerd Font) + hostname + cached LAN IP
 ⎇ main …     git          branch/tag/commit, ahead/behind, staged/modified/…
 venv myproj  venv         the active Python virtualenv ($VIRTUAL_ENV)
@@ -205,7 +205,7 @@ The semantic names and their defaults:
 | `pwd`                                     | white (red as root) | working directory                |
 | `time`                                    | dark grey          | `[clock]`                         |
 | `info`, `sep`                             | dark grey          | the "at" / separators             |
-| `status_ok` / `status_err`               | green / red        | the status dot and exit code      |
+| `status_ok` / `status_err`                | green / red        | the status dot and exit code      |
 | `branch`, `remote`, `commit`              | white              | git ref names                     |
 | `clean` / `dirty`                         | forest green / brown | worktree state icon             |
 | `ahead` / `behind`                        | chartreuse / deep pink | upstream distance             |
@@ -270,14 +270,14 @@ remote session a shell belongs to.
 ### Working directory
 
 The path segment shows the full working directory with `$HOME` abbreviated to `~`
-(`~/Development/KronuZSH/integrations/bat`). `PROMPT_KRONUZ_PWD_STYLE` shortens it:
+(`~/.config/KronuZSH/integrations/bat`). `PROMPT_KRONUZ_PWD_STYLE` shortens it:
 
 | Value | Example | |
 |-------|---------|--|
-| `full` (default) | `~/Development/KronuZSH/integrations/bat` | the whole path, home as `~` |
+| `full` (default) | `~/.config/KronuZSH/integrations/bat` | the whole path, home as `~` |
 | `short` | `~/D/k/i/bat` | fish-style: each parent shrunk to its first character (a leading dot is kept, so `.config` → `.c`), the current directory in full |
 | `base` | `bat` | just the current directory's name |
-| `absolute` | `/Users/gmendezb/Development/KronuZSH/integrations/bat` | the whole path with `$HOME` expanded |
+| `absolute` | `/home/kronuz/.config/KronuZSH/integrations/bat` | the whole path with `$HOME` expanded |
 
 ```zsh
 PROMPT_KRONUZ_PWD_STYLE=short
@@ -314,7 +314,7 @@ restyled together by `PROMPT_KRONUZ_TRANSIENT_STYLE`.
 ⏎ 2          ← make failed; its outcome line stays, dimmed
 ~/project/src ❯ ./run --watch
 3.4s         ← slow; the dimmed duration stays
-● gmendezb at host (10.0.0.5)  ⎇ main             ← live prompt, full color
+● kronuz at host (10.0.0.5)  ⎇ main              ← live prompt, full color
 [16:26:02] ~/project/src ❯❯❯
 ```
 

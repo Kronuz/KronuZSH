@@ -469,11 +469,11 @@ function _kronuz_venv_segment {
 
 # ---- working directory ----
 # Render $PWD into _prompt_kronuz_pwd, per PROMPT_KRONUZ_PWD_STYLE:
-#   full     (default) the whole path, home as ~      ~/Development/KronuZSH/integrations/bat
+#   full     (default) the whole path, home as ~      ~/.config/KronuZSH/integrations/bat
 #   short    fish-style: each parent shrunk to its    ~/D/k/i/bat
 #            first char (leading dots kept), tail full
 #   base     just the current directory name          bat
-#   absolute the full path with $HOME expanded         /Users/gmendezb/Development/.../bat
+#   absolute the full path with $HOME expanded         /home/kronuz/.config/KronuZSH/.../bat
 # (literal % are doubled so print -P won't expand them.)
 function _kronuz_pwd_segment {
   local p="${(%):-%~}"
