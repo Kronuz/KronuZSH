@@ -104,9 +104,9 @@ replaces, and inits the plugin submodules. It's idempotent; `./install.sh
 tracked `runcoms/zshrc` directly, and `$KRONUZSH` self-resolves through them.
 
 Use `./install.sh --force` to apply the Kronuz theme over conflicting tool
-preferences without prompting, or `--hints` to include optional usage and maintenance
-notes for integrations that are already configured. `--no-backup` suppresses recovery
-copies when replacing user files; use it only when those files are safely versioned.
+preferences without prompting, `--hints` for optional usage and maintenance notes, or
+`--files` to list integration-managed files and their backups. `--no-backup` suppresses
+recovery copies when replacing user files; use it only when those files are versioned.
 
 ## Machine-local config
 

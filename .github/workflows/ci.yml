@@ -51,6 +51,9 @@ jobs:
             bash -n "$file"
           done
 
+      - name: Check integration structure
+        run: bash scripts/check-integrations.sh
+
   shellcheck:
     name: ShellCheck
     runs-on: ubuntu-latest

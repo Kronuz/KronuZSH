@@ -30,6 +30,7 @@ for file in install.sh install.lib.sh integrations/setup.sh integrations/*/setup
   bash -n "$file" || exit
 done
 shellcheck --external-sources install.sh install.lib.sh integrations/setup.sh integrations/*/setup.sh
+bash scripts/check-integrations.sh
 ```
 
 For prompt behavior, also start a real interactive Zsh in a PTY. A manual

@@ -1,49 +1,64 @@
 # shellcheck shell=bash
-# glow: point glow's own `style:` setting at the bundled glamour theme. The CLI does
-# not read $GLAMOUR_STYLE, so this must live in glow.yml. Existing custom styles are
-# respected unless --force is used. Sourced by ../setup.sh; idempotent.
-_kronuz_glow_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]:-$0}")" && pwd -P)"
-_kronuz_glow_style="$_kronuz_glow_dir/kronuz.json"
-if command -v glow >/dev/null 2>&1; then
-  # glow prints its resolved config path in --help (it uses go-app-paths, so macOS is
-  # ~/Library/Preferences, not Application Support); ask glow itself, fall back per-OS.
-  _kronuz_glow_cfg="$(glow --help 2>/dev/null | sed -n 's/.*--config string.*(default \(.*\))$/\1/p' | head -n1)"
-  if [ -z "$_kronuz_glow_cfg" ]; then
+# glow: point glow.yml at the bundled glamour theme. The CLI does not honor
+# $GLAMOUR_STYLE, so the setting must live in glow's own config file.
+
+_kronuz_setup_glow() {
+  command -v glow >/dev/null 2>&1 || return
+
+  local here style config_path current_style='' temp
+  local -a config
+
+  here="$(kz_script_dir "${BASH_SOURCE[0]:-$0}")"
+  style="$here/kronuz.json"
+
+  # Ask glow for its platform-native path, then fall back for older versions.
+  config_path="$(glow --help 2>/dev/null \
+    | sed -n 's/.*--config string.*(default \(.*\))$/\1/p' \
+    | head -n1)"
+  if [ -z "$config_path" ]; then
     case "$(uname -s)" in
-      Darwin) _kronuz_glow_cfg="$HOME/Library/Preferences/glow/glow.yml" ;;
-      *)      _kronuz_glow_cfg="${XDG_CONFIG_HOME:-$HOME/.config}/glow/glow.yml" ;;
+      Darwin) config_path="$HOME/Library/Preferences/glow/glow.yml" ;;
+      *)      config_path="${XDG_CONFIG_HOME:-$HOME/.config}/glow/glow.yml" ;;
     esac
   fi
-  # Read the current style, stripping the key, whitespace, and optional quotes.
-  _kronuz_glow_cur=''
-  if [ -f "$_kronuz_glow_cfg" ]; then
-    _kronuz_glow_cur="$(sed -n 's/^[[:space:]]*style:[[:space:]]*//p' "$_kronuz_glow_cfg" | head -n1)"
-    _kronuz_glow_cur="${_kronuz_glow_cur%\"}"
-    _kronuz_glow_cur="${_kronuz_glow_cur#\"}"
-    _kronuz_glow_cur="${_kronuz_glow_cur%\'}"
-    _kronuz_glow_cur="${_kronuz_glow_cur#\'}"
+  config=("glow config" "$config_path")
+
+  # Read style:, removing optional surrounding quotes.
+  if [ -f "$config_path" ]; then
+    current_style="$(sed -n 's/^[[:space:]]*style:[[:space:]]*//p' "$config_path" \
+      | head -n1)"
+    current_style="${current_style%\"}"
+    current_style="${current_style#\"}"
+    current_style="${current_style%\'}"
+    current_style="${current_style#\'}"
   fi
 
-  if [ "$_kronuz_glow_cur" = "$_kronuz_glow_style" ]; then
+  if [ "$current_style" = "$style" ]; then
     kz_ok "glow" "already themed"
   elif [ -z "$KRONUZ_FORCE" ] \
-    && [ -n "$_kronuz_glow_cur" ] \
-    && [ "$_kronuz_glow_cur" != auto ]; then
-    kz_skip "glow" "respecting your style: \"$_kronuz_glow_cur\""
-    kz_info "enable later: set style to $(kz_tilde "$_kronuz_glow_style") via \`glow config\`"
+    && [ -n "$current_style" ] \
+    && [ "$current_style" != auto ]; then
+    kz_skip "glow" "respecting your style: \"$current_style\""
+    kz_info "enable later: set style to $(kz_tilde "$style") via \`glow config\`"
   else
-    mkdir -p "$(dirname "$_kronuz_glow_cfg")"
-    _kronuz_glow_tmp="$(mktemp)"
-    if [ -f "$_kronuz_glow_cfg" ]; then
-      kz_backup_file "$_kronuz_glow_cfg"
-      grep -v -E '^[[:space:]]*style:' "$_kronuz_glow_cfg" > "$_kronuz_glow_tmp" || true
+    temp="$(mktemp)"
+
+    if [ -f "$config_path" ]; then
+      grep -v -E '^[[:space:]]*style:' "$config_path" > "$temp" || true
     else
-      printf 'mouse: false\npager: false\nwidth: 80\nall: false\n' > "$_kronuz_glow_tmp"
+      printf 'mouse: false\npager: false\nwidth: 80\nall: false\n' > "$temp"
     fi
-    printf 'style: "%s"\n' "$_kronuz_glow_style" >> "$_kronuz_glow_tmp"
-    mv "$_kronuz_glow_tmp" "$_kronuz_glow_cfg"
-    kz_ok "glow" "Kronuz style set in $(kz_tilde "$_kronuz_glow_cfg")"
+
+    printf 'style: "%s"\n' "$style" >> "$temp"
+    kz_commit_file "${config[@]}" "$temp"
+    kz_ok "glow" "Kronuz style set in $(kz_tilde "$config_path")"
   fi
-  unset _kronuz_glow_cfg _kronuz_glow_cur _kronuz_glow_tmp
-fi
-unset _kronuz_glow_dir _kronuz_glow_style
+
+  if grep -Fqx "style: \"$style\"" "$config_path" 2>/dev/null; then
+    kz_manage_file "${config[@]}"
+    kz_hint "theme setting: style: \"$(kz_tilde "$style")\" in $(kz_tilde "$config_path")"
+  fi
+}
+
+_kronuz_setup_glow
+unset -f _kronuz_setup_glow

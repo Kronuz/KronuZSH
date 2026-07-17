@@ -17,7 +17,7 @@ fi
 for _kronuz_arg in "$@"; do
   case "$_kronuz_arg" in
     -h|--help)
-      printf 'Usage: %s [--force] [--hints] [--no-backup]\n' "$0"
+      printf 'Usage: %s [--files] [--force] [--hints] [--no-backup]\n' "$0"
       exit 0
       ;;
     *) kz_option "$_kronuz_arg" || { printf 'Unknown option: %s\n' "$_kronuz_arg" >&2; exit 2; } ;;
@@ -28,4 +28,5 @@ for _kronuz_s in "$_kronuz_setup_dir"/*/setup.sh; do
   # shellcheck source=/dev/null
   [ -r "$_kronuz_s" ] && source "$_kronuz_s"
 done
+kz_show_managed_files
 unset _kronuz_arg _kronuz_s _kronuz_setup_dir

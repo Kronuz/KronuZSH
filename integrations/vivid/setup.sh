@@ -1,26 +1,35 @@
 # shellcheck shell=bash
-# vivid: the generator behind our rich $LS_COLORS. Runtime needs no vivid — lib/colors.zsh
-# loads the committed integrations/vivid/ls_colors. This step only makes the Kronuz theme
-# available to vivid (symlink into its config dir) so you can REGENERATE after editing
-# integrations/vivid/kronuz.yml:  vivid generate kronuz > integrations/vivid/ls_colors
-# Idempotent: an existing Kronuz theme is left alone unless confirmed or --force is
-# used. Sourced by ../setup.sh.
-# install: brew install vivid · cargo install vivid
-_kronuz_vivid_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]:-$0}")" && pwd -P)"
-if command -v vivid >/dev/null 2>&1; then
-  _kronuz_vdir="${XDG_CONFIG_HOME:-$HOME/.config}/vivid/themes"
-  _kronuz_vlink="$_kronuz_vdir/kronuz.yml"
-  _kronuz_vhint="after editing: vivid generate kronuz > $(kz_tilde "$_kronuz_vivid_dir/ls_colors")"
-  if kz_is_link "$_kronuz_vivid_dir/kronuz.yml" "$_kronuz_vlink"; then
+# vivid: expose the source theme to vivid. Runtime uses the committed ls_colors file,
+# so vivid itself is needed only when regenerating that file after a theme edit.
+
+_kronuz_setup_vivid() {
+  command -v vivid >/dev/null 2>&1 || return
+
+  local here destination hint active=0
+  local -a theme
+
+  here="$(kz_script_dir "${BASH_SOURCE[0]:-$0}")"
+  destination="${XDG_CONFIG_HOME:-$HOME/.config}/vivid/themes/kronuz.yml"
+  hint="after editing: vivid generate kronuz > $(kz_tilde "$here/ls_colors")"
+  theme=("vivid theme" "$here/kronuz.yml" "$destination")
+
+  if kz_managed_link_active "${theme[@]}"; then
     kz_ok "vivid" "Kronuz theme already available"
-    kz_hint "$_kronuz_vhint"
-  elif { [ ! -e "$_kronuz_vlink" ] && [ ! -L "$_kronuz_vlink" ]; } \
-    || kz_confirm "Replace $(kz_tilde "$_kronuz_vlink") with the Kronuz theme"; then
-    kz_link "$_kronuz_vivid_dir/kronuz.yml" "$_kronuz_vlink"
-    kz_ok "vivid" "Kronuz theme available ($(kz_tilde "$_kronuz_vlink"))"
-    kz_info "$_kronuz_vhint"
+    kz_hint "$hint"
+    active=1
+  elif { [ ! -e "$destination" ] && [ ! -L "$destination" ]; } \
+    || kz_confirm "Replace $(kz_tilde "$destination") with the Kronuz theme"; then
+    kz_ok "vivid" "Kronuz theme available ($(kz_tilde "$destination"))"
+    kz_info "$hint"
+    active=1
   else
-    kz_skip "vivid" "respecting existing theme at $(kz_tilde "$_kronuz_vlink")"
+    kz_skip "vivid" "respecting existing theme at $(kz_tilde "$destination")"
   fi
-fi
-unset _kronuz_vdir _kronuz_vhint _kronuz_vivid_dir _kronuz_vlink
+
+  if [ "$active" -eq 1 ]; then
+    kz_manage_link "${theme[@]}"
+  fi
+}
+
+_kronuz_setup_vivid
+unset -f _kronuz_setup_vivid

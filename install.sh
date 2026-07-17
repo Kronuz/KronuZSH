@@ -5,6 +5,7 @@
 # to re-run.
 #
 #   ./install.sh              install / refresh
+#   ./install.sh --files      list integration-managed files and backups
 #   ./install.sh --force      replace conflicting integration settings
 #   ./install.sh --hints      show optional usage and maintenance hints
 #   ./install.sh --no-backup  modify files without keeping recovery copies
@@ -71,14 +72,17 @@ install() {
 
   kz_head "Shell config" "🔗"
   local rc target link
+  local -a runcom
   for rc in "${runcoms[@]}"; do
     target="$here/runcoms/$rc"
     link="$HOME/.$rc"
-    if kz_is_link "$target" "$link"; then
+    runcom=("shell config" "$target" "$link")
+    if kz_managed_link_active "${runcom[@]}"; then
+      kz_manage_file "${runcom[0]}" "${runcom[2]}"
       kz_ok "$(kz_tilde "$link")" "already linked"
       continue
     fi
-    kz_link "$target" "$link"
+    kz_manage_link "${runcom[@]}"
     kz_ok "$(kz_tilde "$link")" "linked"
   done
 
@@ -122,6 +126,6 @@ for arg in "$@"; do
 done
 case "$action" in
   uninstall) uninstall ;;
-  help) sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//' ;;
+  help) sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//' ;;
   install) install ;;
 esac

@@ -1,15 +1,8 @@
 # shellcheck shell=bash
-# vim / neovim: (1) link the bundled Kronuz colorscheme (./colors/kronuz.vim) into the
-# dir each looks in, and (2) offer to turn it on in your rc. We never silently rewrite
-# your config: if the rc already loads kronuz we leave it; otherwise, on a real terminal
-# we ask (kz_confirm), and only on "yes" append a clearly-marked, removable block (backing
-# the rc up first). Force the answer with KRONUZ_VIM_AUTORC=1 / KRONUZ_VIM_NOAUTORC=1, or
-# the global KRONUZ_YES / KRONUZ_NO. Sourced by ../setup.sh at install time; idempotent.
-_kronuz_vim_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]:-$0}")" && pwd -P)"
-_kronuz_vim_src="$_kronuz_vim_dir/colors/kronuz.vim"
+# Vim / Neovim: link the colorscheme into each editor's runtime and optionally append
+# a marked, removable activation block to its config.
 
-# the marked block we append, in vimscript or lua (nvim init.lua)
-_kronuz_vim_block() {  # $1 = vim|lua
+_kronuz_vim_block() {
   if [ "$1" = lua ]; then
     cat <<'RC'
 
@@ -36,54 +29,67 @@ RC
   fi
 }
 
-# wire the colorscheme into an rc, asking first unless overridden. $1 = rc, $2 = vim|lua,
-# $3 = editor label (vim/neovim)
 _kronuz_vim_wire() {
-  _kronuz_rc="$1"; _kronuz_lang="$2"; _kronuz_ed="$3"
-  # already loads kronuz? leave it untouched (idempotent)
-  if [ -f "$_kronuz_rc" ] && grep -qi kronuz "$_kronuz_rc" 2>/dev/null; then
-    kz_ok "$_kronuz_ed" "already enabled in $(kz_tilde "$_kronuz_rc")"
-    return 0
+  local editor="$1" language="$2" path="$3" replacement enable=0
+  local -a config=("$editor config" "$path")
+
+  if [ -f "$path" ] && grep -qi kronuz "$path" 2>/dev/null; then
+    kz_ok "$editor" "already enabled in $(kz_tilde "$path")"
+    enable=1
+  elif [ -n "$KRONUZ_FORCE" ] || [ -n "${KRONUZ_VIM_AUTORC:-}" ]; then
+    enable=1
+  elif [ -z "${KRONUZ_VIM_NOAUTORC:-}" ] \
+    && kz_confirm "Enable the Kronuz colorscheme in $(kz_tilde "$path")"; then
+    enable=1
   fi
-  _kronuz_yes=0
-  if [ -n "$KRONUZ_FORCE" ]; then
-    _kronuz_yes=1
-  elif [ -n "${KRONUZ_VIM_NOAUTORC:-}" ]; then
-    _kronuz_yes=0
-  elif [ -n "${KRONUZ_VIM_AUTORC:-}" ]; then
-    _kronuz_yes=1
-  elif kz_confirm "Enable the Kronuz colorscheme in $(kz_tilde "$_kronuz_rc")"; then
-    _kronuz_yes=1
+
+  if [ "$enable" -eq 0 ]; then
+    kz_skip "$editor" "colorscheme linked, not enabled"
+    kz_info "enable later: add 'silent! colorscheme kronuz' to $(kz_tilde "$path")"
+    return
   fi
-  if [ "$_kronuz_yes" = 0 ]; then
-    kz_skip "$_kronuz_ed" "colorscheme linked, not enabled"
-    kz_info "enable later: add 'silent! colorscheme kronuz' to $(kz_tilde "$_kronuz_rc")"
-    return 0
+
+  if ! grep -qi kronuz "$path" 2>/dev/null; then
+    replacement="$(mktemp)"
+    if [ -f "$path" ]; then
+      cat "$path" > "$replacement"
+    fi
+    _kronuz_vim_block "$language" >> "$replacement"
+    kz_commit_file "${config[@]}" "$replacement"
+    kz_ok "$editor" "colorscheme enabled in $(kz_tilde "$path")"
   fi
-  mkdir -p "$(dirname "$_kronuz_rc")"
-  if [ -f "$_kronuz_rc" ]; then
-    kz_backup_file "$_kronuz_rc"
-  fi
-  _kronuz_vim_block "$_kronuz_lang" >> "$_kronuz_rc"
-  kz_ok "$_kronuz_ed" "colorscheme enabled in $(kz_tilde "$_kronuz_rc")"
+
+  kz_manage_file "${config[@]}"
+  kz_hint "transparent background: set kronuz_transparent before loading the colorscheme"
 }
 
-if command -v vim >/dev/null 2>&1; then
-  kz_link "$_kronuz_vim_src" "$HOME/.vim/colors/kronuz.vim"
-  _kronuz_vim_wire "$HOME/.vimrc" vim vim
-fi
+_kronuz_setup_vim() {
+  local here source nvim_dir
+  local -a vim_theme neovim_theme
 
-if command -v nvim >/dev/null 2>&1; then
-  _kronuz_nvim="${XDG_CONFIG_HOME:-$HOME/.config}/nvim"
-  kz_link "$_kronuz_vim_src" "$_kronuz_nvim/colors/kronuz.vim"
-  # nvim loads init.lua OR init.vim (both at once is an error) — wire whichever is in play
-  if [ -f "$_kronuz_nvim/init.lua" ]; then
-    _kronuz_vim_wire "$_kronuz_nvim/init.lua" lua neovim
-  else
-    _kronuz_vim_wire "$_kronuz_nvim/init.vim" vim neovim
+  here="$(kz_script_dir "${BASH_SOURCE[0]:-$0}")"
+  source="$here/colors/kronuz.vim"
+  nvim_dir="${XDG_CONFIG_HOME:-$HOME/.config}/nvim"
+
+  vim_theme=("vim colorscheme" "$source" "$HOME/.vim/colors/kronuz.vim")
+  neovim_theme=("neovim colorscheme" "$source" "$nvim_dir/colors/kronuz.vim")
+
+  if command -v vim >/dev/null 2>&1; then
+    kz_manage_link "${vim_theme[@]}"
+    _kronuz_vim_wire vim vim "$HOME/.vimrc"
   fi
-  unset _kronuz_nvim
-fi
 
-unset -f _kronuz_vim_block _kronuz_vim_wire 2>/dev/null
-unset _kronuz_vim_dir _kronuz_vim_src _kronuz_rc _kronuz_lang _kronuz_ed _kronuz_yes 2>/dev/null
+  if command -v nvim >/dev/null 2>&1; then
+    kz_manage_link "${neovim_theme[@]}"
+
+    # Neovim loads init.lua or init.vim, never both.
+    if [ -f "$nvim_dir/init.lua" ]; then
+      _kronuz_vim_wire neovim lua "$nvim_dir/init.lua"
+    else
+      _kronuz_vim_wire neovim vim "$nvim_dir/init.vim"
+    fi
+  fi
+}
+
+_kronuz_setup_vim
+unset -f _kronuz_setup_vim _kronuz_vim_block _kronuz_vim_wire

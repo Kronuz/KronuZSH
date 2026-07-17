@@ -281,18 +281,38 @@ the load order (fast-syntax-highlighting stays last). Bind keys after sourcing.
 
 ## Backing up user files
 
-Any installer or integration that modifies a user-owned file must use `kz_backup <file>`
-from `install.lib.sh`; use `kz_backup --move <file>` when the original must be removed,
-as with runcoms replaced by symlinks. It creates a sibling backup named
-`<file>.YYYYMMDDhhmmss.kronuzsh.bak`, preserving metadata in copy mode. Prefer the
-reporting wrappers `kz_backup_file <file>` for config rewrites and
-`kz_link <source> <destination>` for managed symlinks. The stable suffix makes every
-backup discoverable with
-`*.kronuzsh.bak`. Never introduce a fixed `.bak` or `.kronuz.bak` filename: a later
-setup run would overwrite the user's previous recovery point. Uninstall can restore the
-runcom files because their backups use the helper's `--move` mode. The shared
-`--no-backup` option sets `KRONUZ_NO_BACKUP`; `kz_backup` must remain the one place that
-implements its behavior so integrations do not duplicate that policy.
+Integration setup uses the small managed-file API in `install.lib.sh`. A descriptor
+keeps its human label and paths together; expand it quoted when calling a helper:
+
+```bash
+local -a theme=("yazi theme" "$source" "$destination")
+kz_managed_link_active "${theme[@]}"
+kz_manage_link "${theme[@]}"
+
+local -a config=("yazi config" "$config_path")
+kz_commit_file "${config[@]}" "$replacement"
+kz_manage_file "${config[@]}"   # on a later run when already active
+```
+
+`kz_manage_link` is the ownership boundary for symlinks: it is idempotent, backs up a
+conflict, installs the link, and registers the destination. Do not call `ln` directly.
+For config rewrites, prepare a complete temporary replacement and pass it to
+`kz_commit_file`: it creates the parent directory, backs up the old file, atomically
+installs the replacement, and registers the result. Do not move a replacement into a
+user path directly. A setup step that writes through an external tool (for example
+`git config` or a cache builder) MUST call `kz_manage_file <label> <path>` after
+confirming the result exists. Use `kz_script_dir "${BASH_SOURCE[0]:-$0}"` rather than
+repeating the physical-directory resolution expression.
+
+The registry is deliberately ephemeral: every active integration rebuilds it on every
+run, and `integrations/setup.sh` renders it once for `--files`, together with all sibling
+`<file>.YYYYMMDDhhmmss.kronuzsh.bak` recovery points. Never invent a backup filename or
+call `kz_backup` from an integration. The shared `--no-backup` policy belongs solely to
+the managed helpers.
+
+Wrap each sourced setup script in one `_kronuz_setup_<tool>` function, use descriptive
+`local` variables and arrays inside it, then call and `unset -f` the function. This keeps
+one integration's temporary state from leaking into the next.
 
 ## Testing (no real terminal needed for most of it)
 

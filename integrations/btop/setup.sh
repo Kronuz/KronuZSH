@@ -1,37 +1,50 @@
 # shellcheck shell=bash
-# btop: opt-in Kronuz theming. btop has no env/flag to select a theme — it reads
-# color_theme from btop.conf and themes from <config>/themes/ — so enabling means
-# placing the theme and setting the key. We ask first (kz_confirm), then symlink
-# Kronuz.theme into the themes dir and set color_theme = "Kronuz" in btop.conf (backing
-# it up first). Idempotent; honors KRONUZ_YES / KRONUZ_NO. Sourced by ../setup.sh.
-_kronuz_btop_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]:-$0}")" && pwd -P)"
-if command -v btop >/dev/null 2>&1; then
-  _kronuz_bcfg="${XDG_CONFIG_HOME:-$HOME/.config}/btop"
-  _kronuz_bconf="$_kronuz_bcfg/btop.conf"
-  if [ -f "$_kronuz_bconf" ] \
-    && grep -q '^color_theme *= *"Kronuz"' "$_kronuz_bconf" 2>/dev/null; then
+# btop: link the Kronuz theme and select it in btop.conf. The config rewrite preserves
+# every unrelated setting and follows the shared backup policy.
+
+_kronuz_setup_btop() {
+  command -v btop >/dev/null 2>&1 || return
+
+  local here config_dir config temp
+  local -a config_file theme
+
+  here="$(kz_script_dir "${BASH_SOURCE[0]:-$0}")"
+  config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/btop"
+  config="$config_dir/btop.conf"
+  config_file=("btop config" "$config")
+  theme=("btop theme" "$here/Kronuz.theme" "$config_dir/themes/Kronuz.theme")
+
+  if [ -f "$config" ] \
+    && grep -q '^color_theme *= *"Kronuz"' "$config" 2>/dev/null \
+    && kz_managed_link_active "${theme[@]}"; then
     kz_ok "btop" "already themed"
   elif kz_confirm "Enable the Kronuz theme for btop"; then
-    kz_link "$_kronuz_btop_dir/Kronuz.theme" "$_kronuz_bcfg/themes/Kronuz.theme"
+    temp="$(mktemp)"
 
-    # Select Kronuz while preserving every unrelated btop setting.
-    if [ -f "$_kronuz_bconf" ]; then
-      kz_backup_file "$_kronuz_bconf"
-      if grep -q '^color_theme *=' "$_kronuz_bconf"; then
-        _kronuz_btmp="$(mktemp)"
-        sed 's#^color_theme *=.*#color_theme = "Kronuz"#' "$_kronuz_bconf" > "$_kronuz_btmp"
-        mv "$_kronuz_btmp" "$_kronuz_bconf"
+    if [ -f "$config" ]; then
+      if grep -q '^color_theme *=' "$config"; then
+        sed 's#^color_theme *=.*#color_theme = "Kronuz"#' "$config" > "$temp"
       else
-        printf 'color_theme = "Kronuz"\n' >> "$_kronuz_bconf"
+        cat "$config" > "$temp"
+        printf 'color_theme = "Kronuz"\n' >> "$temp"
       fi
     else
-      printf 'color_theme = "Kronuz"\n' > "$_kronuz_bconf"
+      printf 'color_theme = "Kronuz"\n' > "$temp"
     fi
-    kz_ok "btop" "Kronuz theme set in $(kz_tilde "$_kronuz_bconf")"
+
+    kz_commit_file "${config_file[@]}" "$temp"
+    kz_ok "btop" "Kronuz theme set in $(kz_tilde "$config")"
   else
     kz_skip "btop" "not themed"
     kz_info "enable later: re-run install, or set color_theme=\"Kronuz\" in btop.conf"
   fi
-  unset _kronuz_bcfg _kronuz_bconf _kronuz_btmp
-fi
-unset _kronuz_btop_dir
+
+  if grep -q '^color_theme *= *"Kronuz"' "$config" 2>/dev/null; then
+    kz_manage_link "${theme[@]}"
+    kz_manage_file "${config_file[@]}"
+    kz_hint "theme setting: color_theme=\"Kronuz\" in $(kz_tilde "$config")"
+  fi
+}
+
+_kronuz_setup_btop
+unset -f _kronuz_setup_btop

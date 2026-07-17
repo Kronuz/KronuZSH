@@ -44,8 +44,9 @@ environment) or install-time configuration (`setup.sh`: themes, caches, or tool-
 config). Runtime integrations activate in the next shell; setup integrations are
 applied by `install.sh` or `bash integrations/setup.sh`. Both accept `--force` to
 replace a conflicting tool theme without prompting, `--hints` to show optional usage
-and maintenance notes, and `--no-backup` to suppress recovery copies (only advisable
-when your configuration is already versioned).
+and maintenance notes, `--files` to list managed files and timestamped backups, and
+`--no-backup` to suppress recovery copies (only advisable when your configuration is
+already versioned).
 
 ### [fzf](https://github.com/junegunn/fzf) — fuzzy finder
 
