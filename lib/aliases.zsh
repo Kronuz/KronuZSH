@@ -17,6 +17,7 @@ alias _='sudo'
 alias e='${(z)VISUAL:-${(z)EDITOR}}'   # `e file` opens $EDITOR
 alias b='${(z)BROWSER}'                 # `b URL` opens $BROWSER
 alias p='${(z)PAGER}'                   # explicit pager, normally less
+alias help='run-help'                   # contextual zsh help (or man fallback)
 
 # Open a file or URL in the desktop environment.
 if [[ "$OSTYPE" == darwin* ]]; then
