@@ -10,9 +10,9 @@
 
 if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
   _kz_b=$'\033[1m'; _kz_d=$'\033[2m'; _kz_g=$'\033[32m'; _kz_c=$'\033[36m'
-  _kz_y=$'\033[33m'; _kz_rs=$'\033[0m'; _kz_fancy=1
+  _kz_rs=$'\033[0m'; _kz_fancy=1
 else
-  _kz_b=''; _kz_d=''; _kz_g=''; _kz_c=''; _kz_y=''; _kz_rs=''; _kz_fancy=0
+  _kz_b=''; _kz_d=''; _kz_g=''; _kz_c=''; _kz_rs=''; _kz_fancy=0
 fi
 
 # _kz_em <emoji> <plain>: the emoji on a fancy TTY, the plain fallback otherwise.

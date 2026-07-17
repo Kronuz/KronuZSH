@@ -15,6 +15,7 @@ if ! command -v kz_ok >/dev/null 2>&1; then
 fi
 kz_head "Tool integrations" "🎨"
 for _kronuz_s in "$_kronuz_setup_dir"/*/setup.sh; do
+  # shellcheck source=/dev/null
   [ -r "$_kronuz_s" ] && source "$_kronuz_s"
 done
 unset _kronuz_s _kronuz_setup_dir

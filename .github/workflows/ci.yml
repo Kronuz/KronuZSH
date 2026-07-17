@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  syntax:
+    name: Syntax (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check Zsh syntax
+        shell: zsh {0}
+        run: |
+          files=(
+            runcoms/*
+            lib/*.zsh
+            integrations/*.zsh
+            integrations/*/*.zsh
+            zshrc.local.example
+          )
+          for file in $files; do
+            zsh -n "$file"
+          done
+
+      - name: Check Bash syntax
+        shell: bash
+        run: |
+          for file in \
+            install.sh \
+            install.lib.sh \
+            integrations/setup.sh \
+            integrations/*/setup.sh
+          do
+            bash -n "$file"
+          done
+
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check installer scripts
+        run: |
+          shellcheck --external-sources \
+            install.sh \
+            install.lib.sh \
+            integrations/setup.sh \
+            integrations/*/setup.sh

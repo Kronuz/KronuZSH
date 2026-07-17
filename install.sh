@@ -36,11 +36,13 @@ recommend_tools() {
     "tealdeer tldr" "tokei tokei" "glow glow" "xh xh"
   )
   local entry name total=0 have=0 missing=""
+  local -a probes
   kz_head "Optional tools" "🧰"
   for entry in "${tools[@]}"; do
     name="${entry%% *}"
     total=$((total + 1))
-    if _have_any ${entry#* }; then
+    read -r -a probes <<< "${entry#* }"
+    if _have_any "${probes[@]}"; then
       have=$((have + 1))
     else
       missing="$missing $name"

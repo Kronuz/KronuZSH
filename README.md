@@ -4,6 +4,12 @@
 amount of config, with no framework underneath. It replaces a 7-years-behind prezto
 fork with something I maintain end to end.
 
+![KronuZSH prompt showing host, Git and virtualenv context above the time, working directory, and caret.](assets/kronuzsh-prompt.png)
+
+KronuZSH is an opinionated, complete Zsh configuration—not a plugin intended to be
+sourced into an existing framework. It installs the standard Zsh runcoms and owns the
+shell options, history, completion, keybindings, plugins, and prompt they load.
+
 It is deliberately small. The prompt is one file. Everything Prezto used to give
 me that I actually use is now maintained here or supplied by a standalone plugin:
 
@@ -30,6 +36,17 @@ something, the file it lives in is obvious.
 
 For the story behind the move away from Prezto—and the small conveniences I only
 noticed after removing it—read [“Molting: Down to the core”](https://kronuz.github.io/blog/molting/).
+
+## Contents
+
+- [Prompt and fonts](#fonts-nerd-font)
+- [Install](#install)
+- [Machine-local config](#machine-local-config)
+- [Shell conveniences](#shell-conveniences)
+- [Git prompt engine](#gitstatusd-the-git-prompt-engine)
+- [External tools](#external-tools)
+- [Repository layout](#layout)
+- [License](#license)
 
 ## Fonts (Nerd Font)
 
@@ -62,6 +79,17 @@ For a longer, opinionated (and surely incomplete) rundown of good coding fonts,
 see [nerd_fonts.md](nerd_fonts.md).
 
 ## Install
+
+### Requirements
+
+- **Zsh 5.9** is tested in CI on macOS and Linux. Older Zsh 5.x releases may work,
+  but are not currently guaranteed.
+- **Git** is required to clone and initialize the four plugin submodules.
+- **Bash** is used by `install.sh`; the installed interactive configuration is Zsh.
+- A **Nerd Font is optional**. Plain-Unicode glyphs are available when one is not
+  installed.
+- The external tools described below are optional. In particular, the prompt falls
+  back to direct `git` calls when `gitstatusd` cannot run.
 
 ```bash
 git clone --recursive https://github.com/Kronuz/KronuZSH.git ~/.config/KronuZSH
@@ -204,6 +232,9 @@ plugins/           vendored plugins (git submodules)
 Topic docs: **[prompt.md](prompt.md)** (the full prompt manual: every segment and
 option), **[integrations.md](integrations.md)** (the external-tool catalog) and
 **[nerd_fonts.md](nerd_fonts.md)** (font rankings + setup).
+
+Contributions are welcome within the project's deliberately narrow scope; see
+[CONTRIBUTING.md](CONTRIBUTING.md) for file placement, checks, and attribution notes.
 
 ## License
 
