@@ -3,6 +3,11 @@
 
 bindkey -e
 
+# Disable software flow control when a real terminal is available. This frees
+# Ctrl-S/Ctrl-Q for ZLE and prevents an accidental Ctrl-S from freezing output.
+[[ -r ${TTY:-} && -w ${TTY:-} && $+commands[stty] == 1 ]] &&
+  stty -ixon <"$TTY" >"$TTY"
+
 # Treat path separators (and "=") as word boundaries; zsh's default lumps them
 # into the word. This is what makes Ctrl-W on "a/b/c" delete just "c" (leaving
 # "a/b/") instead of the whole path, and word motions stop at each slash.
