@@ -89,6 +89,19 @@ Two tiers, by language:
 
 `/etc/profile` is left to the system.
 
+## Shell conveniences
+
+The small built-in command set stays deliberately conventional: `d` prints the
+automatic directory stack, `1`–`9` jump through it, and `-` returns to the previous
+directory. `mkdcd <directory>` creates one directory (including parents) and enters
+it. `http-serve` starts Python 3's HTTP server when `python3` is installed.
+
+`run-help <command>` uses zsh's context-aware help function when the host ships it,
+including its Git, `ip`, OpenSSL, and `sudo` helpers; minimal installations fall back
+to `man`. The completion menu matches case and `.`, `_`, or `-` boundaries flexibly,
+keeps private functions out of normal results, and includes the directory stack for
+`cd`.
+
 ## gitstatusd (the git prompt engine)
 
 gitstatus needs a small daemon, `gitstatusd`. **It is downloaded, not compiled.**

@@ -30,7 +30,7 @@ fi
 alias df='df -kh'                       # human-readable filesystem usage
 alias du='du -kh'                       # human-readable directory usage
 alias diffu='diff --unified'
-alias http-serve='python3 -m http.server'
+(( $+commands[python3] )) && alias http-serve='python3 -m http.server'
 alias po='popd'
 alias pu='pushd'
 
