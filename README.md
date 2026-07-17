@@ -19,8 +19,8 @@ me that I actually use is either mine or a standalone plugin:
   [zsh-history-substring-search](https://github.com/zsh-users/zsh-history-substring-search),
   and [gitstatus](https://github.com/romkatv/gitstatus).
 - **config** (in `lib/`): `options.zsh`, `history.zsh`, `colors.zsh`,
-  `completion.zsh`, `keybindings.zsh`, `aliases.zsh`, `terminal.zsh` — one named
-  file per concern.
+  `completion.zsh`, `keybindings.zsh`, `aliases.zsh`, `functions.zsh`,
+  `terminal.zsh` — one named file per concern.
 
 The guiding rule: keep only the **genuinely useful** parts, lean and easy to find,
 and prefer zsh-native over a vendored module (e.g. bracketed paste is built in, so
@@ -163,6 +163,7 @@ lib/               modules sourced by zshrc, one per concern
   completion.zsh     completion (cached compinit)
   keybindings.zsh    key bindings (emacs; word nav, Ctrl-W to last slash)
   aliases.zsh        the useful aliases (ls colors, ll, mkdir -p, ...)
+  functions.zsh      small, generally useful shell functions
   terminal.zsh       window/tab title
   plugins.zsh        plugin loader
   prompt.zsh         the Kronuz prompt (OS glyph, gitstatus, ...; see prompt.md)

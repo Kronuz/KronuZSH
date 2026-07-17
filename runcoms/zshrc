@@ -15,6 +15,7 @@ source "$KRONUZSH/lib/colors.zsh"   # canonical $LS_COLORS — before completion
 source "$KRONUZSH/lib/completion.zsh"
 source "$KRONUZSH/lib/keybindings.zsh"
 source "$KRONUZSH/lib/aliases.zsh"
+source "$KRONUZSH/lib/functions.zsh"
 source "$KRONUZSH/lib/terminal.zsh"
 source "$KRONUZSH/lib/plugins.zsh"
 source "$KRONUZSH/integrations/init.zsh"   # optional external tools (fzf, zoxide, ...), each guarded

@@ -32,11 +32,11 @@ self-resolves from `runcoms/zshrc` via `${(%):-%x}:A:h:h`.
   `~/.profile` for cross-shell env. `runcoms/zshrc` (interactive): the entry that
   sources the `lib/` modules below. `runcoms/zlogin`: bg-compiles the compdump.
 - `runcoms/zshrc` order: `zshenv → lib/options → lib/history → lib/colors →
-  lib/completion → lib/keybindings → lib/aliases → lib/terminal → lib/plugins →
-  integrations/init → lib/prompt → prompt_kronuz_setup`, then `setopt PROMPT_SUBST`,
-  then `~/.zshrc.local`. (`lib/colors` sets `$LS_COLORS` before `lib/completion` so the
-  completion menu picks it up, plus `$GREP_COLORS`, `$LESS_TERMCAP`, and BSD `$LSCOLORS`
-  — see "File colours" below.)
+  lib/completion → lib/keybindings → lib/aliases → lib/functions → lib/terminal →
+  lib/plugins → integrations/init → lib/prompt → prompt_kronuz_setup`, then `setopt
+  PROMPT_SUBST`, then `~/.zshrc.local`. (`lib/colors` sets `$LS_COLORS` before
+  `lib/completion` so the completion menu picks it up, plus `$GREP_COLORS`,
+  `$LESS_TERMCAP`, and BSD `$LSCOLORS` — see "File colours" below.)
 
 The bar for adding anything: keep only the **genuinely useful** part, lean and in
 an obviously-named file, and prefer zsh-native over a vendored module (that's why
