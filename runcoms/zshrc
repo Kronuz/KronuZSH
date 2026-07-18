@@ -20,12 +20,13 @@ source "$KRONUZSH/lib/terminal.zsh"
 source "$KRONUZSH/lib/plugins.zsh"
 source "$KRONUZSH/integrations/init.zsh"   # optional external tools (fzf, zoxide, ...), each guarded
 source "$KRONUZSH/lib/prompt.zsh"
+
 prompt_kronuz_setup
 
 # Machine-local, non-public config (tool hooks, corp URLs, PROMPT_KRONUZ_* overrides).
 # Tracked example: zshrc.local.example. The real ~/.zshrc.local is yours, in $HOME.
 [[ -r "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
 
-# An absent optional file above leaves $? = 1 (the failed `[[ -r ]]` test), which
-# the prompt would show as a bogus error on the very first prompt. End clean.
-true
+# Startup-file bookkeeping must not become the first prompt's command status.
+return 0
+
