@@ -11,6 +11,7 @@ _kronuz_vim_block() {
 vim.opt.termguicolors = true
 -- vim.g.kronuz_transparent = 1   -- uncomment to inherit your terminal background
 pcall(vim.cmd, 'colorscheme kronuz')
+vim.opt.mouse = 'a'
 -- <<< kronuzsh (Kronuz colorscheme) <<<
 RC
   else
@@ -24,6 +25,7 @@ if has('termguicolors')
 endif
 " let g:kronuz_transparent = 1   " uncomment to inherit your terminal background
 silent! colorscheme kronuz
+set mouse=a
 " <<< kronuzsh (Kronuz colorscheme) <<<
 RC
   fi
