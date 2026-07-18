@@ -198,7 +198,12 @@ Current layout:
 (plus normal OSC 133 `A`/`B` marks when transience is off). With transience on, the
 live prompt is unmarked; accepting it collapses away status/context and emits `A`/`B`
 only around the pwd/caret command line, so historical status/duration is deliberately
-discarded while each executed command retains one correctly placed terminal mark.
+discarded while each executed command retains one correctly placed terminal mark. With
+transience off, one-shot `A`/`B` markers permanently bracket only the editable final
+prompt: status/duration are deliberately omitted, adjacent `D;<status>` / `A` precede
+the context row, and `B` ends the editable final line. `zle-line-init` clears all three
+before its same-layout repaint and later keymap redraws. This avoids extra/misplaced
+marks; status/duration remain a transient-mode feature.
 `RPROMPT = overwrite vim emacs`. The **status** segment (`_prompt_kronuz_status`,
 built in `_kronuz_status_segment`) is the last command's exit code (`⏎<code>` when
 nonzero) and duration (when slow) on their own line above the info row, and renders
@@ -249,10 +254,8 @@ final paint over fast-syntax-highlighting it wraps fsh's `_zsh_highlight` once (
 re-wraps the dispatcher): the wrapper runs fsh, then re-applies our style while the
 `_kronuz_muting` flag is set (set at accept, cleared in precmd). fsh rebuilds
 `region_highlight` unconditionally on line-finish, so this also covers a buffer fsh
-skipped, e.g. a paste). On accept it also keeps a **dimmed copy of the status line**
-(`_prompt_kronuz_status_dim`, dimmed per the same style via `_kronuz_dim_col`) above
-the collapsed caret, so a failed or slow command leaves a one-line marker in
-scrollback while quiet commands collapse to a bare caret. The **jobs** segment is
+skipped, e.g. a paste). Status/duration are live-only in transient mode and are
+discarded along with context on accept. The **jobs** segment is
 prompt-native (`%(1j...)`); the
 **context** (SSH/container) badge is detected once at setup. All of these are gated
 off on dumb terminals.

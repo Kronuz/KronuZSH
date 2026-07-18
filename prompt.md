@@ -247,9 +247,10 @@ layout still renders with zero escapes. It's re-evaluated every prompt, so
 
 When the last command **failed or was slow**, the prompt shows a line on top, above
 the info row, with its exit code (`⏎<code>`) and/or duration. On a quick, clean
-command that line is absent entirely. When you submit the next command, that line
-stays behind in scrollback (dimmed, per your transient style), so your history reads
-as a quiet log of what failed or dragged. See [Transient prompt](#transient-prompt).
+command that line is absent entirely. With transient prompts enabled, submitting the
+next command discards this live-only line along with context, leaving only the collapsed
+command in scrollback. With transience disabled, status/duration are omitted so OSC 133
+terminal marks remain correctly associated with the stable multiline prompt.
 
 ### Command duration
 
@@ -473,7 +474,7 @@ with `PROMPT_KRONUZ_COLOR_HOST`. The outcome line itself owns the conditional la
 `PROMPT_KRONUZ_ERROR` is used only for a nonzero exit, and `PROMPT_KRONUZ_DURATION`
 only after the duration threshold is reached. Their values control the contents of
 those items; the status line supplies their default colors, spacing, newline, and
-transient dimming. Set either to `''` to hide that item without disabling the other.
+conditional layout. Set either to `''` to hide that item without disabling the other.
 
 ```zsh
 # A 24-hour clock with seconds instead of the default [%*]:

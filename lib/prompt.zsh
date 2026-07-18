@@ -534,9 +534,10 @@ function _kronuz_duration_segment {
 
 # ---- status line (exit code + duration, on a line above the info row) ----
 # $_prompt_kronuz_last_exit is captured by the OSC precmd (it runs first). The line
-# is built twice: full colour for the live prompt, and dimmed for the copy the
-# transient prompt leaves in scrollback.
-typeset -g _prompt_kronuz_status='' _prompt_kronuz_status_dim='' _prompt_kronuz_last_exit=0
+# is shown only on the live prompt when transience is enabled; accepting the command
+# discards it, and non-transient mode omits it to keep terminal marks unambiguous.
+typeset -g _prompt_kronuz_status='' _prompt_kronuz_status_live=''
+typeset -g _prompt_kronuz_last_exit=0
 
 # Dim one colour spec (name / index / #hex) toward black by $PROMPT_KRONUZ_TRANSIENT_DIM,
 # returning #rrggbb in $REPLY. Returns 1 (and leaves $REPLY untouched) if the spec can't
@@ -571,17 +572,16 @@ function _kronuz_dim_string {
   REPLY="$out"
 }
 function _kronuz_status_segment {
-  _prompt_kronuz_status='' _prompt_kronuz_status_dim=''
+  _prompt_kronuz_status='' _prompt_kronuz_status_live=''
   # Only after a real command ran: a blank Enter leaves $? unchanged and must not
   # re-show (and, via the transient copy, re-keep) the previous command's exit code.
   (( ${_kronuz_cmd_ran:-0} )) || return
-  local out='' dim='' body item sp REPLY
+  local out='' body item sp
   if (( ${_prompt_kronuz_last_exit:-0} != 0 )); then
     body="${(e)PROMPT_KRONUZ_ERROR-$DEFAULT_PROMPT_KRONUZ_ERROR}"
     if [[ -n "$body" ]]; then
       item="${(e)col[status_err]}${body}${(e)col[none]}"
       out+="$item"
-      _kronuz_dim_string "$item"; dim+="$REPLY"
     fi
   fi
   if [[ -n "$_prompt_kronuz_duration" ]]; then
@@ -589,10 +589,12 @@ function _kronuz_status_segment {
     if [[ -n "$body" ]]; then
       sp="${out:+ }"; item="${(e)col[duration]}${body}${(e)col[none]}"
       out+="${sp}${item}"
-      _kronuz_dim_string "$item"; dim+="${sp}${REPLY}"
     fi
   fi
-  [[ -n "$out" ]] && { _prompt_kronuz_status="${out}%E"$'\n'; _prompt_kronuz_status_dim="${dim}%E"$'\n'; }
+  if [[ -n "$out" ]]; then
+    _prompt_kronuz_status="${out}%E"$'\n'
+    _kronuz_transient_enabled && _prompt_kronuz_status_live=$_prompt_kronuz_status
+  fi
   _kronuz_cmd_ran=0
 }
 
@@ -622,7 +624,12 @@ function _kronuz_keymap_update {
   (( ${_kronuz_dumb:-0} )) || zle reset-prompt 2>/dev/null
 }
 function zle-keymap-select { _kronuz_keymap_update }
-function zle-line-init { _kronuz_keymap_update }
+function zle-line-init {
+  # Non-transient A/B have already marked the editable line on the first paint.
+  # Keep line-init and later keymap redraws from creating duplicate command marks.
+  _kronuz_osc_d='' _kronuz_osc_a='' _kronuz_osc_b=''
+  _kronuz_keymap_update
+}
 # Toggling overwrite mode does not change keymaps, so zle-keymap-select does not fire.
 # Wrap the standard widget, as Prezto does, so inherited and explicit bindings both
 # refresh the caret and RPROMPT after invoking the builtin.
@@ -637,7 +644,8 @@ function _kronuz_overwrite_toggle {
 # Lets capable terminals open new tabs/splits in $PWD and jump between prompts /
 # show per-command status. The B (input start) mark rides at the end of $PROMPT via
 # $_kronuz_osc_b. Skipped on dumb/unknown terminals.
-typeset -g _kronuz_osc_b='' _kronuz_is_iterm=0 _kronuz_osc_command_active=0
+typeset -g _kronuz_osc_d='' _kronuz_osc_a='' _kronuz_osc_b=''
+typeset -g _kronuz_is_iterm=0 _kronuz_osc_command_active=0
 function _kronuz_osc_active {
   [[ "${PROMPT_KRONUZ_TERMINAL_INTEGRATION:-1}" != (0|no|off|false) \
     && -n "$TERM" && "$TERM" != (dumb|unknown) ]]
@@ -664,10 +672,11 @@ function _kronuz_osc_precmd {
   # and, more importantly, do not close a command boundary that was never opened.
   (( _kronuz_osc_command_active )) && typeset -g _prompt_kronuz_last_exit=$ret
   if ! _kronuz_osc_active; then
-    _kronuz_osc_b=''
+    _kronuz_osc_d='' _kronuz_osc_a='' _kronuz_osc_b=''
     _kronuz_osc_command_active=0
     return
   fi
+  _kronuz_osc_d=''
   # Detect and announce iTerm2 here, after ~/.zshrc.local has had a chance to disable
   # terminal integration. Once announced, the flag also gates its host/cwd updates.
   if (( ! _kronuz_is_iterm )) \
@@ -676,15 +685,19 @@ function _kronuz_osc_precmd {
     print -n '\e]1337;ShellIntegrationVersion=14;shell=zsh\a'
   fi
   if (( _kronuz_osc_command_active )); then
-    print -n "\e]133;D;${ret}\a"
+    if _kronuz_transient_enabled; then
+      print -n "\e]133;D;${ret}\a"
+    else
+      _kronuz_osc_d=$'%{\e]133;D;'"${ret}"$'\a%}'
+    fi
     _kronuz_osc_command_active=0
   fi
   print -Pn '\e]7;file://%M%d\a'
   (( _kronuz_is_iterm )) && print -Pn "\e]1337;RemoteHost=${USER}@%M\a\e]1337;CurrentDir=%d\a"
   if _kronuz_transient_enabled; then
-    _kronuz_osc_b=''
+    _kronuz_osc_a='' _kronuz_osc_b=''
   else
-    print -n '\e]133;A\a'
+    _kronuz_osc_a=$'%{\e]133;A\a%}'
     _kronuz_osc_b=$'%{\e]133;B\a%}'
   fi
 }
@@ -873,7 +886,7 @@ function prompt_kronuz_setup {
 
   SPROMPT='zsh: correct $col[red]%R%f to $col[green]%r%f [nyae]? '
   RPROMPT="$kronuz[overwrite]$kronuz[vim]$kronuz[emacs]"
-  PROMPT="\${_prompt_kronuz_status}$kronuz[err] $kronuz[info]$kronuz[context]$kronuz[etctl]$kronuz[git]$kronuz[venv]$kronuz[jobs]$kronuz[nl]$kronuz[time] $kronuz[pwd] $kronuz[prompt] \${_kronuz_osc_b}"
+  PROMPT="\${_prompt_kronuz_status_live}\${_kronuz_osc_d}\${_kronuz_osc_a}$kronuz[err] $kronuz[info]$kronuz[context]$kronuz[etctl]$kronuz[git]$kronuz[venv]$kronuz[jobs]$kronuz[nl]$kronuz[time] $kronuz[pwd] $kronuz[prompt] \${_kronuz_osc_b}"
 
   # Transient prompt (collapsed past prompts), symmetric to the live prompt above:
   #   PROMPT_KRONUZ_TRANSIENT       — the whole collapsed line  (like PROMPT)
