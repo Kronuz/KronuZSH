@@ -299,7 +299,7 @@ function prompt_kronuz_colors {
 # overridable via $PROMPT_KRONUZ_GLYPH_<NAME> (a character, or '' to hide it).
 typeset -gA glyph glyph_pad
 function prompt_kronuz_glyphs {
-  local -A g p
+  local -A g
   local os_nerd=''
   case "$OSTYPE" in
     darwin*) os_nerd=$'\uf179' ;;  # nf-fa-apple
@@ -355,13 +355,6 @@ function prompt_kronuz_glyphs {
       ssh        $'\ueb3a'  # nf-cod-remote          inside an SSH session
       container  $'\uf4b7'  # nf-oct-container       inside a container
     )
-    # Explicit spacing for icons used directly beside text/counts. Font metrics
-    # cannot be inferred from Unicode ranges; notably, stashed (U+F187) needs no pad.
-    p=(
-      os ' ' branch ' ' tag ' ' commit ' ' remote ' ' action ' '
-      staged ' ' modified ' ' conflicted ' ' untracked ' ' venv ' ' vim ' '
-      emacs ' ' jobs ' ' duration ' ' ssh ' ' container ' '
-    )
   fi
   # Mode-independent marks: plain BMP, identical in both sets (still overridable).
   g[dot]=$'\u25cf'        # ● command status dot
@@ -369,22 +362,25 @@ function prompt_kronuz_glyphs {
   g[overwrite]=$'\u267a'  # ♺ overwrite (replace) mode
   g[caret]=$'\u276f'      # ❯ prompt caret (insert keymap)
   g[caret_alt]=$'\u276e'  # ❮ prompt caret (vicmd keymap)
-  local name ov pad_ov val pad sentinel='__KRONUZ_GLYPH_UNSET__'
+  local name ov val sentinel='__KRONUZ_GLYPH_UNSET__'
+  local -i c
   for name in ${(k)g}; do
     ov="PROMPT_KRONUZ_GLYPH_${name:u}"
     val="${(P)ov-$sentinel}"
     [[ "$val" == "$sentinel" ]] && val="$g[$name]"
     glyph[$name]="$val"
-    pad_ov="PROMPT_KRONUZ_GLYPH_PAD_${name:u}"
-    pad="${(P)pad_ov-$sentinel}"
-    [[ "$pad" == "$sentinel" ]] && pad="${p[$name]-}"
-    glyph_pad[$name]="$pad"
+    # A single Private-Use-Area glyph can render wider than its cell; flag a trailing
+    # pad space for it so an adjacent count/text doesn't collide. BMP and multi-char
+    # glyphs are single-width and get none.
+    c=0; [[ ${#val} -eq 1 ]] && c=$(( #val ))
+    if (( (c >= 0xe000 && c <= 0xf8ff) || c >= 0xf0000 )); then
+      glyph_pad[$name]=' '
+    else
+      glyph_pad[$name]=''
+    fi
   done
   # Legacy override: an explicit $_kronuz_os (set in ~/.zshrc.local) wins for the OS glyph.
-  if (( ${+_kronuz_os} )); then
-    glyph[os]="$_kronuz_os"
-    (( ${+PROMPT_KRONUZ_GLYPH_PAD_OS} )) || glyph_pad[os]=''
-  fi
+  (( ${+_kronuz_os} )) && glyph[os]="$_kronuz_os"
 }
 
 # ============================================================================

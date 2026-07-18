@@ -178,11 +178,9 @@ Names: `os branch tag commit remote action clean dirty stashed ahead behind stag
 modified conflicted untracked venv vim emacs jobs duration ssh container dot return
 overwrite caret caret_alt`. The git/venv/keymap/error segments and the OS segment
 all read `$glyph[...]` rather than hard-coding icons. A separate `glyph_pad[<name>]`
-holds an explicitly declared trailing separator where a glyph touches following text.
-Bundled Nerd Font defaults list the needed spaces (the U+F187 stash icon deliberately
-has none); plain glyphs default to none. Never infer font metrics from Unicode ranges.
-Users can override a pad, including with `''`, via
-`PROMPT_KRONUZ_GLYPH_PAD_<NAME>`. The OS glyph is OS-dependent
+holds a trailing space for glyphs wide enough to collide with following text (a
+single Private-Use-Area Nerd Font char); plain BMP / character glyphs get none, so
+counts/jobs/duration only space out the wide glyphs. The OS glyph is OS-dependent
 (apple/Tux by `$OSTYPE`, empty in plain mode); the legacy `_kronuz_os` still works
 as a highest-priority override (applied after the loop). Each default codepoint is
 in the inline `g=( ... )` tables, with the `nf-*` name or the literal
