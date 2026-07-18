@@ -23,7 +23,7 @@ directory; there's no list to edit.
 classic     →  modern            what you get
 ──────────────────────────────────────────────────────────────
 ls          →  eza               colors, icons, git, tree
-cat         →  bat               syntax highlighting, line numbers, git gutter
+cat file    →  bat               syntax highlighting for interactive file viewing
 find        →  fd                simpler syntax, respects .gitignore, fast
 grep        →  rg (ripgrep)      recursive + gitignore-aware by default, fast
 git diff    →  delta             side-by-side, syntax-highlighted diffs
@@ -74,7 +74,10 @@ KronuZSH uses it for `cat`, the **man pager**, local-function output from `help`
 and fzf's file preview; without it, the native tools stay untouched. Themed with
 Kronuz: `setup.sh` builds bat's cache with the bundled theme
 ([`integrations/themes/Kronuz.tmTheme`](integrations/themes/Kronuz.tmTheme))
-and init.zsh sets `BAT_THEME=Kronuz`. Debian ships it as `batcat`; init.zsh
+and init.zsh sets `BAT_THEME=Kronuz`. A compatibility wrapper uses bat only for a
+plain `cat file` written directly to the terminal. Options such as `cat -v`, stdin,
+pipelines, and redirections use the native `cat`, so shell and byte-stream behavior
+remain intact. Debian ships it as `batcat`; init.zsh
 accepts either name.
 
 ### [ripgrep](https://github.com/BurntSushi/ripgrep) (`rg`) — a fast `grep`
