@@ -86,10 +86,10 @@ kz_hint() {
 # kz_manage_file <label> <path>: declare a path currently managed by KronuZSH.
 # Re-declaring a path updates its label and never duplicates the inventory entry.
 kz_manage_file() {
-  [ "$#" -eq 2 ] && [ -n "$1" ] && [ -n "$2" ] || {
+  if [ "$#" -ne 2 ] || [ -z "$1" ] || [ -z "$2" ]; then
     printf 'kz_manage_file: expected <label> <path>\n' >&2
     return 2
-  }
+  fi
 
   local label="$1" path="$2" i
 
@@ -139,10 +139,10 @@ kz_tilde() {
 
 # kz_script_dir <source>: resolve the physical directory containing a sourced script.
 kz_script_dir() {
-  [ "$#" -eq 1 ] && [ -n "$1" ] || {
+  if [ "$#" -ne 1 ] || [ -z "$1" ]; then
     printf 'kz_script_dir: expected <source>\n' >&2
     return 2
-  }
+  fi
 
   (cd -- "$(dirname -- "$1")" && pwd -P)
 }
@@ -195,10 +195,10 @@ kz_backup_info() {
 # kz_backup_file <label> <path>: manage, copy, and report a user config file before
 # editing it. With --no-backup the path is still registered, but no copy is created.
 kz_backup_file() {
-  [ "$#" -eq 2 ] && [ -n "$1" ] && [ -n "$2" ] || {
+  if [ "$#" -ne 2 ] || [ -z "$1" ] || [ -z "$2" ]; then
     printf 'kz_backup_file: expected <label> <path>\n' >&2
     return 2
-  }
+  fi
 
   local label="$1" path="$2" backup
 
@@ -211,10 +211,10 @@ kz_backup_file() {
 # file. Parent creation, backup policy, and managed-file registration live here so an
 # integration cannot accidentally perform only part of the ownership protocol.
 kz_commit_file() {
-  [ "$#" -eq 3 ] && [ -n "$1" ] && [ -n "$2" ] && [ -f "$3" ] || {
+  if [ "$#" -ne 3 ] || [ -z "$1" ] || [ -z "$2" ] || [ ! -f "$3" ]; then
     printf 'kz_commit_file: expected <label> <path> <replacement-file>\n' >&2
     return 2
-  }
+  fi
 
   local label="$1" path="$2" replacement="$3"
 
@@ -231,10 +231,10 @@ kz_commit_file() {
 # descriptor already points at its intended source. The label is accepted so callers
 # can pass one descriptor unchanged to both link helpers.
 kz_managed_link_active() {
-  [ "$#" -eq 3 ] && [ -n "$1" ] && [ -n "$2" ] && [ -n "$3" ] || {
+  if [ "$#" -ne 3 ] || [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
     printf 'kz_managed_link_active: expected <label> <source> <destination>\n' >&2
     return 2
-  }
+  fi
 
   [ -L "$3" ] && [ "$(readlink "$3")" = "$2" ]
 }
@@ -242,10 +242,10 @@ kz_managed_link_active() {
 # kz_manage_link <label> <source> <destination>: declare and install a managed link.
 # The operation is idempotent; conflicts pass through the shared backup policy.
 kz_manage_link() {
-  [ "$#" -eq 3 ] && [ -n "$1" ] && [ -n "$2" ] && [ -n "$3" ] || {
+  if [ "$#" -ne 3 ] || [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
     printf 'kz_manage_link: expected <label> <source> <destination>\n' >&2
     return 2
-  }
+  fi
 
   local label="$1" source="$2" destination="$3" backup
 
