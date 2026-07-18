@@ -42,6 +42,7 @@ PROMPT_KRONUZ_COLOR_HOST='$col[green]'
 # stashed ahead behind staged modified conflicted untracked venv vim emacs jobs duration
 # ssh container dot return overwrite caret caret_alt.
 # PROMPT_KRONUZ_GLYPH_MODIFIED='*'
+# PROMPT_KRONUZ_GLYPH_PAD_MODIFIED=' ' # add/remove spacing after a custom glyph
 # PROMPT_KRONUZ_GLYPH_OS=''            # hide the OS logo next to the hostname
 # Replace or hide the complete live keymap indicators (prompt strings may reference
 # the semantic palette and glyph arrays):
