@@ -300,9 +300,11 @@ When you press Enter, the prompt for the command you just ran collapses to a com
 line: the **directory it ran in**, then a short caret. So your scrollback reads as a
 column of `path ❯ command` instead of a wall of repeated full prompts, and you can see
 where each command was run. The live prompt above the cursor is always the full one;
-only the past ones shrink. A command that **failed or was slow** also leaves its outcome
-line (the `⏎<code>` / duration) behind, dimmed, so scrollback stays a quiet log of what
-happened.
+only the past ones shrink. A command that **failed or was slow** leaves its outcome
+line (the `⏎<code>` / duration) visible in the next live prompt. When you submit the
+next command, that outcome line is discarded with the rest of the full prompt so it
+does not create another terminal mark. In iTerm2, the command's mark still retains its
+exit status and calculated running time for later inspection.
 
 The collapsed path reuses your `PROMPT_KRONUZ_PWD_STYLE` (so `short`/`base` shorten it
 there too) and uses the live `pwd` colour (so it matches the prompt and honours
@@ -319,10 +321,12 @@ restyled together by `PROMPT_KRONUZ_TRANSIENT_STYLE`.
 ```
 ~/project ❯ cd src
 ~/project/src ❯ make
-⏎ 2          ← make failed; its outcome line stays, dimmed
-~/project/src ❯ ./run --watch
-3.4s         ← slow; the dimmed duration stays
-● kronuz at host (10.0.0.5)  ⎇ main              ← live prompt, full color
+⏎ 2          ← make failed; visible in the current live prompt
+● kronuz at host (10.0.0.5)  ⎇ main
+[16:25:58] ~/project/src ❯❯❯ ./run --watch
+~/project/src ❯ ./run --watch       ← after Enter, the old prompt collapses
+3.4s         ← the completed command was slow; visible in the new live prompt
+● kronuz at host (10.0.0.5)  ⎇ main
 [16:26:02] ~/project/src ❯❯❯
 ```
 
@@ -333,7 +337,7 @@ styles below, and listed in full in the option reference):
 |--------------------------------|--------------------|---------------------------------------------------|
 | `PROMPT_KRONUZ_TRANSIENT`      | `pwd ❯`            | The whole collapsed prompt string (by default the directory the command ran in, then a caret), built like `PROMPT` from deferred `${...}` segments. Set to `''` to disable transience entirely (past prompts stay full), or to any string for a custom collapsed prompt (which is itself restyled per `PROMPT_KRONUZ_TRANSIENT_STYLE`). |
 | `PROMPT_KRONUZ_TRANSIENT_CARET`| `❯`                | Just the caret piece of the default collapsed line — symmetric to `PROMPT_KRONUZ_PROMPT` for the live prompt. Set to an emoji or any string to change the caret without touching the rest. Ignored if you override the whole `PROMPT_KRONUZ_TRANSIENT`. |
-| `PROMPT_KRONUZ_TRANSIENT_STYLE`| `dim`              | How the collapsed line — the pwd, caret, and the just-run **command** (plus the kept outcome line) — is restyled: `dim`, `mute`, or `keep`. |
+| `PROMPT_KRONUZ_TRANSIENT_STYLE`| `dim`              | How the collapsed line — the pwd, caret, and the just-run **command** — is restyled: `dim`, `mute`, or `keep`. |
 | `PROMPT_KRONUZ_TRANSIENT_DIM`  | `0.7`              | For `dim`: darkness factor, `0` = black, `1` = unchanged. Lower is darker. |
 | `PROMPT_KRONUZ_TRANSIENT_HL`   | `fg=8`             | For `mute`: the `region_highlight` spec to paint the command with (default = grey). |
 
@@ -366,17 +370,17 @@ The three styles:
   it with `PROMPT_KRONUZ_TRANSIENT_HL`).
 - **`keep`** leaves the syntax colors untouched.
 
-### The exit code lives above the caret, not in it
+### The exit code is live; the terminal keeps the history
 
 A natural wish is to color the caret of a failed command red. The caret itself
 can't be: it's drawn the moment you press Enter, before the command runs, so at
-caret-draw time its own result doesn't exist yet. Instead the result shows on the
-**line above** the caret. The live prompt puts the `⏎<code>` / duration on its own
-line, and when you submit the next command that line stays behind (dimmed) in
-scrollback, so past failures and slow commands are still visible at a glance. The
-terminal also gets the machine-readable version via the OSC 133 `D;<exitcode>` mark
-the prompt emits per command, which terminals like iTerm2 use to flag failed
-commands in the gutter.
+caret-draw time its own result doesn't exist yet. Instead the result shows on a line
+above the **next live prompt**, where it is useful while it is fresh. Submitting
+another command discards that visual line during the transient collapse. The terminal
+independently gets the machine-readable result via the OSC 133 `D;<exitcode>` mark
+emitted for each command. iTerm2 uses it to flag failed commands in the gutter and
+retains the command's status and calculated running time in the mark's Info panel, so
+the information remains available without another line in scrollback.
 
 ## Terminal integration
 
@@ -397,7 +401,7 @@ The metadata is invisible until iTerm2 uses it, and several small conveniences a
 - **Jump between commands:** press **Command-Shift-Up** or **Command-Shift-Down** to
   move to the previous or next prompt mark instead of scrolling and hunting.
 - **Spot failures:** with mark indicators visible, a failed command gets a red mark.
-  Right-click its mark to inspect information such as the exit status.
+  Right-click its mark to inspect its exit status and running time.
 - **Select clean output:** press **Command-Shift-A**, or choose **Edit → Select Output
   of Last Command**, to select only what the last command printed, without its prompt
   or command line.

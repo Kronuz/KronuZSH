@@ -255,7 +255,8 @@ re-wraps the dispatcher): the wrapper runs fsh, then re-applies our style while 
 `_kronuz_muting` flag is set (set at accept, cleared in precmd). fsh rebuilds
 `region_highlight` unconditionally on line-finish, so this also covers a buffer fsh
 skipped, e.g. a paste). Status/duration are live-only in transient mode and are
-discarded along with context on accept. The **jobs** segment is
+discarded along with context on accept; OSC 133 leaves the terminal responsible for
+historical exit status and elapsed time. The **jobs** segment is
 prompt-native (`%(1j...)`); the
 **context** (SSH/container) badge is detected once at setup. All of these are gated
 off on dumb terminals.

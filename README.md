@@ -18,8 +18,9 @@ me that I actually use is now maintained here or supplied by a standalone plugin
   from [gitstatus](https://github.com/romkatv/gitstatus); the venv, vi/emacs keymap
   indicator, and pwd are tiny native replacements for prezto's python-info,
   editor-info, and prompt-pwd. Past prompts collapse to a compact, configurable
-  `path ❯` line (the [transient prompt](prompt.md#transient-prompt)), and a slow or
-  failed command leaves a one-line status marker behind in scrollback.
+  `path ❯` line (the [transient prompt](prompt.md#transient-prompt)); a slow or
+  failed command is immediately visible in the live prompt, while terminals with
+  OSC 133 support retain its historical status and running time.
 - **plugins** (git submodules under `plugins/`):
   [fast-syntax-highlighting](https://github.com/zdharma-continuum/fast-syntax-highlighting),
   [zsh-autosuggestions](https://github.com/zsh-users/zsh-autosuggestions),
