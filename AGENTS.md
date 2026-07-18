@@ -33,9 +33,10 @@ self-resolves from `runcoms/zshrc` via `${(%):-%x}:A:h:h`.
   sources the `lib/` modules below. `runcoms/zlogin`: bg-compiles the compdump.
 - `runcoms/zshrc` order: `zshenv → lib/options → lib/history → lib/colors →
   lib/completion → lib/keybindings → lib/aliases → lib/functions → lib/terminal →
-  lib/plugins → integrations/init → lib/prompt → prompt_kronuz_setup`, then `setopt
-  PROMPT_SUBST`, then `~/.zshrc.local`. (`lib/colors` sets `$LS_COLORS` before
-  `lib/completion` so the completion menu picks it up, plus `$GREP_COLORS`,
+  lib/plugins → integrations/init → lib/prompt → prompt_kronuz_setup →
+  ~/.zshrc.local`. (`lib/options` globally enables the prompt options before setup;
+  `lib/colors` sets `$LS_COLORS` before `lib/completion` so the completion menu
+  picks it up, plus `$GREP_COLORS`,
   `$LESS_TERMCAP`, and BSD `$LSCOLORS` — see "File colours" below.)
 
 The bar for adding anything: keep only the **genuinely useful** part, lean and in
@@ -116,11 +117,12 @@ symlinks the theme into vivid's config dir (when vivid is installed) so you can.
 The prompt is built from deferred strings that are evaluated at every render. Two
 things make it work; keep both intact:
 
-1. **`setopt PROMPT_SUBST`** (set in `runcoms/zshrc`, not the prompt module) makes
-   the `${(e)...}` inside `$PROMPT` parameter-expand on each display. zshrc also
-   sets `PROMPT_PERCENT PROMPT_CR PROMPT_SP`. (These used to ride on prezto's
+1. **`setopt PROMPT_SUBST`** (set globally in `lib/options.zsh`, not inside the
+   locally scoped prompt setup function) makes the `${(e)...}` inside `$PROMPT`
+   parameter-expand on each display. The same Prompt section also sets
+   `PROMPT_PERCENT PROMPT_CR PROMPT_SP`. (These used to ride on prezto's
    `$prompt_opts`, which only `promptinit`'s `prompt` command reads — we call
-   `prompt_kronuz_setup` directly, so it's set explicitly in zshrc instead.)
+   `prompt_kronuz_setup` directly, so they are set explicitly in `lib/options.zsh`.)
 2. **`${(e)...}` resolves the array refs**: each segment embeds `${col[...]}` and
    `${glyph[...]}`, and one `${(e)}` pass at render expands them to the final escape /
    icon (a value that itself holds prompt `%`-escapes, left for `print -P`).

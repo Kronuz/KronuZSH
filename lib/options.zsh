@@ -28,4 +28,14 @@ unsetopt BEEP               # No beeps.
 setopt LONG_LIST_JOBS NOTIFY
 unsetopt BG_NICE HUP CHECK_JOBS
 
-PS2=''                      # Drop the "heredoc>" continuation prompt.
+# Prompt
+# KronuZSH's segments are deferred ${(e)...} strings. PROMPT_SUBST expands them on
+# every display; the remaining options provide normal prompt escapes, clean redraws,
+# and partial-line preservation. Keep these global: prompt_kronuz_setup uses
+# LOCAL_OPTIONS, so setting them inside that function would not survive its return.
+setopt PROMPT_SUBST         # Expand parameters and substitutions in prompt strings.
+setopt PROMPT_PERCENT       # Interpret `%` prompt escapes.
+setopt PROMPT_CR            # Return to column zero before drawing a prompt.
+setopt PROMPT_SP            # Preserve a partial output line before the next prompt.
+
+PS2=''                      # Use no prefix for continuation lines.
