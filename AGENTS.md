@@ -195,7 +195,10 @@ in `prompt_kronuz_precmd` (pwd, venv, git) into vars the deferred strings read
 
 Current layout:
 `PROMPT = status err info context etctl git venv jobs \n time pwd prompt`
-(plus a zero-width OSC 133 "B" mark at the end via `$_kronuz_osc_b`),
+(plus normal OSC 133 `A`/`B` marks when transience is off). With transience on, the
+live prompt is unmarked; accepting it collapses away status/context and emits `A`/`B`
+only around the pwd/caret command line, so historical status/duration is deliberately
+discarded while each executed command retains one correctly placed terminal mark.
 `RPROMPT = overwrite vim emacs`. The **status** segment (`_prompt_kronuz_status`,
 built in `_kronuz_status_segment`) is the last command's exit code (`⏎<code>` when
 nonzero) and duration (when slow) on their own line above the info row, and renders

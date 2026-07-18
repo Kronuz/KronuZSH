@@ -642,6 +642,10 @@ function _kronuz_osc_active {
   [[ "${PROMPT_KRONUZ_TERMINAL_INTEGRATION:-1}" != (0|no|off|false) \
     && -n "$TERM" && "$TERM" != (dumb|unknown) ]]
 }
+function _kronuz_transient_enabled {
+  local tp="${(e)PROMPT_KRONUZ_TRANSIENT-$DEFAULT_PROMPT_KRONUZ_TRANSIENT}"
+  [[ -n "$tp" && -n "$TERM" && "$TERM" != (dumb|unknown) ]]
+}
 function _kronuz_osc_preexec {
   _kronuz_osc_active || return
   _kronuz_osc_command_active=1
@@ -675,10 +679,14 @@ function _kronuz_osc_precmd {
     print -n "\e]133;D;${ret}\a"
     _kronuz_osc_command_active=0
   fi
-  print -n '\e]133;A\a'
   print -Pn '\e]7;file://%M%d\a'
   (( _kronuz_is_iterm )) && print -Pn "\e]1337;RemoteHost=${USER}@%M\a\e]1337;CurrentDir=%d\a"
-  _kronuz_osc_b=$'%{\e]133;B\a%}'
+  if _kronuz_transient_enabled; then
+    _kronuz_osc_b=''
+  else
+    print -n '\e]133;A\a'
+    _kronuz_osc_b=$'%{\e]133;B\a%}'
+  fi
 }
 
 # ============================================================================
@@ -727,7 +735,7 @@ function _kronuz_transient_accept {
     fi
     _kronuz_prompt_full=$PROMPT _kronuz_rprompt_full=$RPROMPT
     _kronuz_dim_string "$tp"; tp="$REPLY"     # restyle the whole line (dim/mute/keep)
-    PROMPT="${osc_a}${_prompt_kronuz_status_dim}${tp}${osc_b}" RPROMPT=''
+    PROMPT="${osc_a}${tp}${osc_b}" RPROMPT=''
     POSTDISPLAY=''
     [[ "${PROMPT_KRONUZ_TRANSIENT_STYLE:-dim}" != (keep|none|off) ]] && _kronuz_muting=1
     zle .reset-prompt
