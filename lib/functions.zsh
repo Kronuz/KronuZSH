@@ -37,12 +37,20 @@ else
 fi
 unset _kronuz_run_help_files
 
-# Show local function source directly; let native run-help resolve everything
-# else (builtins, aliases, reserved words, and external commands).
+# Integrations may register a transparent wrapper whose help should resolve to the
+# wrapped external command rather than display the wrapper's implementation.
+typeset -gA _kronuz_help_native
+
+# Show local function source directly; let native run-help resolve everything else
+# (builtins, aliases, reserved words, external commands, and registered wrappers).
 function help {
   emulate -L zsh
 
-  if (( $# == 1 && $+functions[$1] )); then
+  if (( $# == 1 && $+_kronuz_help_native[$1] )); then
+    # A subshell makes unfunction temporary. Native run-help can then classify the
+    # executable normally, including any command-specific run-help helper.
+    ( unfunction "$1" 2>/dev/null; run-help "${_kronuz_help_native[$1]}" )
+  elif (( $# == 1 && $+functions[$1] )); then
     local bat_command=${commands[bat]:-${commands[batcat]:-}}
     if [[ -n $bat_command ]]; then
       builtin functions "$1" |

@@ -43,6 +43,12 @@ an obviously-named file, and prefer zsh-native over a vendored module (that's wh
 there's no `safe-paste` module, no `spectrum`, no `terminal` module — the useful
 bit of each is a few native lines). Don't re-import prezto's breadth wholesale.
 
+`help` normally shows a shell function's source. If an integration adds a transparent
+function wrapper around an external command but users should still see the native
+manual, register it as `_kronuz_help_native[wrapper]=command`. Do this only for hybrid
+compatibility wrappers such as `cat`; genuine helpers such as `y` should document their
+function implementation.
+
 In `lib/plugins.zsh` the order matters: **gitstatus first**, autosuggestions and
 history-substring-search next, **fast-syntax-highlighting LAST** (it wraps ZLE
 widgets, so anything that defines widgets must come before it).

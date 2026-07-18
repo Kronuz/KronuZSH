@@ -137,7 +137,9 @@ it. `http-serve` starts Python 3's HTTP server when `python3` is installed.
 `help <command>` is the normal help entry point: local shell functions show their
 source (syntax-highlighted and paged by bat when available, otherwise through
 `$PAGER`), while builtins, aliases, reserved words, and external commands go through
-zsh's context-aware `run-help`. Native `run-help` remains available directly,
+zsh's context-aware `run-help`. Transparent integration wrappers do the same, so
+`help cat` opens the native `cat` manual even when interactive file viewing is powered
+by bat. Native `run-help` remains available directly,
 including its Git, `ip`, OpenSSL, and `sudo` helpers; minimal installations fall back
 to `man`.
 

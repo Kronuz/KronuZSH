@@ -77,7 +77,8 @@ Kronuz: `setup.sh` builds bat's cache with the bundled theme
 and init.zsh sets `BAT_THEME=Kronuz`. A compatibility wrapper uses bat only for a
 plain `cat file` written directly to the terminal. Options such as `cat -v`, stdin,
 pipelines, and redirections use the native `cat`, so shell and byte-stream behavior
-remain intact. Debian ships it as `batcat`; init.zsh
+remain intact. `help cat` likewise resolves to native cat's manual rather than showing
+the compatibility wrapper. Debian ships it as `batcat`; init.zsh
 accepts either name.
 
 ### [ripgrep](https://github.com/BurntSushi/ripgrep) (`rg`) — a fast `grep`

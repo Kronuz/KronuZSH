@@ -21,6 +21,7 @@ if [[ -n $_kronuz_bat ]]; then
   # only for option-free files written directly to a terminal; native cat handles
   # every flag (including platform-specific ones), stdin, pipes, and redirections.
   typeset -g _kronuz_bat_command="$_kronuz_bat"
+  _kronuz_help_native[cat]=cat
   unalias cat 2>/dev/null
   function cat {
     local arg after_options=0
