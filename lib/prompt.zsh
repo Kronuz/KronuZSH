@@ -719,9 +719,15 @@ function _kronuz_transient_accept {
   # PROMPT_KRONUZ_TRANSIENT='' disables transience while unset falls back to the default.
   local tp="${(e)PROMPT_KRONUZ_TRANSIENT-$DEFAULT_PROMPT_KRONUZ_TRANSIENT}"
   if (( ! ${_kronuz_dumb:-0} )) && [[ -n "$tp" ]]; then
+    local osc_a='' osc_b=''
+    if _kronuz_osc_active; then
+      # reset-prompt erases and relocates the live prompt. Re-mark the collapsed
+      # prompt so the following C/D status attaches to its new screen position.
+      osc_a=$'%{\e]133;A\a%}' osc_b=$'%{\e]133;B\a%}'
+    fi
     _kronuz_prompt_full=$PROMPT _kronuz_rprompt_full=$RPROMPT
     _kronuz_dim_string "$tp"; tp="$REPLY"     # restyle the whole line (dim/mute/keep)
-    PROMPT="${_prompt_kronuz_status_dim}${tp}" RPROMPT=''
+    PROMPT="${osc_a}${_prompt_kronuz_status_dim}${tp}${osc_b}" RPROMPT=''
     POSTDISPLAY=''
     [[ "${PROMPT_KRONUZ_TRANSIENT_STYLE:-dim}" != (keep|none|off) ]] && _kronuz_muting=1
     zle .reset-prompt

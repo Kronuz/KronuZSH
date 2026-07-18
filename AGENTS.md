@@ -217,6 +217,8 @@ not a spurious `D;0` command completion; in iTerm2,
 first enabled precmd so `~/.zshrc.local` can opt out), and the **transient prompt** (an accept-line
 widget on `^M`/`^J` that swaps `$PROMPT` to the resolved
 `${(e)PROMPT_KRONUZ_TRANSIENT-$DEFAULT_PROMPT_KRONUZ_TRANSIENT}` and `reset-prompt`s,
+wrapping the collapsed redraw in fresh OSC 133 `A`/`B` boundaries so iTerm2 keeps the
+command mark and its eventual `D;<status>` attached to the relocated prompt,
 restored in precmd; configured symmetrically to the live prompt — `PROMPT_KRONUZ_TRANSIENT`
 is the whole string like `PROMPT`, `PROMPT_KRONUZ_TRANSIENT_CARET` is just the caret piece
 like `PROMPT_KRONUZ_PROMPT`, both deferred `${...}` strings re-evaluated per accept. By
