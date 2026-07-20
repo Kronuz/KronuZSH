@@ -467,6 +467,7 @@ deferred so it is resolved whenever the prompt is drawn.
 | `PROMPT_KRONUZ_ERROR` | nonzero exit-code item on the conditional outcome line |
 | `PROMPT_KRONUZ_DURATION` | elapsed-time item on the conditional outcome line |
 | `PROMPT_KRONUZ_USER` | username (`%n`) |
+| `PROMPT_KRONUZ_HOST` | hostname (`%M`) |
 | `PROMPT_KRONUZ_IP` | cached LAN address inside the hostname's parentheses |
 | `PROMPT_KRONUZ_TIME` | current time (`[%*]`) |
 | `PROMPT_KRONUZ_PWD` | working directory generated according to `PROMPT_KRONUZ_PWD_STYLE` |
@@ -480,9 +481,9 @@ deferred so it is resolved whenever the prompt is drawn.
 | `PROMPT_KRONUZ_OVERWRITE` | right-prompt overwrite indicator; `''` hides it |
 | `PROMPT_KRONUZ_PROMPT` | complete live input caret; replacing it bypasses the primary/alternate keymap carets |
 
-There is no `PROMPT_KRONUZ_HOST`: the host display is composed from the OS, hostname,
-and IP pieces. Change `PROMPT_KRONUZ_OS` or `PROMPT_KRONUZ_IP`, or recolor the hostname
-with `PROMPT_KRONUZ_COLOR_HOST`. The outcome line itself owns the conditional layout:
+The host display composes `PROMPT_KRONUZ_OS`, `PROMPT_KRONUZ_HOST`, and
+`PROMPT_KRONUZ_IP`; recolor the hostname with `PROMPT_KRONUZ_COLOR_HOST`. The outcome
+line itself owns the conditional layout:
 `PROMPT_KRONUZ_ERROR` is used only for a nonzero exit, and `PROMPT_KRONUZ_DURATION`
 only after the duration threshold is reached. Their values control the contents of
 those items; the status line supplies their default colors, spacing, newline, and
@@ -526,7 +527,7 @@ fully enumerated in the linked table or directly in the description.
 | `PROMPT_KRONUZ_GLYPH_<NAME>` | per glyph | Override one glyph; `''` hides it. All names are in the [glyph table](#glyphs). |
 | `PROMPT_KRONUZ_COLOR_<NAME>` | per color | Override one semantic color. All public names are in the [color table](#colors). |
 | `PROMPT_KRONUZ_PALETTE_<NAME>` | terminal palette | Override one ANSI base color with `#RRGGBB` or a 0–255 index. Names: `BLACK`, `RED`, `GREEN`, `YELLOW`, `BLUE`, `MAGENTA`, `CYAN`, `GREY`, `DARKGREY`, `LIGHTRED`, `LIGHTGREEN`, `LIGHTYELLOW`, `LIGHTBLUE`, `LIGHTMAGENTA`, `LIGHTCYAN`, `LIGHTGREY`. This changes display colors and the RGB used by `dim`. |
-| `PROMPT_KRONUZ_<SEGMENT>` | built in | Replace one complete segment or outcome item. Names: `OS`, `ERR`, `ERROR`, `DURATION`, `USER`, `IP`, `TIME`, `PWD`, `GIT`, `VENV`, `JOBS`, `CONTEXT`, `ETCTL`, `VIM`, `EMACS`, `OVERWRITE`, `PROMPT`; see [Replacing a whole segment](#replacing-a-whole-segment). |
+| `PROMPT_KRONUZ_<SEGMENT>` | built in | Replace one complete segment or outcome item. Names: `OS`, `ERR`, `ERROR`, `DURATION`, `USER`, `HOST`, `IP`, `TIME`, `PWD`, `GIT`, `VENV`, `JOBS`, `CONTEXT`, `ETCTL`, `VIM`, `EMACS`, `OVERWRITE`, `PROMPT`; see [Replacing a whole segment](#replacing-a-whole-segment). |
 | `PROMPT_KRONUZ_PWD_STYLE` | `full` | Working-directory shortening: `full`, `short` (`~/D/k/i/bat`), `base` (current dir name), or `absolute` (`$HOME` expanded). |
 | `PROMPT_KRONUZ_CMD_DURATION_MIN` | `3` | Seconds a command must run before its duration is shown. `0` = always. |
 | `PROMPT_KRONUZ_IP_TTL` | `60` | Seconds the LAN-IP lookup is cached; lower it if prompt-time address changes must appear sooner. |

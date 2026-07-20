@@ -22,6 +22,8 @@
 # local laptop, leave it silver for anything unlabeled (and reserve red for prod). This
 # box is a dev box:
 PROMPT_KRONUZ_COLOR_HOST='$col[green]'
+# Use the short hostname instead of the fully qualified hostname (`%M`):
+# PROMPT_KRONUZ_HOST='%m'
 
 # --- Prompt: other colours (any semantic name from the colour table in prompt.md) ---
 # PROMPT_KRONUZ_COLOR_TIME='%F{45}'

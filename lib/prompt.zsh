@@ -955,6 +955,7 @@ function prompt_kronuz_setup {
   DEFAULT_PROMPT_KRONUZ_JOBS="%(1j. \${col[jobs]}\${glyph[jobs]}\${glyph_pad[jobs]}%j\${col[none]}.)"
   DEFAULT_PROMPT_KRONUZ_DURATION="\${glyph[duration]}\${glyph_pad[duration]}\${_prompt_kronuz_duration}"
   DEFAULT_PROMPT_KRONUZ_USER="%n"
+  DEFAULT_PROMPT_KRONUZ_HOST="%M"
   DEFAULT_PROMPT_KRONUZ_IP="\${_prompt_kronuz_ip}"
   DEFAULT_PROMPT_KRONUZ_GIT="\${_prompt_kronuz_git:+\${(e)_prompt_kronuz_git}}"
   DEFAULT_PROMPT_KRONUZ_VENV="\${(e)_prompt_kronuz_venv}"
@@ -978,7 +979,7 @@ function prompt_kronuz_setup {
   kronuz[user]="\${col[user]}\${(e)PROMPT_KRONUZ_USER:-\$DEFAULT_PROMPT_KRONUZ_USER}\${col[none]}"
   kronuz[time]="\${col[time]}\${(e)PROMPT_KRONUZ_TIME:-\$DEFAULT_PROMPT_KRONUZ_TIME}\${col[none]}"
   kronuz[pwd]="\${col[pwd]}\${(e)PROMPT_KRONUZ_PWD:-\$DEFAULT_PROMPT_KRONUZ_PWD}\${col[none]}"
-  kronuz[host]="$kronuz[os]\${col[host]}%M\${col[none]} \${col[ip]}(\${(e)PROMPT_KRONUZ_IP:-\$DEFAULT_PROMPT_KRONUZ_IP})\${col[none]}"
+  kronuz[host]="$kronuz[os]\${col[host]}\${(e)PROMPT_KRONUZ_HOST:-\$DEFAULT_PROMPT_KRONUZ_HOST}\${col[none]} \${col[ip]}(\${(e)PROMPT_KRONUZ_IP:-\$DEFAULT_PROMPT_KRONUZ_IP})\${col[none]}"
   kronuz[info]="$kronuz[user] at $kronuz[host]"
 
   SPROMPT='zsh: correct $col[red]%R%f to $col[green]%r%f [nyae]? '
