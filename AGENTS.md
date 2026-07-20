@@ -204,9 +204,10 @@ in `prompt_kronuz_precmd` (pwd, venv, git) into vars the deferred strings read
 Current layout:
 `PROMPT = status err info context etctl git venv jobs \n time pwd prompt`
 (plus normal OSC 133 `A`/`B` marks when transience is off). With transience on, the
-live prompt is unmarked; accepting it collapses away status/context and emits `A`/`B`
-only around the pwd/caret command line, so historical status/duration is deliberately
-discarded while each executed command retains one correctly placed terminal mark. With
+live prompt is unmarked; accepting a nonblank command keeps the dimmed previous
+status/duration by default, then emits `A`/`B` only around the pwd/caret command line.
+The status prefix therefore survives without acquiring a terminal mark;
+`PROMPT_KRONUZ_TRANSIENT_STATUS=0` makes it live-only. With
 transience off, one-shot `A`/`B` markers permanently bracket only the editable final
 prompt: status/duration are deliberately omitted, adjacent `D;<status>` / `A` precede
 the context row, and `B` ends the editable final line. `zle-line-init` clears all three
@@ -226,8 +227,8 @@ produced duplicate blue triangles. Continue with the controlled raw-stream and Z
 matrix in `iterm-transient-prompt-test-plan.md`, not ad hoc prompt edits.
 
 For prompt lifecycle refactors, run `scripts/check-prompt-streams.zsh <reference-tree>`.
-It drives fresh interactive ZLE sessions through failure, success, blank Enter, Ctrl-C,
-and exit in six modes: transient/static/disabled integration across iTerm and generic
+It drives fresh interactive ZLE sessions through failure, success, blank Enter, and
+exit in six modes: transient/static/disabled integration across iTerm and generic
 terminal paths. It normalizes only fixed machine/time/root values, then compares every
 remaining visible and control byte with `cmp`.
 

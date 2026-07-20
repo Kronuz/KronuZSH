@@ -534,8 +534,9 @@ function _kronuz_duration_segment {
 
 # ---- status line (exit code + duration, on a line above the info row) ----
 # $_prompt_kronuz_last_exit is captured by the OSC precmd (it runs first). The line
-# is shown only on the live prompt when transience is enabled; accepting the command
-# discards it, and non-transient mode omits it to keep terminal marks unambiguous.
+# is shown on the live prompt when transience is enabled. By default, accepting the
+# next command keeps that line in history outside the next command's OSC 133 A/B region.
+# Non-transient mode omits it because its stable multiline prompt is never collapsed.
 typeset -g _prompt_kronuz_status='' _prompt_kronuz_status_live=''
 typeset -g _prompt_kronuz_last_exit=0
 
@@ -750,6 +751,19 @@ function _kronuz_transient_prompt {
   REPLY="${(e)PROMPT_KRONUZ_TRANSIENT-$DEFAULT_PROMPT_KRONUZ_TRANSIENT}"
 }
 
+function _kronuz_transient_status_enabled {
+  [[ "${PROMPT_KRONUZ_TRANSIENT_STATUS:-1}" != (0|no|off|false) ]]
+}
+
+# Preserve the previous result above the collapsed prompt. It must remain outside OSC
+# A/B: putting A before this prefix moves the next command's gutter mark onto ⏎/time.
+function _kronuz_transient_status_prefix {
+  REPLY=''
+  _kronuz_transient_status_enabled || return
+  [[ -n "$_prompt_kronuz_status" ]] || return
+  _kronuz_dim_string "$_prompt_kronuz_status"
+}
+
 # Add OSC 133 only to the collapsed prompt that will survive in scrollback. REPLY is
 # the complete temporary PROMPT value; the full live prompt remains untouched here.
 function _kronuz_transient_marked_prompt {
@@ -789,9 +803,13 @@ function _kronuz_transient_accept {
   local tp=$REPLY
   if (( ! ${_kronuz_dumb:-0} )) && [[ -n "$tp" ]]; then
     _kronuz_prompt_full=$PROMPT _kronuz_rprompt_full=$RPROMPT
+    _kronuz_transient_status_prefix
+    local status_prefix=$REPLY
     _kronuz_dim_string "$tp"; tp="$REPLY"     # restyle the whole line (dim/mute/keep)
+    # A/B also delimit a blank prompt, so iTerm can navigate it independently. Since
+    # no command runs, preexec emits no C and precmd emits no D for that blank entry.
     _kronuz_transient_marked_prompt "$tp"
-    PROMPT=$REPLY RPROMPT=''
+    PROMPT="${status_prefix}${REPLY}" RPROMPT=''
     POSTDISPLAY=''
     [[ "${PROMPT_KRONUZ_TRANSIENT_STYLE:-dim}" != (keep|none|off) ]] && _kronuz_muting=1
     zle .reset-prompt
