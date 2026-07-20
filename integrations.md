@@ -126,7 +126,7 @@ backed up and changed only after confirmation; non-style preferences stay intact
 
 Renders Markdown with the bundled Kronuz glamour style. Its setup integration writes
 the style path into glow's own config when the current style is still the default,
-leaving an existing custom style alone.
+leaving an existing custom style alone, and sets wrapping to 120 columns.
 
 ### [btop](https://github.com/aristocratos/btop) — process monitor
 
@@ -231,6 +231,7 @@ palette wiring:
   (man pages), and `$LSCOLORS`/`$CLICOLOR` (macOS/BSD `ls`) in Kronuz tones.
 - **glow** — the bundled `integrations/glow/kronuz.json` glamour style, written into
   glow's own config (`style:`) by `setup.sh`, only when your style is still the default.
+  The setup also changes `width:` from glow's 80-column default to 120.
   glow the CLI never reads `$GLAMOUR_STYLE` (only the glamour *library* does) and themes
   nothing until its config or a `-s` flag names a style, so the env var alone does nothing
   — override with `glow -s <style>` or by editing `glow config`.

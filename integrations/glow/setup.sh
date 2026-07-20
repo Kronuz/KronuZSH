@@ -1,11 +1,12 @@
 # shellcheck shell=bash
-# glow: point glow.yml at the bundled glamour theme. The CLI does not honor
-# $GLAMOUR_STYLE, so the setting must live in glow's own config file.
+# glow: point glow.yml at the bundled glamour theme and wrap at 120 columns.
+# The CLI does not honor $GLAMOUR_STYLE, so both settings must live in glow's
+# own config file.
 
 _kronuz_setup_glow() {
   command -v glow >/dev/null 2>&1 || return 0
 
-  local here style config_path current_style='' temp
+  local here style config_path current_style='' current_width='' temp set_style=
   local -a config
 
   here="$(kz_script_dir "${BASH_SOURCE[0]:-$0}")"
@@ -27,6 +28,8 @@ _kronuz_setup_glow() {
   if [ -f "$config_path" ]; then
     current_style="$(sed -n 's/^[[:space:]]*style:[[:space:]]*//p' "$config_path" \
       | head -n1)"
+    current_width="$(sed -n 's/^[[:space:]]*width:[[:space:]]*//p' "$config_path" \
+      | head -n1)"
     current_style="${current_style%\"}"
     current_style="${current_style#\"}"
     current_style="${current_style%\'}"
@@ -34,29 +37,43 @@ _kronuz_setup_glow() {
   fi
 
   if [ "$current_style" = "$style" ]; then
-    kz_ok "glow" "already themed"
+    set_style=1
   elif [ -z "$KRONUZ_FORCE" ] \
     && [ -n "$current_style" ] \
     && [ "$current_style" != auto ]; then
     kz_skip "glow" "respecting your style: \"$current_style\""
     kz_info "enable later: set style to $(kz_tilde "$style") via \`glow config\`"
   else
+    set_style=1
+  fi
+
+  if [ "$current_width" = 120 ] \
+    && { [ "$current_style" = "$style" ] || [ -z "$set_style" ]; }; then
+    kz_ok "glow" "already configured"
+  else
     temp="$(mktemp)"
 
     if [ -f "$config_path" ]; then
-      grep -v -E '^[[:space:]]*style:' "$config_path" > "$temp" || true
+      if [ -n "$set_style" ]; then
+        grep -v -E '^[[:space:]]*(style|width):' "$config_path" > "$temp" || true
+      else
+        grep -v -E '^[[:space:]]*width:' "$config_path" > "$temp" || true
+      fi
     else
-      printf 'mouse: false\npager: false\nwidth: 80\nall: false\n' > "$temp"
+      printf 'mouse: false\npager: false\nall: false\n' > "$temp"
     fi
 
-    printf 'style: "%s"\n' "$style" >> "$temp"
+    printf 'width: 120\n' >> "$temp"
+    if [ -n "$set_style" ]; then
+      printf 'style: "%s"\n' "$style" >> "$temp"
+    fi
     kz_commit_file "${config[@]}" "$temp"
-    kz_ok "glow" "Kronuz style set in $(kz_tilde "$config_path")"
+    kz_ok "glow" "configured in $(kz_tilde "$config_path")"
   fi
 
-  if grep -Fqx "style: \"$style\"" "$config_path" 2>/dev/null; then
+  if grep -Eq '^[[:space:]]*width:[[:space:]]*120[[:space:]]*$' "$config_path" 2>/dev/null; then
     kz_manage_file "${config[@]}"
-    kz_hint "theme setting: style: \"$(kz_tilde "$style")\" in $(kz_tilde "$config_path")"
+    kz_hint "settings: width: 120 in $(kz_tilde "$config_path")"
   fi
 }
 
