@@ -540,38 +540,6 @@ function _kronuz_duration_segment {
 typeset -g _prompt_kronuz_status='' _prompt_kronuz_status_live=''
 typeset -g _prompt_kronuz_last_exit=0
 
-# Dim one colour spec (name / index / #hex) toward black by $PROMPT_KRONUZ_TRANSIENT_DIM,
-# returning #rrggbb in $REPLY. Returns 1 (and leaves $REPLY untouched) if the spec can't
-# be resolved. Shared by the command-buffer dimmer and the prompt-escape dimmer below.
-function _kronuz_dim_rgb {
-  local -a reply
-  _kronuz_color_rgb "$1"
-  (( $#reply == 3 )) || return 1
-  local -F f=${PROMPT_KRONUZ_TRANSIENT_DIM:-0.7}
-  local -i r=$(( reply[1]*f )) g=$(( reply[2]*f )) b=$(( reply[3]*f ))
-  printf -v REPLY '#%02x%02x%02x' r g b
-}
-
-# Restyle a resolved escape string per $PROMPT_KRONUZ_TRANSIENT_STYLE, into $REPLY:
-# keep = unchanged; mute = recolour every %F{} span to the mute grey; dim = darken every
-# %F{} span. Both leave %B / %(!..) / text structure intact, so a bold or root-conditional
-# colour dims/mutes correctly, and it works on a whole composed line (the transient).
-function _kronuz_dim_string {
-  emulate -L zsh
-  local s=$1 style="${PROMPT_KRONUZ_TRANSIENT_STYLE:-dim}"
-  [[ "$style" == (keep|none|off) ]] && { REPLY="$s"; return }
-  local mute=0; [[ "$style" == (mute|grey|gray) ]] && mute=1
-  local grey="${(e)col[transmuted]}"
-  local -a parts=("${(@ps:%F{:)s}")
-  local out="${parts[1]}" p spec rest
-  for p in "${(@)parts[2,-1]}"; do
-    spec="${p%%\}*}"; rest="${p#*\}}"
-    if (( mute )); then out+="${grey}${rest}"
-    elif _kronuz_dim_rgb "$spec"; then out+="%F{$REPLY}$rest"
-    else out+="%F{$spec}$rest"; fi
-  done
-  REPLY="$out"
-}
 function _kronuz_status_segment {
   _prompt_kronuz_status='' _prompt_kronuz_status_live=''
   # Only after a real command ran: a blank Enter leaves $? unchanged and must not
@@ -745,6 +713,37 @@ function _kronuz_osc_precmd {
 # darker), mute (one grey span), or keep. Off on dumb and when $PROMPT_KRONUZ_TRANSIENT=''.
 typeset -g _kronuz_prompt_full='' _kronuz_rprompt_full='' _kronuz_muting=0
 
+# Transient styling is shared by prompt strings and ZLE command highlights. Keep the
+# colour math here so segment renderers only decide what to display, not how history
+# is repainted.
+function _kronuz_dim_rgb {
+  local -a reply
+  _kronuz_color_rgb "$1"
+  (( $#reply == 3 )) || return 1
+  local -F f=${PROMPT_KRONUZ_TRANSIENT_DIM:-0.7}
+  local -i r=$(( reply[1]*f )) g=$(( reply[2]*f )) b=$(( reply[3]*f ))
+  printf -v REPLY '#%02x%02x%02x' r g b
+}
+
+# Resolve keep/mute/dim into $REPLY without changing prompt structure. The dim path
+# rewrites each %F{} span; mute replaces every foreground with the configured grey.
+function _kronuz_dim_string {
+  emulate -L zsh
+  local s=$1 style="${PROMPT_KRONUZ_TRANSIENT_STYLE:-dim}"
+  [[ "$style" == (keep|none|off) ]] && { REPLY="$s"; return }
+  local mute=0; [[ "$style" == (mute|grey|gray) ]] && mute=1
+  local grey="${(e)col[transmuted]}"
+  local -a parts=("${(@ps:%F{:)s}")
+  local out="${parts[1]}" p spec rest
+  for p in "${(@)parts[2,-1]}"; do
+    spec="${p%%\}*}"; rest="${p#*\}}"
+    if (( mute )); then out+="${grey}${rest}"
+    elif _kronuz_dim_rgb "$spec"; then out+="%F{$REPLY}$rest"
+    else out+="%F{$spec}$rest"; fi
+  done
+  REPLY="$out"
+}
+
 # Resolve the public whole-prompt override. `-` rather than `:-` makes an explicit
 # empty value disable transience while an unset value selects the default.
 function _kronuz_transient_prompt {
@@ -860,6 +859,51 @@ function prompt_kronuz_precmd {
   _kronuz_git_segment
 }
 
+# Register lifecycle hooks and editor widgets in one place. Ordering is semantic:
+# OSC precmd must capture $? before the render hook changes it, while duration and OSC
+# preexec observe the same accepted command.
+function _kronuz_setup_lifecycle {
+  autoload -Uz add-zsh-hook
+  add-zsh-hook precmd prompt_kronuz_precmd
+  add-zsh-hook preexec _kronuz_duration_preexec
+  add-zsh-hook precmd _kronuz_osc_precmd
+  add-zsh-hook preexec _kronuz_osc_preexec
+  precmd_functions=(_kronuz_osc_precmd ${precmd_functions:#_kronuz_osc_precmd})
+
+  zle -N zle-keymap-select
+  zle -N zle-line-init
+  zle -N overwrite-mode _kronuz_overwrite_toggle
+  if [[ -n "${terminfo[kich1]-}" ]]; then
+    bindkey -M emacs "$terminfo[kich1]" overwrite-mode
+    bindkey -M viins "$terminfo[kich1]" overwrite-mode
+  fi
+}
+
+# Install the accept-line replacement and the syntax-highlighter bridge. This is kept
+# separate from prompt composition because it mutates ZLE's widget graph.
+function _kronuz_setup_transient_widgets {
+  zle -N _kronuz_transient_accept
+  bindkey '^M' _kronuz_transient_accept
+  bindkey '^J' _kronuz_transient_accept
+  add-zsh-hook precmd _kronuz_transient_restore
+
+  # Fast-syntax-highlighting repaints region_highlight on line-finish. Wrap its shared
+  # painter once, then apply the transient style after it while a command is accepting.
+  if (( ${+functions[_zsh_highlight]} )) && (( ! ${+functions[_kronuz_zsh_highlight_orig]} )); then
+    functions[_kronuz_zsh_highlight_orig]=$functions[_zsh_highlight]
+    function _zsh_highlight {
+      _kronuz_zsh_highlight_orig "$@"
+      local ret=$?
+      (( ${_kronuz_muting:-0} )) && _kronuz_transient_style
+      return ret
+    }
+  fi
+
+  # Palette loading is lazy so ~/.zshrc.local, sourced after setup, can configure it.
+  # Re-arm the one-shot when setup is explicitly run again.
+  _kronuz_pal_loaded=0
+}
+
 function prompt_kronuz_setup {
   setopt LOCAL_OPTIONS
   unsetopt XTRACE KSH_ARRAYS
@@ -874,22 +918,7 @@ function prompt_kronuz_setup {
     zmodload zsh/nearcolor 2>/dev/null
   fi
 
-  autoload -Uz add-zsh-hook
-  add-zsh-hook precmd prompt_kronuz_precmd
-  add-zsh-hook preexec _kronuz_duration_preexec
-  add-zsh-hook precmd _kronuz_osc_precmd
-  add-zsh-hook preexec _kronuz_osc_preexec
-  # Run the OSC precmd first so it captures the command's real exit status.
-  precmd_functions=(_kronuz_osc_precmd ${precmd_functions:#_kronuz_osc_precmd})
-  zle -N zle-keymap-select
-  zle -N zle-line-init
-  zle -N overwrite-mode _kronuz_overwrite_toggle
-  # Match Prezto's convenient Insert-key binding when the terminal advertises one.
-  # Emacs mode also retains Zsh's inherited ^X^O binding to `overwrite-mode`.
-  if [[ -n "${terminfo[kich1]-}" ]]; then
-    bindkey -M emacs "$terminfo[kich1]" overwrite-mode
-    bindkey -M viins "$terminfo[kich1]" overwrite-mode
-  fi
+  _kronuz_setup_lifecycle
 
   DEFAULT_PROMPT_KRONUZ_KEYMAP_PRIMARY="\${col[caret1]}\${glyph[caret]}\${col[none]}\${col[caret2]}\${glyph[caret]}\${col[none]}\${col[caret3]}\${glyph[caret]}\${col[none]}"
   DEFAULT_PROMPT_KRONUZ_KEYMAP_ALTERNATE="\${col[caret3]}\${glyph[caret_alt]}\${col[none]}\${col[caret2]}\${glyph[caret_alt]}\${col[none]}\${col[caret1]}\${glyph[caret_alt]}\${col[none]}"
@@ -957,25 +986,5 @@ function prompt_kronuz_setup {
   # PROMPT_KRONUZ_TRANSIENT='' disables transience.
   DEFAULT_PROMPT_KRONUZ_TRANSIENT_CARET="\${col[transcaret]}\${glyph[caret]}\${col[none]}"
   DEFAULT_PROMPT_KRONUZ_TRANSIENT="\${_prompt_kronuz_pwd:+\${col[pwd]}\${_prompt_kronuz_pwd}\${col[none]} }\${(e)PROMPT_KRONUZ_TRANSIENT_CARET:-\$DEFAULT_PROMPT_KRONUZ_TRANSIENT_CARET} "
-  zle -N _kronuz_transient_accept
-  bindkey '^M' _kronuz_transient_accept
-  bindkey '^J' _kronuz_transient_accept
-  add-zsh-hook precmd _kronuz_transient_restore
-  # The dim/mute styles repaint region_highlight, which fast-syntax-highlighting then
-  # rebuilds on its own zle-line-finish. Wrap _zsh_highlight once (rather than hook
-  # the widget, which recurses with fsh's wrapper) to re-apply our style on top while
-  # $_kronuz_muting is set; the unconditional rebuild also covers a buffer fsh skipped
-  # (e.g. a paste). Works for fast-syntax-highlighting and zsh-syntax-highlighting.
-  if (( ${+functions[_zsh_highlight]} )) && (( ! ${+functions[_kronuz_zsh_highlight_orig]} )); then
-    functions[_kronuz_zsh_highlight_orig]=$functions[_zsh_highlight]
-    function _zsh_highlight {
-      _kronuz_zsh_highlight_orig "$@"
-      local ret=$?
-      (( ${_kronuz_muting:-0} )) && _kronuz_transient_style
-      return ret
-    }
-  fi
-  # The dim palette is loaded lazily on the first precmd (so ~/.zshrc.local, sourced after
-  # setup, can configure it); re-arm that one-shot here in case setup is re-run.
-  _kronuz_pal_loaded=0
+  _kronuz_setup_transient_widgets
 }

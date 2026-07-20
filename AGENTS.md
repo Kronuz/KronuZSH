@@ -204,8 +204,8 @@ in `prompt_kronuz_precmd` (pwd, venv, git) into vars the deferred strings read
 Current layout:
 `PROMPT = status err info context etctl git venv jobs \n time pwd prompt`
 (plus normal OSC 133 `A`/`B` marks when transience is off). With transience on, the
-live prompt is unmarked; accepting a nonblank command keeps the dimmed previous
-status/duration by default, then emits `A`/`B` only around the pwd/caret command line.
+live prompt is unmarked; accepting a command or blank line keeps the dimmed previous
+status/duration by default, then emits `A`/`B` only around the pwd/caret prompt line.
 The status prefix therefore survives without acquiring a terminal mark;
 `PROMPT_KRONUZ_TRANSIENT_STATUS=0` makes it live-only. With
 transience off, one-shot `A`/`B` markers permanently bracket only the editable final
@@ -219,6 +219,12 @@ nonzero) and duration (when slow) on their own line above the info row, and rend
 nothing (no line) on a quick, clean command. Its exit code comes from
 `_prompt_kronuz_last_exit`, captured first thing in `_kronuz_osc_precmd` (which runs first
 among the precmd hooks). `err` is the always-on `●` success/failure dot.
+
+`prompt_kronuz_setup` composes the defaults and final prompt strings. Keep side effects
+out of that composition: `_kronuz_setup_lifecycle` owns hook/widget registration, and
+`_kronuz_setup_transient_widgets` owns the accept-line bindings plus syntax-highlighter
+bridge. Transient colour math belongs with the transient lifecycle (`_kronuz_dim_rgb` /
+`_kronuz_dim_string`), not inside an individual segment renderer.
 
 Before changing OSC 133 placement around the transient prompt, read
 `iterm-transient-prompt-experiments.md`. It records the marker arrangements already
@@ -276,9 +282,13 @@ final paint over fast-syntax-highlighting it wraps fsh's `_zsh_highlight` once (
 re-wraps the dispatcher): the wrapper runs fsh, then re-applies our style while the
 `_kronuz_muting` flag is set (set at accept, cleared in precmd). fsh rebuilds
 `region_highlight` unconditionally on line-finish, so this also covers a buffer fsh
-skipped, e.g. a paste). Status/duration are live-only in transient mode and are
-discarded along with context on accept; OSC 133 leaves the terminal responsible for
-historical exit status and elapsed time. The **jobs** segment is
+skipped, e.g. a paste). Status/duration are shown live, then preserved above the
+collapsed history prompt by default. The status stays before the next `A`, so iTerm
+keeps the gutter triangle on the pwd/caret row; consequently, iTerm's “Select Output of
+Last Command” includes the status line because it bounds output by the next prompt mark
+rather than by `D`. Blank Enter also preserves the status and emits a fresh `A`/`B`
+prompt boundary, but no `C`/`D`, so command navigation remains distinct.
+`PROMPT_KRONUZ_TRANSIENT_STATUS=0` restores the old live-only behavior. The **jobs** segment is
 prompt-native (`%(1j...)`); the
 **context** (SSH/container) badge is detected once at setup. All of these are gated
 off on dumb terminals.
