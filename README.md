@@ -163,7 +163,8 @@ into `~/.cache/gitstatus/` (from GitHub releases). Nothing is committed here.
   ```
 
 - **Either way the prompt still works**: if `gitstatusd` isn't up, the git
-  segment falls back to a direct `git` call (a little slower on huge repos).
+  segment falls back to direct `git` calls (slower on huge repos) and shows a warning
+  icon before the branch until the daemon answers again.
 
 ## External tools
 

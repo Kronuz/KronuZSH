@@ -257,6 +257,7 @@ function prompt_kronuz_colors {
     transmuted '$col[darkgrey]'
     transcaret '%B$col[white]'
     action     '$col[darkorange]'
+    fallback   '$col[gold]'
     added      '$col[darkorange]'
     ahead      '$col[chartreuse]'
     behind     '$col[deeppink]'
@@ -313,6 +314,7 @@ function prompt_kronuz_glyphs {
       commit     '@'        # @  detached HEAD
       remote     $'\u21c5'  # ⇅  upstream / remote tracking
       action     $'\u2699'  # ⚙  in-progress op (rebase/merge)
+      fallback   $'\u26a0'  # ⚠  direct-git fallback warning
       clean      $'\u2714'  # ✔  worktree clean
       dirty      $'\u2717'  # ✗  worktree dirty
       stashed    $'\u2261'  # ≡  stash entries
@@ -338,6 +340,7 @@ function prompt_kronuz_glyphs {
       commit     $'\uf417'  # nf-oct-git_commit      detached HEAD
       remote     $'\uf47f'  # nf-oct-git_compare     upstream / remote tracking
       action     $'\uf419'  # nf-oct-git_merge       in-progress op (rebase/merge)
+      fallback   $'\uf071'  # nf-fa-warning          direct-git fallback warning
       clean      $'\u2714'  # ✔                      worktree clean
       dirty      $'\u2717'  # ✗                      worktree dirty
       stashed    $'\uf187'  # nf-fa-archive          stash entries
@@ -400,7 +403,9 @@ function _kronuz_git_fallback {
   local sep="${(e)col[sep]}" none="${(e)col[none]}" info="${(e)col[info]}"
   local gly="$glyph[branch]"
   command git symbolic-ref --quiet HEAD &>/dev/null || gly="$glyph[commit]"
-  local s=" ${info}${gly}${none} ${(e)col[branch]}${branch}${none}"
+  local warning=''
+  [[ -n "$glyph[fallback]" ]] && warning="${(e)col[fallback]}${glyph[fallback]}${none} "
+  local s=" ${warning}${info}${gly}${none} ${(e)col[branch]}${branch}${none}"
   local remote
   remote="$(command git rev-parse --abbrev-ref --symbolic-full-name @{upstream} 2>/dev/null)"
   [[ -n "$remote" ]] && s+=" ${info}${glyph[remote]}${none} ${(e)col[remote]}${remote}${none}"

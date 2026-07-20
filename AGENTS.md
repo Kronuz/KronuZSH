@@ -182,7 +182,7 @@ each glyph is overridable via `PROMPT_KRONUZ_GLYPH_<NAME>` (name upper-cased): s
 it to any character, or to `''` to hide it (an empty override is honored, via the
 `__KRONUZ_GLYPH_UNSET__` sentinel, not coerced back to the default).
 
-Names: `os branch tag commit remote action clean dirty stashed ahead behind staged
+Names: `os branch tag commit remote action fallback clean dirty stashed ahead behind staged
 modified conflicted untracked venv vim emacs jobs duration ssh container dot return
 overwrite caret caret_alt`. The git/venv/keymap/error segments and the OS segment
 all read `$glyph[...]` rather than hard-coding icons. A separate `glyph_pad[<name>]`
@@ -312,7 +312,9 @@ two cleanest examples to copy.
 `_kronuz_git_segment` queries the `KRONUZ` gitstatusd instance and maps
 `VCS_STATUS_*` to the branch/icons. If gitstatusd isn't up (no tty, not installed,
 download blocked) it calls `_kronuz_git_fallback`, a lean direct-`git` version, so
-the prompt always shows git info. gitstatus only distinguishes counts
+the prompt always shows git info. That path prefixes `glyph[fallback]` in
+`col[fallback]`, making synchronous fallback visible without warning in the healthy
+daemon path. gitstatus only distinguishes counts
 (staged/unstaged/untracked/conflicted), not added-vs-deleted-vs-renamed, so the
 icon set is a small simplification of the old prezto one.
 

@@ -138,6 +138,7 @@ only in a Nerd Font, so it's named here rather than shown):
 | `commit`     |  @    | `nf-oct-git_commit` U+F417      | detached HEAD                    |
 | `remote`     |  ⇅    | `nf-oct-git_compare` U+F47F     | upstream / remote tracking       |
 | `action`     |  ⚙    | `nf-oct-git_merge` U+F419       | in-progress op (rebase/merge)    |
+| `fallback`   |  ⚠    | `nf-fa-warning` U+F071           | direct-git fallback is active    |
 | `clean`      |  ✔    | ✔ U+2714 (same)                 | worktree clean                   |
 | `dirty`      |  ✗    | ✗ U+2717 (same)                 | worktree dirty                   |
 | `stashed`    |  ≡    | `nf-fa-archive` U+F187          | stash entries                    |
@@ -217,6 +218,7 @@ The semantic names and their defaults:
 | `clean` / `dirty`                         | forest green / brown | worktree state icon             |
 | `ahead` / `behind`                        | chartreuse / deep pink | upstream distance             |
 | `added` / `action`                        | dark orange        | staged changes / in-progress operation |
+| `fallback`                                | gold               | direct-git fallback warning      |
 | `modified` / `unmerged`                   | red                | unstaged changes / conflicts      |
 | `untracked`                               | dark grey          | untracked count                   |
 | `stashed`                                 | light steel blue   | stash count                       |
