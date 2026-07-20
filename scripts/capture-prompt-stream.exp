@@ -1,0 +1,70 @@
+#!/usr/bin/expect -f
+
+# Capture the real interactive ZLE stream. Run one scenario per fresh shell so OSC
+# state cannot leak between cases. The caller supplies the output path and scenario.
+if {$argc != 2 && $argc != 3} {
+  puts stderr "usage: capture-prompt-stream.exp OUTPUT SCENARIO ?KRONUZSH_ROOT?"
+  exit 2
+}
+
+set output [lindex $argv 0]
+set scenario [lindex $argv 1]
+set timeout 20
+log_user 1
+log_file -noappend $output
+
+if {$argc == 3} {
+  set root [file normalize [lindex $argv 2]]
+} else {
+  set root [file normalize [file join [file dirname [info script]] ..]]
+}
+set home "/tmp/kronuzsh-prompt-capture-home"
+file mkdir $home
+
+set term_program ""
+set lc_terminal ""
+set integration 1
+if {[string match "iterm-*" $scenario]} {
+  set term_program "iTerm.app"
+  set lc_terminal "iTerm2"
+}
+if {[string match "*-disabled" $scenario]} {
+  set integration 0
+}
+
+spawn -noecho env \
+  HOME=$home \
+  TERM=xterm-256color \
+  TERM_PROGRAM=$term_program \
+  LC_TERMINAL=$lc_terminal \
+  NO_COLOR=1 \
+  PROMPT_KRONUZ_PALETTE_TIMEOUT=0 \
+  PROMPT_KRONUZ_TERMINAL_INTEGRATION=$integration \
+  PROMPT_KRONUZ_GIT=\$\{:-\} \
+  PROMPT_KRONUZ_IP=\$\{:-\} \
+  PROMPT_KRONUZ_TIME=FIXED_TIME \
+  zsh -f
+
+expect "% "
+send -- "source $root/runcoms/zshrc\r"
+expect "❯❯❯ "
+
+if {[string match "*-static" $scenario]} {
+  send -- "PROMPT_KRONUZ_TRANSIENT=''\r"
+  expect "❯❯❯ "
+}
+
+send -- "sh -c 'printf \"nope\\n\"; exit 1'\r"
+expect "❯❯❯ "
+send -- "printf \"okay\\n\"\r"
+expect "❯❯❯ "
+send -- "\r"
+expect "❯❯❯ "
+set send_slow {1 .01}
+send -s -- "printf this-will-not-run"
+after 500
+send -- "\003"
+expect "❯❯❯ "
+send -- "exit\r"
+expect eof
+log_file

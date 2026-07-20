@@ -387,11 +387,13 @@ the information remains available without another line in scrollback.
 On a capable terminal (skipped on `dumb`/unknown), the prompt emits standard
 shell-integration escape sequences so the terminal can do more for you:
 
-- **OSC 7** (current directory): new tabs and splits open in the same `$PWD`.
+- **OSC 7** (current directory): on non-iTerm terminals, new tabs and splits open in
+  the same `$PWD`. iTerm2 receives `OSC 1337;CurrentDir` instead because its OSC 7
+  handler also creates a prompt mark, which would duplicate the OSC 133 mark.
 - **OSC 133** (prompt/command marks `A`/`B`/`C`/`D;exit`): jump between prompts,
   show per-command success/failure, select command output. The `D;<exitcode>` mark
   carries the real `$?`, so the terminal knows which commands failed.
-- **OSC 1337** (iTerm2 only): also reports host and directory to iTerm2's own
+- **OSC 1337** (iTerm2 only): reports host and directory through iTerm2's native
   integration, on top of the cross-terminal OSC 133 marks.
 
 ### Why keep the iTerm2 integration enabled?
@@ -441,7 +443,8 @@ PROMPT_KRONUZ_TERMINAL_INTEGRATION=0
 ```
 
 That disables all terminal metadata emitted by the prompt: OSC 7 current-directory
-reporting, OSC 133 prompt/command marks, and iTerm2's OSC 1337 host/directory updates.
+reporting on other terminals, OSC 133 prompt/command marks, and iTerm2's OSC 1337
+host/directory updates.
 Values `0`, `no`, `off`, and `false` disable it; the default is `1`.
 
 ## Replacing a whole segment

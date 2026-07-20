@@ -225,16 +225,23 @@ tested in the real iTerm UI, including several byte-correct sequences that still
 produced duplicate blue triangles. Continue with the controlled raw-stream and ZLE
 matrix in `iterm-transient-prompt-test-plan.md`, not ad hoc prompt edits.
 
+For prompt lifecycle refactors, run `scripts/check-prompt-streams.zsh <reference-tree>`.
+It drives fresh interactive ZLE sessions through failure, success, blank Enter, Ctrl-C,
+and exit in six modes: transient/static/disabled integration across iTerm and generic
+terminal paths. It normalizes only fixed machine/time/root values, then compares every
+remaining visible and control byte with `cmp`.
+
 Beyond the deferred segments, a few features hook the line lifecycle:
 **command duration** (`preexec` stamps `$EPOCHREALTIME`, precmd formats the delta
 into `_prompt_kronuz_duration` when it tops `PROMPT_KRONUZ_CMD_DURATION_MIN`),
-**terminal integration** (cross-terminal OSC 7 cwd + OSC 133 marks from
+**terminal integration** (OSC 7 cwd on non-iTerm terminals + cross-terminal OSC 133
+marks from
 `_kronuz_osc_precmd` / `_kronuz_osc_preexec`, with the OSC precmd ordered first in
 `precmd_functions` so the `D` mark carries the real `$?`; a separate
 `$_kronuz_osc_command_active` flag ensures a blank Enter emits a fresh prompt mark but
-not a spurious `D;0` command completion; in iTerm2,
-`$_kronuz_is_iterm`, it also emits the proprietary OSC 1337 ShellIntegrationVersion
-/ RemoteHost / CurrentDir; all three protocols are gated by
+not a spurious `D;0` command completion; in iTerm2, `$_kronuz_is_iterm`, it emits the
+proprietary OSC 1337 ShellIntegrationVersion / RemoteHost / CurrentDir instead of OSC 7
+because iTerm's OSC 7 handler creates a second prompt mark; all protocols are gated by
 `PROMPT_KRONUZ_TERMINAL_INTEGRATION`, and iTerm detection/announcement happens on the
 first enabled precmd so `~/.zshrc.local` can opt out), and the **transient prompt** (an accept-line
 widget on `^M`/`^J` that swaps `$PROMPT` to the resolved

@@ -639,21 +639,74 @@ function _kronuz_overwrite_toggle {
 }
 
 # ============================================================================
-# Terminal integration  (OSC 7 cwd, OSC 133 prompt marks, OSC 1337 iTerm2)
+# Terminal integration  (OSC 7/1337 cwd, OSC 133 command boundaries)
 # ============================================================================
-# Lets capable terminals open new tabs/splits in $PWD and jump between prompts /
-# show per-command status. The B (input start) mark rides at the end of $PROMPT via
-# $_kronuz_osc_b. Skipped on dumb/unknown terminals.
+# This section owns the whole shell-integration state machine. Hook functions decide
+# *when* a boundary occurs; the small helpers below decide *which bytes* each terminal
+# receives. Keep prompt-rendered bytes in $_kronuz_osc_{d,a,b}: A/B must surround the
+# editable prompt, while non-transient D must appear after the live status row.
 typeset -g _kronuz_osc_d='' _kronuz_osc_a='' _kronuz_osc_b=''
 typeset -g _kronuz_is_iterm=0 _kronuz_osc_command_active=0
+
 function _kronuz_osc_active {
   [[ "${PROMPT_KRONUZ_TERMINAL_INTEGRATION:-1}" != (0|no|off|false) \
     && -n "$TERM" && "$TERM" != (dumb|unknown) ]]
 }
+
 function _kronuz_transient_enabled {
   local tp="${(e)PROMPT_KRONUZ_TRANSIENT-$DEFAULT_PROMPT_KRONUZ_TRANSIENT}"
   [[ -n "$tp" && -n "$TERM" && "$TERM" != (dumb|unknown) ]]
 }
+
+function _kronuz_osc_clear_prompt_boundaries {
+  _kronuz_osc_d='' _kronuz_osc_a='' _kronuz_osc_b=''
+}
+
+# Detection is deferred until precmd so ~/.zshrc.local can disable integration after
+# prompt setup. The announcement is once per shell; $_kronuz_is_iterm then selects all
+# later iTerm-specific protocol forms.
+function _kronuz_osc_detect_iterm {
+  (( _kronuz_is_iterm )) && return
+  [[ "$LC_TERMINAL" == iTerm2 || "$TERM_PROGRAM" == iTerm.app ]] || return
+  _kronuz_is_iterm=1
+  print -n '\e]1337;ShellIntegrationVersion=14;shell=zsh\a'
+}
+
+# Report the same cwd through one protocol only. iTerm2's OSC 7 implementation creates
+# a prompt mark, so combining it with OSC 133 produces a duplicate blue triangle.
+function _kronuz_osc_report_context {
+  if (( _kronuz_is_iterm )); then
+    print -Pn "\e]1337;RemoteHost=${USER}@%M\a\e]1337;CurrentDir=%d\a"
+  else
+    print -Pn '\e]7;file://%M%d\a'
+  fi
+}
+
+# Close the command whose C was emitted by preexec. Transient D is written now because
+# its following live prompt is deliberately unmarked. Static D is deferred into PROMPT
+# so the status row remains outside the completed command's output range.
+function _kronuz_osc_finish_command {
+  local ret=$1
+  typeset -g _prompt_kronuz_last_exit=$ret
+  if _kronuz_transient_enabled; then
+    print -n "\e]133;D;${ret}\a"
+  else
+    _kronuz_osc_d=$'%{\e]133;D;'"${ret}"$'\a%}'
+  fi
+  _kronuz_osc_command_active=0
+}
+
+# A transient live prompt is a preview and is not recorded. Its A/B pair is added only
+# by the accept-line widget after the prompt collapses to its permanent history form.
+function _kronuz_osc_prepare_prompt_boundaries {
+  if _kronuz_transient_enabled; then
+    _kronuz_osc_a='' _kronuz_osc_b=''
+  else
+    _kronuz_osc_a=$'%{\e]133;A\a%}'
+    _kronuz_osc_b=$'%{\e]133;B\a%}'
+  fi
+}
+
 function _kronuz_osc_preexec {
   _kronuz_osc_active || return
   _kronuz_osc_command_active=1
@@ -668,44 +721,18 @@ function _kronuz_osc_preexec {
 }
 function _kronuz_osc_precmd {
   local ret=$?
-  # A blank Enter runs precmd without preexec. Preserve the preceding command's status
-  # and, more importantly, do not close a command boundary that was never opened.
-  (( _kronuz_osc_command_active )) && typeset -g _prompt_kronuz_last_exit=$ret
   if ! _kronuz_osc_active; then
-    _kronuz_osc_d='' _kronuz_osc_a='' _kronuz_osc_b=''
+    _kronuz_osc_clear_prompt_boundaries
     _kronuz_osc_command_active=0
     return
   fi
   _kronuz_osc_d=''
-  # Detect and announce iTerm2 here, after ~/.zshrc.local has had a chance to disable
-  # terminal integration. Once announced, the flag also gates its host/cwd updates.
-  if (( ! _kronuz_is_iterm )) \
-    && [[ "$LC_TERMINAL" == iTerm2 || "$TERM_PROGRAM" == iTerm.app ]]; then
-    _kronuz_is_iterm=1
-    print -n '\e]1337;ShellIntegrationVersion=14;shell=zsh\a'
-  fi
-  if (( _kronuz_osc_command_active )); then
-    if _kronuz_transient_enabled; then
-      print -n "\e]133;D;${ret}\a"
-    else
-      _kronuz_osc_d=$'%{\e]133;D;'"${ret}"$'\a%}'
-    fi
-    _kronuz_osc_command_active=0
-  fi
-  if (( _kronuz_is_iterm )); then
-    # iTerm2 turns OSC 7 into a prompt mark. Sending it alongside OSC 133
-    # therefore creates a second blue triangle at the precmd cursor position.
-    # Its proprietary CurrentDir update carries the same cwd without adding a mark.
-    print -Pn "\e]1337;RemoteHost=${USER}@%M\a\e]1337;CurrentDir=%d\a"
-  else
-    print -Pn '\e]7;file://%M%d\a'
-  fi
-  if _kronuz_transient_enabled; then
-    _kronuz_osc_a='' _kronuz_osc_b=''
-  else
-    _kronuz_osc_a=$'%{\e]133;A\a%}'
-    _kronuz_osc_b=$'%{\e]133;B\a%}'
-  fi
+  _kronuz_osc_detect_iterm
+  # Blank Enter runs precmd without preexec. Do not invent D;0 or overwrite the
+  # preceding command's status when no C boundary was opened.
+  (( _kronuz_osc_command_active )) && _kronuz_osc_finish_command "$ret"
+  _kronuz_osc_report_context
+  _kronuz_osc_prepare_prompt_boundaries
 }
 
 # ============================================================================
@@ -716,6 +743,23 @@ function _kronuz_osc_precmd {
 # accepted command is restyled per $PROMPT_KRONUZ_TRANSIENT_STYLE: dim (same hues,
 # darker), mute (one grey span), or keep. Off on dumb and when $PROMPT_KRONUZ_TRANSIENT=''.
 typeset -g _kronuz_prompt_full='' _kronuz_rprompt_full='' _kronuz_muting=0
+
+# Resolve the public whole-prompt override. `-` rather than `:-` makes an explicit
+# empty value disable transience while an unset value selects the default.
+function _kronuz_transient_prompt {
+  REPLY="${(e)PROMPT_KRONUZ_TRANSIENT-$DEFAULT_PROMPT_KRONUZ_TRANSIENT}"
+}
+
+# Add OSC 133 only to the collapsed prompt that will survive in scrollback. REPLY is
+# the complete temporary PROMPT value; the full live prompt remains untouched here.
+function _kronuz_transient_marked_prompt {
+  local prompt=$1
+  if _kronuz_osc_active; then
+    REPLY=$'%{\e]133;A\a%}'"${prompt}"$'%{\e]133;B\a%}'
+  else
+    REPLY=$prompt
+  fi
+}
 
 # Restyle the command's region_highlight in place (zsh has no faint attribute, so
 # `dim` recolours each fg toward black at truecolor precision).
@@ -741,20 +785,13 @@ function _kronuz_transient_style {
 # wrappers: clear the autosuggestion ghost ourselves (else reset-prompt bakes it into
 # scrollback), keep the dimmed status line, then accept.
 function _kronuz_transient_accept {
-  # Resolve the transient line: $PROMPT_KRONUZ_TRANSIENT overrides, else the default
-  # (pwd piece + the PROMPT_KRONUZ_TRANSIENT_CARET piece). `-` not `:-`, so an explicit
-  # PROMPT_KRONUZ_TRANSIENT='' disables transience while unset falls back to the default.
-  local tp="${(e)PROMPT_KRONUZ_TRANSIENT-$DEFAULT_PROMPT_KRONUZ_TRANSIENT}"
+  _kronuz_transient_prompt
+  local tp=$REPLY
   if (( ! ${_kronuz_dumb:-0} )) && [[ -n "$tp" ]]; then
-    local osc_a='' osc_b=''
-    if _kronuz_osc_active; then
-      # reset-prompt erases and relocates the live prompt. Re-mark the collapsed
-      # prompt so the following C/D status attaches to its new screen position.
-      osc_a=$'%{\e]133;A\a%}' osc_b=$'%{\e]133;B\a%}'
-    fi
     _kronuz_prompt_full=$PROMPT _kronuz_rprompt_full=$RPROMPT
     _kronuz_dim_string "$tp"; tp="$REPLY"     # restyle the whole line (dim/mute/keep)
-    PROMPT="${osc_a}${tp}${osc_b}" RPROMPT=''
+    _kronuz_transient_marked_prompt "$tp"
+    PROMPT=$REPLY RPROMPT=''
     POSTDISPLAY=''
     [[ "${PROMPT_KRONUZ_TRANSIENT_STYLE:-dim}" != (keep|none|off) ]] && _kronuz_muting=1
     zle .reset-prompt
