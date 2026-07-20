@@ -252,8 +252,9 @@ the info row, with its exit code (`⏎<code>`) and/or duration. On a quick, clea
 command that line is absent entirely. With transient prompts enabled, submitting the
 next command keeps the result line in scrollback above that command's collapsed prompt.
 The line stays outside the prompt's OSC 133 `A`/`B` region, so it does not acquire a
-terminal mark. Set `PROMPT_KRONUZ_TRANSIENT_STATUS=0` to retain the older live-only
-behavior. With transience disabled, status/duration remain omitted.
+terminal mark. Set `PROMPT_KRONUZ_STATUS=0` to retain the older live-only
+behavior. With transience disabled, the option instead controls whether status/duration
+are shown in the static prompt (shown by default, hidden when false).
 
 ### Command duration
 
@@ -340,7 +341,7 @@ styles below, and listed in full in the option reference):
 |--------------------------------|--------------------|---------------------------------------------------|
 | `PROMPT_KRONUZ_TRANSIENT`      | `pwd ❯`            | The whole collapsed prompt string (by default the directory the command ran in, then a caret), built like `PROMPT` from deferred `${...}` segments. Set to `''` to disable transience entirely (past prompts stay full), or to any string for a custom collapsed prompt (which is itself restyled per `PROMPT_KRONUZ_TRANSIENT_STYLE`). |
 | `PROMPT_KRONUZ_TRANSIENT_CARET`| `❯`                | Just the caret piece of the default collapsed line — symmetric to `PROMPT_KRONUZ_PROMPT` for the live prompt. Set to an emoji or any string to change the caret without touching the rest. Ignored if you override the whole `PROMPT_KRONUZ_TRANSIENT`. |
-| `PROMPT_KRONUZ_TRANSIENT_STATUS`| `1`               | Keep a failed exit status and/or slow-command duration in scrollback when the next command collapses; `0`/`no`/`off`/`false` makes it live-only. |
+| `PROMPT_KRONUZ_STATUS`          | `1`                | Keep a failed exit status and/or slow-command duration in scrollback when the next command collapses, or show it in the static prompt when transience is disabled; `0`/`no`/`off`/`false` makes it live-only with transience and hides it without transience. |
 | `PROMPT_KRONUZ_TRANSIENT_STYLE`| `dim`              | How the collapsed line — the pwd, caret, and the just-run **command** — is restyled: `dim`, `mute`, or `keep`. |
 | `PROMPT_KRONUZ_TRANSIENT_DIM`  | `0.7`              | For `dim`: darkness factor, `0` = black, `1` = unchanged. Lower is darker. |
 | `PROMPT_KRONUZ_TRANSIENT_HL`   | `fg=8`             | For `mute`: the `region_highlight` spec to paint the command with (default = grey). |
@@ -531,7 +532,7 @@ fully enumerated in the linked table or directly in the description.
 | `PROMPT_KRONUZ_IP_TTL` | `60` | Seconds the LAN-IP lookup is cached; lower it if prompt-time address changes must appear sooner. |
 | `PROMPT_KRONUZ_TRANSIENT` | `pwd ❯` | The whole collapsed past-prompt string (default: the run directory + caret), built like `PROMPT`; `''` disables transience. |
 | `PROMPT_KRONUZ_TRANSIENT_CARET` | `❯` | Just the caret piece of the default collapsed line (symmetric to `PROMPT_KRONUZ_PROMPT`); set to an emoji or any string. |
-| `PROMPT_KRONUZ_TRANSIENT_STATUS` | `1` | Keep the previous failed status and/or duration above the next collapsed command; `0`/`no`/`off`/`false` discards it on accept. |
+| `PROMPT_KRONUZ_STATUS` | `1` | Keep the previous failed status and/or duration above the next collapsed command, or show it in the static prompt when transience is disabled; false values make it live-only with transience and hide it without transience. |
 | `PROMPT_KRONUZ_TRANSIENT_STYLE` | `dim` | Restyle of the collapsed line (pwd, caret, command): `dim`, `mute`, or `keep`. |
 | `PROMPT_KRONUZ_TRANSIENT_DIM` | `0.7` | `dim` darkness factor (`0` black .. `1` unchanged). |
 | `PROMPT_KRONUZ_TRANSIENT_HL` | `fg=8` | `mute` color, as a `region_highlight` spec. |

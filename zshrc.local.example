@@ -65,7 +65,7 @@ PROMPT_KRONUZ_PWD_STYLE=short
 # Swap just the collapsed caret for an emoji or any string (the rest stays the default):
 # PROMPT_KRONUZ_TRANSIENT_CARET='🚀'
 # Set to 0 to discard ⏎/duration instead of keeping it in command history:
-# PROMPT_KRONUZ_TRANSIENT_STATUS=0
+# PROMPT_KRONUZ_STATUS=0
 # How the whole collapsed line (pwd, caret, command) is restyled: dim (default), mute, keep.
 # PROMPT_KRONUZ_TRANSIENT_STYLE=mute
 

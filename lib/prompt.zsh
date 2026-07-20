@@ -541,7 +541,7 @@ function _kronuz_duration_segment {
 # $_prompt_kronuz_last_exit is captured by the OSC precmd (it runs first). The line
 # is shown on the live prompt when transience is enabled. By default, accepting the
 # next command keeps that line in history outside the next command's OSC 133 A/B region.
-# Non-transient mode omits it because its stable multiline prompt is never collapsed.
+# In non-transient mode, the same status option controls whether the line is shown.
 typeset -g _prompt_kronuz_status='' _prompt_kronuz_status_live=''
 typeset -g _prompt_kronuz_last_exit=0
 
@@ -567,7 +567,9 @@ function _kronuz_status_segment {
   fi
   if [[ -n "$out" ]]; then
     _prompt_kronuz_status="${out}%E"$'\n'
-    _kronuz_transient_enabled && _prompt_kronuz_status_live=$_prompt_kronuz_status
+    if _kronuz_transient_enabled || _kronuz_status_enabled; then
+      _prompt_kronuz_status_live=$_prompt_kronuz_status
+    fi
   fi
   _kronuz_cmd_ran=0
 }
@@ -755,15 +757,15 @@ function _kronuz_transient_prompt {
   REPLY="${(e)PROMPT_KRONUZ_TRANSIENT-$DEFAULT_PROMPT_KRONUZ_TRANSIENT}"
 }
 
-function _kronuz_transient_status_enabled {
-  [[ "${PROMPT_KRONUZ_TRANSIENT_STATUS:-1}" != (0|no|off|false) ]]
+function _kronuz_status_enabled {
+  [[ "${PROMPT_KRONUZ_STATUS:-1}" != (0|no|off|false) ]]
 }
 
 # Preserve the previous result above the collapsed prompt. It must remain outside OSC
 # A/B: putting A before this prefix moves the next command's gutter mark onto ⏎/time.
 function _kronuz_transient_status_prefix {
   REPLY=''
-  _kronuz_transient_status_enabled || return
+  _kronuz_status_enabled || return
   [[ -n "$_prompt_kronuz_status" ]] || return
   _kronuz_dim_string "$_prompt_kronuz_status"
 }

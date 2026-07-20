@@ -209,12 +209,13 @@ Current layout:
 live prompt is unmarked; accepting a command or blank line keeps the dimmed previous
 status/duration by default, then emits `A`/`B` only around the pwd/caret prompt line.
 The status prefix therefore survives without acquiring a terminal mark;
-`PROMPT_KRONUZ_TRANSIENT_STATUS=0` makes it live-only. With
+`PROMPT_KRONUZ_STATUS=0` makes it live-only. With
 transience off, one-shot `A`/`B` markers permanently bracket only the editable final
-prompt: status/duration are deliberately omitted, adjacent `D;<status>` / `A` precede
-the context row, and `B` ends the editable final line. `zle-line-init` clears all three
-before its same-layout repaint and later keymap redraws. This avoids extra/misplaced
-marks; status/duration remain a transient-mode feature.
+prompt: status/duration are shown above it by default (and hidden when
+`PROMPT_KRONUZ_STATUS=0`), adjacent `D;<status>` / `A` follow the status and
+precede the context row, and `B` ends the editable final line. `zle-line-init` clears
+all three before its same-layout repaint and later keymap redraws. This avoids
+extra/misplaced marks.
 `RPROMPT = overwrite vim emacs`. The **status** segment (`_prompt_kronuz_status`,
 built in `_kronuz_status_segment`) is the last command's exit code (`⏎<code>` when
 nonzero) and duration (when slow) on their own line above the info row, and renders
@@ -290,7 +291,8 @@ keeps the gutter triangle on the pwd/caret row; consequently, iTerm's “Select 
 Last Command” includes the status line because it bounds output by the next prompt mark
 rather than by `D`. Blank Enter also preserves the status and emits a fresh `A`/`B`
 prompt boundary, but no `C`/`D`, so command navigation remains distinct.
-`PROMPT_KRONUZ_TRANSIENT_STATUS=0` restores the old live-only behavior. The **jobs** segment is
+`PROMPT_KRONUZ_STATUS=0` restores the old live-only behavior when transience
+is active, and hides the status when transience is disabled. The **jobs** segment is
 prompt-native (`%(1j...)`); the
 **context** (SSH/container) badge is detected once at setup. All of these are gated
 off on dumb terminals.
