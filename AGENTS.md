@@ -219,6 +219,12 @@ nothing (no line) on a quick, clean command. Its exit code comes from
 `_prompt_kronuz_last_exit`, captured first thing in `_kronuz_osc_precmd` (which runs first
 among the precmd hooks). `err` is the always-on `●` success/failure dot.
 
+Before changing OSC 133 placement around the transient prompt, read
+`iterm-transient-prompt-experiments.md`. It records the marker arrangements already
+tested in the real iTerm UI, including several byte-correct sequences that still
+produced duplicate blue triangles. Continue with the controlled raw-stream and ZLE
+matrix in `iterm-transient-prompt-test-plan.md`, not ad hoc prompt edits.
+
 Beyond the deferred segments, a few features hook the line lifecycle:
 **command duration** (`preexec` stamps `$EPOCHREALTIME`, precmd formats the delta
 into `_prompt_kronuz_duration` when it tops `PROMPT_KRONUZ_CMD_DURATION_MIN`),

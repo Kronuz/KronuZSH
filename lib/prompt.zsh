@@ -692,8 +692,14 @@ function _kronuz_osc_precmd {
     fi
     _kronuz_osc_command_active=0
   fi
-  print -Pn '\e]7;file://%M%d\a'
-  (( _kronuz_is_iterm )) && print -Pn "\e]1337;RemoteHost=${USER}@%M\a\e]1337;CurrentDir=%d\a"
+  if (( _kronuz_is_iterm )); then
+    # iTerm2 turns OSC 7 into a prompt mark. Sending it alongside OSC 133
+    # therefore creates a second blue triangle at the precmd cursor position.
+    # Its proprietary CurrentDir update carries the same cwd without adding a mark.
+    print -Pn "\e]1337;RemoteHost=${USER}@%M\a\e]1337;CurrentDir=%d\a"
+  else
+    print -Pn '\e]7;file://%M%d\a'
+  fi
   if _kronuz_transient_enabled; then
     _kronuz_osc_a='' _kronuz_osc_b=''
   else
