@@ -506,10 +506,10 @@ function _kronuz_pwd_segment {
   _prompt_kronuz_pwd="${p//\%/%%}"
 }
 
-# ---- LAN IP (cached; the lookup forks, so refresh at most every 10s) ----
+# ---- LAN IP (cached; the lookup forks, so keep it off the usual prompt path) ----
 typeset -g _prompt_kronuz_ip='' _kronuz_ip_ts=0
 function _kronuz_ip_segment {
-  (( ${EPOCHSECONDS:-0} - _kronuz_ip_ts < 10 )) && return
+  (( ${EPOCHSECONDS:-0} - _kronuz_ip_ts < ${PROMPT_KRONUZ_IP_TTL:-60} )) && return
   _kronuz_ip_ts=${EPOCHSECONDS:-0}
   _prompt_kronuz_ip="$(ifconfig 2>/dev/null | grep 'inet ' | grep -v '127.0.0.1' | head -1 | awk '{print $2}')"
 }

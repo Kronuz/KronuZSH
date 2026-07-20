@@ -52,7 +52,9 @@ function implementation.
 
 In `lib/plugins.zsh` the order matters: **gitstatus first**, autosuggestions and
 history-substring-search next, **fast-syntax-highlighting LAST** (it wraps ZLE
-widgets, so anything that defines widgets must come before it).
+widgets, so anything that defines widgets must come before it). Autosuggestions uses
+`ZSH_AUTOSUGGEST_MANUAL_REBIND`: its first precmd runs after that complete stack is
+loaded, binds once, then removes its own precmd hook. Do not move the binding earlier.
 
 ## File colours (ls / eza / fd / completion): the vivid pipeline
 

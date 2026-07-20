@@ -528,6 +528,7 @@ fully enumerated in the linked table or directly in the description.
 | `PROMPT_KRONUZ_<SEGMENT>` | built in | Replace one complete segment or outcome item. Names: `OS`, `ERR`, `ERROR`, `DURATION`, `USER`, `IP`, `TIME`, `PWD`, `GIT`, `VENV`, `JOBS`, `CONTEXT`, `ETCTL`, `VIM`, `EMACS`, `OVERWRITE`, `PROMPT`; see [Replacing a whole segment](#replacing-a-whole-segment). |
 | `PROMPT_KRONUZ_PWD_STYLE` | `full` | Working-directory shortening: `full`, `short` (`~/D/k/i/bat`), `base` (current dir name), or `absolute` (`$HOME` expanded). |
 | `PROMPT_KRONUZ_CMD_DURATION_MIN` | `3` | Seconds a command must run before its duration is shown. `0` = always. |
+| `PROMPT_KRONUZ_IP_TTL` | `60` | Seconds the LAN-IP lookup is cached; lower it if prompt-time address changes must appear sooner. |
 | `PROMPT_KRONUZ_TRANSIENT` | `pwd ❯` | The whole collapsed past-prompt string (default: the run directory + caret), built like `PROMPT`; `''` disables transience. |
 | `PROMPT_KRONUZ_TRANSIENT_CARET` | `❯` | Just the caret piece of the default collapsed line (symmetric to `PROMPT_KRONUZ_PROMPT`); set to an emoji or any string. |
 | `PROMPT_KRONUZ_TRANSIENT_STATUS` | `1` | Keep the previous failed status and/or duration above the next collapsed command; `0`/`no`/`off`/`false` discards it on accept. |

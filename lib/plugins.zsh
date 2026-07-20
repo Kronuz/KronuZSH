@@ -8,8 +8,11 @@ source "$KRONUZSH/plugins/gitstatus/gitstatus.plugin.zsh"
 gitstatus_start -s -1 -u -1 -c -1 -d -1 KRONUZ 2>/dev/null
 
 # zsh-autosuggestions: fish-style suggestions from history. Dim grey (Kronuz) so the
-# ghost suggestion sits behind what you're typing.
+# ghost suggestion sits behind what you're typing. The plugin stack is fixed and fsh
+# loads last, so bind once on the first precmd instead of rescanning every widget after
+# every Enter (the upstream automatic mode costs roughly 15ms per prompt here).
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#676867'
+ZSH_AUTOSUGGEST_MANUAL_REBIND=1
 source "$KRONUZSH/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
 
 # history-substring-search: type a fragment, press Up to match in history. Kronuz
