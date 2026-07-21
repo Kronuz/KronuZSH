@@ -249,7 +249,9 @@ marks from
 `_kronuz_osc_precmd` / `_kronuz_osc_preexec`, with the OSC precmd ordered first in
 `precmd_functions` so the `D` mark carries the real `$?`; a separate
 `$_kronuz_osc_command_active` flag ensures a blank Enter emits a fresh prompt mark but
-not a spurious `D;0` command completion; in iTerm2, `$_kronuz_is_iterm`, it emits the
+not a spurious `D;0` command completion (and a companion `$_kronuz_osc_line_submitted`
+flag lets a line zsh rejects at parse time still get its `D` — see **Parse-reject
+marks** below); in iTerm2, `$_kronuz_is_iterm`, it emits the
 proprietary OSC 1337 ShellIntegrationVersion / RemoteHost / CurrentDir instead of OSC 7
 because iTerm's OSC 7 handler creates a second prompt mark; all protocols are gated by
 `PROMPT_KRONUZ_TERMINAL_INTEGRATION`, and iTerm detection/announcement happens on the
@@ -296,6 +298,28 @@ is active, and hides the status when transience is disabled. The **jobs** segmen
 prompt-native (`%(1j...)`); the
 **context** (SSH/container) badge is detected once at setup. All of these are gated
 off on dumb terminals.
+
+**Parse-reject marks.** `preexec` fires only for a command that actually runs, so a
+line zsh rejects while *parsing* (structurally complete but invalid) would otherwise
+emit no `D` — a consumer that tracks command boundaries over OSC 133 (a terminal's
+command navigation, or an agent driving the shell) sees the failed line silently
+swallowed. The accept-line widget records that a non-empty line was submitted
+(`$_kronuz_osc_line_submitted`); when `_kronuz_osc_precmd` then runs with no `C` opened
+(`$_kronuz_osc_command_active == 0`) and it was not a Ctrl-C abort (`$? != 130`), it
+emits the closing `D;<status>` itself:
+
+```zsh
+% done      # complete token, invalid here → zsh: parse error near `done'
+#           → still emits OSC 133 D;1 (a boundary + exit status for the failed line)
+```
+
+It deliberately leaves two cases unmarked: a **blank Enter** (no buffer, so no flag) and
+a **Ctrl-C on an unfinished line** (`(( 1 +` then `^C` → `$? == 130`, which ran nothing).
+An *incomplete* line (unbalanced quote / paren / heredoc) parks at a continuation prompt
+and correctly has no `D` until it is finished or aborted. Note this closes the mark for a
+human fat-fingering syntax; a wrapper that always submits a valid outer command (e.g.
+`eval "$(cat <<'EOF' … EOF)"`) already gets a clean `C`/`D;<status>` because its body's
+parse error happens at *runtime* inside the valid `eval`.
 
 ### Add a segment
 

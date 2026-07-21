@@ -622,7 +622,7 @@ function _kronuz_overwrite_toggle {
 # receives. Keep prompt-rendered bytes in $_kronuz_osc_{d,a,b}: A/B must surround the
 # editable prompt, while non-transient D must appear after the live status row.
 typeset -g _kronuz_osc_d='' _kronuz_osc_a='' _kronuz_osc_b=''
-typeset -g _kronuz_is_iterm=0 _kronuz_osc_command_active=0
+typeset -g _kronuz_is_iterm=0 _kronuz_osc_command_active=0 _kronuz_osc_line_submitted=0
 
 function _kronuz_osc_active {
   [[ "${PROMPT_KRONUZ_TERMINAL_INTEGRATION:-1}" != (0|no|off|false) \
@@ -697,6 +697,10 @@ function _kronuz_osc_preexec {
 }
 function _kronuz_osc_precmd {
   local ret=$?
+  # Snapshot and clear the "a line was submitted" flag the accept widget sets, so
+  # exactly one precmd acts on it.
+  local submitted=$_kronuz_osc_line_submitted
+  _kronuz_osc_line_submitted=0
   if ! _kronuz_osc_active; then
     _kronuz_osc_clear_prompt_boundaries
     _kronuz_osc_command_active=0
@@ -704,9 +708,17 @@ function _kronuz_osc_precmd {
   fi
   _kronuz_osc_d=''
   _kronuz_osc_detect_iterm
-  # Blank Enter runs precmd without preexec. Do not invent D;0 or overwrite the
-  # preceding command's status when no C boundary was opened.
-  (( _kronuz_osc_command_active )) && _kronuz_osc_finish_command "$ret"
+  if (( _kronuz_osc_command_active )); then
+    # A command ran: close the C region preexec opened, with the real exit status.
+    _kronuz_osc_finish_command "$ret"
+  elif (( submitted )) && (( ret != 130 )); then
+    # A structurally complete line that zsh rejected at parse time: preexec never
+    # fired, so the normal C/D pair was never emitted. Still mark the line done
+    # with its exit status so consumers get a boundary + status for the failure.
+    # (Blank Enter sets no flag; ret==130 is a Ctrl-C abort of an unfinished line,
+    # which submitted no command -- neither should invent a D.)
+    _kronuz_osc_finish_command "$ret"
+  fi
   _kronuz_osc_report_context
   _kronuz_osc_prepare_prompt_boundaries
 }
@@ -805,6 +817,10 @@ function _kronuz_transient_style {
 # wrappers: clear the autosuggestion ghost ourselves (else reset-prompt bakes it into
 # scrollback), keep the dimmed status line, then accept.
 function _kronuz_transient_accept {
+  # A non-empty buffer is being submitted. Record it so the OSC precmd can emit a
+  # D;<exit> boundary even when zsh rejects the line at parse time -- preexec (and
+  # thus the normal C/D path) never fires for a line that fails to parse.
+  [[ -n "$BUFFER" ]] && _kronuz_osc_line_submitted=1
   _kronuz_transient_prompt
   local tp=$REPLY
   if (( ! ${_kronuz_dumb:-0} )) && [[ -n "$tp" ]]; then
