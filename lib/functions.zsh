@@ -51,13 +51,32 @@ function help {
     # executable normally, including any command-specific run-help helper.
     ( unfunction "$1" 2>/dev/null; run-help "${_kronuz_help_native[$1]}" )
   elif (( $# == 1 && $+functions[$1] )); then
+    zmodload -i zsh/parameter 2>/dev/null  # $functions_source: where each function was defined
+    local src=${functions_source[$1]} location
+    if [[ -r $src ]]; then
+      location=$src
+      # zsh records the source file but not the line; recover it by scanning the file
+      # for the definition (both `function name` and `name()` styles).
+      local -a src_lines=("${(@f)$(<$src)}")
+      local q=${(b)1} n line ws
+      for (( n = 1; n <= $#src_lines; n++ )); do
+        ws=${src_lines[n]%%[![:space:]]*}       # leading whitespace
+        line=${src_lines[n]#$ws}                # ...stripped
+        if [[ $line == ("function "${~q}[[:space:]{]*|"function "${~q}"("*|"function "${~q}|${~q}"("*|${~q}" ("*) ]]; then
+          location=$src:$n
+          break
+        fi
+      done
+    fi
+    local header="# defined in ${location:-(runtime; no source file)}"
+
     local bat_command=${commands[bat]:-${commands[batcat]:-}}
     if [[ -n $bat_command ]]; then
-      builtin functions "$1" |
+      { print -r -- $header; builtin functions "$1"; } |
         "$bat_command" --language=zsh --style=plain --paging=auto
     else
       local -a pager=(${(z)${PAGER:-cat}})
-      builtin functions "$1" | "${pager[@]}"
+      { print -r -- $header; builtin functions "$1"; } | "${pager[@]}"
     fi
   else
     run-help "$@"
