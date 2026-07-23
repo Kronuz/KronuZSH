@@ -287,7 +287,7 @@ The path segment shows the full working directory with `$HOME` abbreviated to `~
 | Value | Example | |
 |-------|---------|--|
 | `full` (default) | `~/.config/KronuZSH/integrations/bat` | the whole path, home as `~` |
-| `short` | `~/D/k/i/bat` | fish-style: each parent shrunk to its first character (a leading dot is kept, so `.config` → `.c`), the current directory in full |
+| `short` | `~/.c/K/i/bat` | shortest-unique-prefix (like Powerlevel10k's `truncate_to_unique`): each parent shrunk only as far as it stays unambiguous among its siblings, the current directory in full |
 | `base` | `bat` | just the current directory's name |
 | `absolute` | `/home/kronuz/.config/KronuZSH/integrations/bat` | the whole path with `$HOME` expanded |
 
@@ -494,7 +494,7 @@ conditional layout. Set either to `''` to hide that item without disabling the o
 PROMPT_KRONUZ_TIME='[%D{%H:%M:%S}]'
 
 # Just the basename of the cwd (or simpler: PROMPT_KRONUZ_PWD_STYLE=base; for the
-# fish-style ~/D/k/i/bat, PROMPT_KRONUZ_PWD_STYLE=short):
+# shortest-unique-prefix ~/.c/K/i/bat, PROMPT_KRONUZ_PWD_STYLE=short):
 PROMPT_KRONUZ_PWD='%1~'
 
 # Add a label before the normal username:
@@ -528,7 +528,7 @@ fully enumerated in the linked table or directly in the description.
 | `PROMPT_KRONUZ_COLOR_<NAME>` | per color | Override one semantic color. All public names are in the [color table](#colors). |
 | `PROMPT_KRONUZ_PALETTE_<NAME>` | terminal palette | Override one ANSI base color with `#RRGGBB` or a 0–255 index. Names: `BLACK`, `RED`, `GREEN`, `YELLOW`, `BLUE`, `MAGENTA`, `CYAN`, `GREY`, `DARKGREY`, `LIGHTRED`, `LIGHTGREEN`, `LIGHTYELLOW`, `LIGHTBLUE`, `LIGHTMAGENTA`, `LIGHTCYAN`, `LIGHTGREY`. This changes display colors and the RGB used by `dim`. |
 | `PROMPT_KRONUZ_<SEGMENT>` | built in | Replace one complete segment or outcome item. Names: `OS`, `ERR`, `ERROR`, `DURATION`, `USER`, `HOST`, `IP`, `TIME`, `PWD`, `GIT`, `VENV`, `JOBS`, `CONTEXT`, `ETCTL`, `VIM`, `EMACS`, `OVERWRITE`, `PROMPT`; see [Replacing a whole segment](#replacing-a-whole-segment). |
-| `PROMPT_KRONUZ_PWD_STYLE` | `full` | Working-directory shortening: `full`, `short` (`~/D/k/i/bat`), `base` (current dir name), or `absolute` (`$HOME` expanded). |
+| `PROMPT_KRONUZ_PWD_STYLE` | `full` | Working-directory shortening: `full`, `short` (shortest unique prefix, `~/.c/K/i/bat`), `base` (current dir name), or `absolute` (`$HOME` expanded). |
 | `PROMPT_KRONUZ_CMD_DURATION_MIN` | `3` | Seconds a command must run before its duration is shown. `0` = always. |
 | `PROMPT_KRONUZ_IP_TTL` | `60` | Seconds the LAN-IP lookup is cached; lower it if prompt-time address changes must appear sooner. |
 | `PROMPT_KRONUZ_TRANSIENT` | `pwd ❯` | The whole collapsed past-prompt string (default: the run directory + caret), built like `PROMPT`; `''` disables transience. |

@@ -556,11 +556,28 @@ function _kronuz_venv_segment {
 # ---- working directory ----
 # Render $PWD into _prompt_kronuz_pwd, per PROMPT_KRONUZ_PWD_STYLE:
 #   full     (default) the whole path, home as ~      ~/.config/KronuZSH/integrations/bat
-#   short    fish-style: each parent shrunk to its    ~/D/k/i/bat
-#            first char (leading dots kept), tail full
+#   short    shortest-unique-prefix (truncate_to_unique) ~/.c/K/i/bat
+#            each parent shrunk only as far as it stays unambiguous; leaf full
 #   base     just the current directory name          bat
 #   absolute the full path with $HOME expanded         /home/kronuz/.config/KronuZSH/.../bat
 # (literal % are doubled so print -P won't expand them.)
+
+# Set $REPLY to the shortest prefix of directory name $2 that is unique among the
+# sub-directories of parent $1 (empty parent = filesystem root). Used by the 'short'
+# PWD style below; globs the parent directory once.
+function _kronuz_unique_prefix {
+  emulate -L zsh -o extended_glob
+  local parent="${1:-/}" name="$2" s
+  local -a sibs=( ${parent%/}/*(ND/:t) )
+  local -i n=1 c
+  while (( n < $#name )); do
+    c=0
+    for s in $sibs; do [[ "$s" == "${name[1,n]}"* ]] && (( c++ )); done
+    (( c <= 1 )) && break
+    (( n++ ))
+  done
+  typeset -g REPLY="${name[1,n]}"
+}
 function _kronuz_pwd_segment {
   local p="${(%):-%~}"
   case "${PROMPT_KRONUZ_PWD_STYLE:-full}" in
@@ -570,18 +587,28 @@ function _kronuz_pwd_segment {
     absolute)
       p="$PWD"
       ;;
-    short|abbrev|fish)
+    short)
+      # Shortest-unique-prefix truncation (like p10k truncate_to_unique): shorten each
+      # parent to the fewest leading chars that still tell it apart from its siblings; the
+      # leaf keeps its full name. Globs each parent once (readdir) -- pricier than the
+      # styles above, but still fork-free.
       local -a parts=("${(@s:/:)p}")
-      local last="${parts[-1]}" e out=''
-      local -a head=("${(@)parts[1,-2]}")
-      for e in "${head[@]}"; do
-        [[ -z "$e" ]] && continue
-        if [[ "$e" == '~'* ]]; then out+="$e/"
-        elif [[ "$e" == .* ]]; then out+="${e[1,2]}/"
-        else out+="${e[1,1]}/"; fi
+      local out='' rp='' seg
+      local -i i last=$#parts
+      for (( i = 1; i <= last; i++ )); do
+        seg="$parts[i]"
+        if [[ "$seg" == '~' ]]; then
+          out+='~'; rp="$HOME"
+        elif [[ -z "$seg" ]]; then
+          rp=''                              # leading empty = filesystem root
+        elif (( i == last )); then
+          out+="/$seg"                       # leaf keeps its full name
+        else
+          _kronuz_unique_prefix "$rp" "$seg"; out+="/$REPLY"
+          rp+="/$seg"
+        fi
       done
-      [[ "$p" == /* ]] && out="/$out"
-      p="${out}${last}"
+      p="${out:-/}"
       ;;
   esac
   _prompt_kronuz_pwd="${p//\%/%%}"
