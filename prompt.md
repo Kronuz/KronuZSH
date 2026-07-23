@@ -154,7 +154,7 @@ string to tune the spacing for your font (e.g. `PROMPT_KRONUZ_GLYPH_PAD_UNTRACKE
 | `staged`     |  ✛     | `nf-oct-diff_added` U+F457     | staged changes                    |
 | `modified`   |  ✴     | `nf-fa-pencil` U+F040          | unstaged changes                  |
 | `conflicted` |  ❖     | `nf-fa-exclamation_tri` U+F071 | merge conflicts                   |
-| `untracked`  |  ⊖     | `nf-fa-question` U+F128        | untracked files                   |
+| `untracked`  |  ⊖     | ⊖ U+2296 (same)                | untracked files                   |
 | `unknown`    |  ∞     | ∞ U+221E (same)                | dirty, count not scanned (-m cap) |
 | `loading`    |  …     | `nf-fa-refresh` U+F021         | async git query in flight         |
 | `venv`       |  venv  | `nf-seti-python` U+E606        | active Python virtualenv          |

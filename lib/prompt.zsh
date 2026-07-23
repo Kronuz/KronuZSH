@@ -370,7 +370,7 @@ function prompt_kronuz_glyphs {
       staged     $'\uf457'  # nf-oct-diff_added      staged changes
       modified   $'\uf040'  # nf-fa-pencil           unstaged changes
       conflicted $'\uf071'  # nf-fa-exclamation_tri  merge conflicts
-      untracked  $'\uf128'  # nf-fa-question         untracked files
+      untracked  $'\u2296'  # ⊖                      untracked files
       unknown    $'\u221e'  # ∞ (uncounted)          dirty, scan skipped (-m cap)
       loading    $'\uf021'  # nf-fa-refresh          async git query in flight
       venv       $'\ue606'  # nf-seti-python         active virtualenv
