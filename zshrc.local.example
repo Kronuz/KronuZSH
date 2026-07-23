@@ -45,6 +45,10 @@ PROMPT_KRONUZ_COLOR_HOST='$col[green]'
 # ssh container dot return overwrite caret caret_alt.
 # PROMPT_KRONUZ_GLYPH_MODIFIED='*'
 # PROMPT_KRONUZ_GLYPH_OS=''            # hide the OS logo next to the hostname
+# Retune a glyph's trailing (right-hand) pad -- the space that stops a wide Nerd Font icon
+# from colliding with its count. '' hugs tight; a space / $'\u00a0' / any string tunes it:
+# PROMPT_KRONUZ_GLYPH_PAD_UNTRACKED=''       # hug the untracked count against its glyph
+# PROMPT_KRONUZ_GLYPH_PAD_MODIFIED=$'\u00a0' # a non-breaking space, if it renders tighter
 # Replace or hide the complete live keymap indicators (prompt strings may reference
 # the semantic palette and glyph arrays):
 # PROMPT_KRONUZ_KEYMAP_PRIMARY='${col[caret1]}${glyph[caret]}${col[none]}'

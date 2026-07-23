@@ -388,21 +388,29 @@ function prompt_kronuz_glyphs {
   g[overwrite]=$'\u267a'  # ♺ overwrite (replace) mode
   g[caret]=$'\u276f'      # ❯ prompt caret (insert keymap)
   g[caret_alt]=$'\u276e'  # ❮ prompt caret (vicmd keymap)
-  local name ov val sentinel='__KRONUZ_GLYPH_UNSET__'
+  local name ov val padov padval sentinel='__KRONUZ_GLYPH_UNSET__'
   local -i c
   for name in ${(k)g}; do
     ov="PROMPT_KRONUZ_GLYPH_${name:u}"
     val="${(P)ov-$sentinel}"
     [[ "$val" == "$sentinel" ]] && val="$g[$name]"
     glyph[$name]="$val"
-    # A single Private-Use-Area glyph can render wider than its cell; flag a trailing
-    # pad space for it so an adjacent count/text doesn't collide. BMP and multi-char
-    # glyphs are single-width and get none.
-    c=0; [[ ${#val} -eq 1 ]] && c=$(( #val ))
-    if (( (c >= 0xe000 && c <= 0xf8ff) || c >= 0xf0000 )); then
-      glyph_pad[$name]=' '
+    # Trailing (right-hand) pad, appended after the glyph. An explicit
+    # $PROMPT_KRONUZ_GLYPH_PAD_<NAME> wins: set it to '' to hug tight, or to ' ', a
+    # non-breaking space ($'\u00a0'), etc. to tune spacing for your font. Otherwise a
+    # single Private-Use-Area glyph can render wider than its cell, so it gets a pad space
+    # by default so an adjacent count/text doesn't collide; BMP and multi-char glyphs none.
+    padov="PROMPT_KRONUZ_GLYPH_PAD_${name:u}"
+    padval="${(P)padov-$sentinel}"
+    if [[ "$padval" != "$sentinel" ]]; then
+      glyph_pad[$name]="$padval"
     else
-      glyph_pad[$name]=''
+      c=0; [[ ${#val} -eq 1 ]] && c=$(( #val ))
+      if (( (c >= 0xe000 && c <= 0xf8ff) || c >= 0xf0000 )); then
+        glyph_pad[$name]=' '
+      else
+        glyph_pad[$name]=''
+      fi
     fi
   done
   # Legacy override: an explicit $_kronuz_os (set in ~/.zshrc.local) wins for the OS glyph.

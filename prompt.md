@@ -130,6 +130,13 @@ from this table. The **Plain** column shows the literal fallback glyph; the **Ne
 Font** column gives the icon's Nerd Font name and codepoint (it renders as an icon
 only in a Nerd Font, so it's named here rather than shown):
 
+Each glyph also has a trailing **pad** (a right-hand space that keeps a wide Nerd Font
+icon from colliding with an adjacent count). It's added automatically for wide glyphs
+and omitted for normal ones; override it per glyph with `PROMPT_KRONUZ_GLYPH_PAD_<NAME>`.
+Set it to `''` to hug tight, or to a space, a non-breaking space (`$'\u00a0'`), or any
+string to tune the spacing for your font (e.g. `PROMPT_KRONUZ_GLYPH_PAD_UNTRACKED=''`).
+
+
 | Name         | Plain  | Nerd Font                      | Meaning                           |
 |--------------|:------:|--------------------------------|-----------------------------------|
 | `os`         | (none) | `nf-fa-apple` / `nf-fa-linux`  | OS logo by the hostname           |
@@ -528,6 +535,7 @@ fully enumerated in the linked table or directly in the description.
 |----------|---------|--------------|
 | `PROMPT_KRONUZ_NERD_FONT` | `1` | `0`/`no`/`off`/`false` switches to the plain-Unicode glyph set. |
 | `PROMPT_KRONUZ_GLYPH_<NAME>` | per glyph | Override one glyph; `''` hides it. All names are in the [glyph table](#glyphs). |
+| `PROMPT_KRONUZ_GLYPH_PAD_<NAME>` | per glyph | Override a glyph's trailing (right-hand) pad; `''` hugs tight, a space / `$'\u00a0'` / any string tunes it for your font. |
 | `PROMPT_KRONUZ_COLOR_<NAME>` | per color | Override one semantic color. All public names are in the [color table](#colors). |
 | `PROMPT_KRONUZ_PALETTE_<NAME>` | terminal palette | Override one ANSI base color with `#RRGGBB` or a 0–255 index. Names: `BLACK`, `RED`, `GREEN`, `YELLOW`, `BLUE`, `MAGENTA`, `CYAN`, `GREY`, `DARKGREY`, `LIGHTRED`, `LIGHTGREEN`, `LIGHTYELLOW`, `LIGHTBLUE`, `LIGHTMAGENTA`, `LIGHTCYAN`, `LIGHTGREY`. This changes display colors and the RGB used by `dim`. |
 | `PROMPT_KRONUZ_<SEGMENT>` | built in | Replace one complete segment or outcome item. Names: `OS`, `ERR`, `ERROR`, `DURATION`, `USER`, `HOST`, `IP`, `TIME`, `PWD`, `GIT`, `VENV`, `JOBS`, `CONTEXT`, `ETCTL`, `VIM`, `EMACS`, `OVERWRITE`, `PROMPT`; see [Replacing a whole segment](#replacing-a-whole-segment). |
