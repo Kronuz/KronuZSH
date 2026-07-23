@@ -154,6 +154,8 @@ string to tune the spacing for your font (e.g. `PROMPT_KRONUZ_GLYPH_PAD_UNTRACKE
 | `stashed`    |  ≡     | `nf-fa-archive` U+F187         | stash entries                     |
 | `ahead`      |  ⇡     | ⇡ U+21E1 (same)                | commits ahead of upstream         |
 | `behind`     |  ⇣     | ⇣ U+21E3 (same)                | commits behind upstream           |
+| `push_ahead`  | ⇧     | ⇧ U+21E7 (same)                | commits ahead of a distinct push remote  |
+| `push_behind` | ⇩     | ⇩ U+21E9 (same)                | commits behind a distinct push remote    |
 | `staged`     |  ✛     | `nf-oct-diff_added` U+F457     | staged changes                    |
 | `modified`   |  ✴     | `nf-fa-pencil` U+F040          | unstaged changes                  |
 | `conflicted` |  ❖     | `nf-fa-exclamation_tri` U+F071 | merge conflicts                   |

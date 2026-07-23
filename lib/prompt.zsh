@@ -339,6 +339,8 @@ function prompt_kronuz_glyphs {
       stashed    $'\u2261'  # ≡  stash entries
       ahead      $'\u21e1'  # ⇡  commits ahead of upstream
       behind     $'\u21e3'  # ⇣  commits behind upstream
+      push_ahead  $'\u21e7' # ⇧  commits ahead of a distinct push remote
+      push_behind $'\u21e9' # ⇩  commits behind a distinct push remote
       staged     $'\u271b'  # ✛  staged changes
       modified   $'\u2734'  # ✴  unstaged changes
       conflicted $'\u2756'  # ❖  merge conflicts
@@ -370,6 +372,8 @@ function prompt_kronuz_glyphs {
       stashed    $'\uf187'  # nf-fa-archive          stash entries
       ahead      $'\u21e1'  # ⇡                      commits ahead of upstream
       behind     $'\u21e3'  # ⇣                      commits behind upstream
+      push_ahead  $'\u21e7' # ⇧                      commits ahead of a distinct push remote
+      push_behind $'\u21e9' # ⇩                      commits behind a distinct push remote
       staged     $'\uf457'  # nf-oct-diff_added      staged changes
       modified   $'\uf040'  # nf-fa-pencil           unstaged changes
       conflicted $'\uf071'  # nf-fa-exclamation_tri  merge conflicts
@@ -512,6 +516,13 @@ function _kronuz_git_render {
   fi
   (( VCS_STATUS_COMMITS_AHEAD ))  && icons+="${icons:+$isep}${(e)col[ahead]}${glyph[ahead]}${glyph_pad[ahead]}${VCS_STATUS_COMMITS_AHEAD}${none}"
   (( VCS_STATUS_COMMITS_BEHIND )) && icons+="${icons:+$isep}${(e)col[behind]}${glyph[behind]}${glyph_pad[behind]}${VCS_STATUS_COMMITS_BEHIND}${none}"
+  # Push-remote divergence (⇧/⇩), shown only when the push target is a *different* remote
+  # than the upstream (triangular / fork workflow: push to your fork, pull from upstream).
+  # gitstatusd fills these in the same payload, so it costs no extra git call.
+  if [[ -n "$VCS_STATUS_PUSH_REMOTE_NAME" && "$VCS_STATUS_PUSH_REMOTE_URL" != "$VCS_STATUS_REMOTE_URL" ]]; then
+    (( VCS_STATUS_PUSH_COMMITS_AHEAD ))  && icons+="${icons:+$isep}${(e)col[ahead]}${glyph[push_ahead]}${glyph_pad[push_ahead]}${VCS_STATUS_PUSH_COMMITS_AHEAD}${none}"
+    (( VCS_STATUS_PUSH_COMMITS_BEHIND )) && icons+="${icons:+$isep}${(e)col[behind]}${glyph[push_behind]}${glyph_pad[push_behind]}${VCS_STATUS_PUSH_COMMITS_BEHIND}${none}"
+  fi
   (( VCS_STATUS_NUM_STAGED ))     && icons+="${icons:+$isep}${(e)col[added]}${glyph[staged]}${glyph_pad[staged]}${VCS_STATUS_NUM_STAGED}${none}"
   if (( dirty_unknown )); then
     icons+="${icons:+$isep}${(e)col[untracked]}${glyph[unknown]}${glyph_pad[unknown]}${none}"
