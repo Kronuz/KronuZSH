@@ -2,10 +2,20 @@
 # Load order matters: gitstatus (for the prompt) first, autosuggestions and
 # history-substring-search next, fast-syntax-highlighting LAST.
 
-# gitstatus: a fast git status daemon (powers the prompt's git segment).
-# gitstatus_start launches a 'KRONUZ' daemon; the prompt queries it per precmd.
+# gitstatus: a fast git status daemon (powers the prompt's git segment). The prompt
+# queries it *non-blockingly* (see _kronuz_git_segment): it waits at most
+# $PROMPT_KRONUZ_GIT_SYNC_TIMEOUT (default 50ms) for an answer, then shows the last known
+# status and repaints when the daemon catches up. That sync-latency budget -- not the
+# counter limits below -- is what keeps the prompt responsive in large/dirty repos.
+#
+# The -1 limits mean "report exact counts" for staged/unstaged/conflicted/untracked, which
+# is what the prompt's counters display. Override $PROMPT_KRONUZ_GITSTATUS_ARGS to cap the
+# daemon's work in pathological repos (the expensive one is untracked, -d, which walks the
+# working tree); note any finite cap makes large counts show as the cap, not the true
+# number. E.g. PROMPT_KRONUZ_GITSTATUS_ARGS='-s -1 -u -1 -c -1 -d 100 -m 20000'.
+: ${PROMPT_KRONUZ_GITSTATUS_ARGS="-s -1 -u -1 -c -1 -d -1"}
 source "$KRONUZSH/plugins/gitstatus/gitstatus.plugin.zsh"
-gitstatus_start -s -1 -u -1 -c -1 -d -1 KRONUZ 2>/dev/null
+gitstatus_start ${=PROMPT_KRONUZ_GITSTATUS_ARGS} KRONUZ 2>/dev/null
 
 # zsh-autosuggestions: fish-style suggestions from history. Dim grey (Kronuz) so the
 # ghost suggestion sits behind what you're typing. The plugin stack is fixed and fsh

@@ -424,14 +424,19 @@ function _kronuz_git_fallback {
   _prompt_kronuz_git="${s}${sep} (${none}${icons}${sep})${none}"
 }
 
-# Primary path: query the KRONUZ gitstatusd instance, else fall back to direct git.
-function _kronuz_git_segment {
-  _prompt_kronuz_git=''
-  if ! { (( ${+functions[gitstatus_query]} )) && gitstatus_query KRONUZ 2>/dev/null && [[ "$VCS_STATUS_RESULT" == ok-sync ]] }; then
-    _kronuz_git_fallback
-    return
-  fi
+# Async git segment. The prompt must never block on git, so we talk to the KRONUZ
+# gitstatusd instance non-blockingly: wait at most $PROMPT_KRONUZ_GIT_SYNC_TIMEOUT seconds
+# for an answer (default 0.05). Fast/cached repos answer within that budget and render
+# fresh; anything slower renders the last-known status immediately and repaints in place
+# when the daemon catches up, via _kronuz_gitstatus_cb. gitstatus forbids overlapping
+# queries on one name ("CONCURRENT CALLS WITH THE SAME NAME ARE NOT ALLOWED", per its
+# header), so we never issue a new query while one is in flight -- $_kronuz_git_inflight
+# tracks that. Only when gitstatusd isn't usable at all do we fall back to blocking git.
+typeset -g _kronuz_git_last='' _kronuz_git_inflight=0
 
+# Render the git segment from the current VCS_STATUS_* into $_prompt_kronuz_git, caching
+# the result in $_kronuz_git_last so an in-flight prompt can show it while a query runs.
+function _kronuz_git_render {
   local sep="${(e)col[sep]}" none="${(e)col[none]}" info="${(e)col[info]}" s=''
   if [[ -n "$VCS_STATUS_LOCAL_BRANCH" ]]; then
     s+=" ${info}${glyph[branch]}${none} ${(e)col[branch]}${VCS_STATUS_LOCAL_BRANCH}${none}"
@@ -460,6 +465,53 @@ function _kronuz_git_segment {
   (( VCS_STATUS_NUM_UNTRACKED ))  && icons+=" ${(e)col[untracked]}${glyph[untracked]}${glyph_pad[untracked]}${VCS_STATUS_NUM_UNTRACKED}${none}"
 
   _prompt_kronuz_git="${s}${sep} (${none}${icons}${sep})${none}"
+  _kronuz_git_last="$_prompt_kronuz_git"
+}
+
+# gitstatusd calls this (from its own zle -F handler) when a timed-out query finally has
+# data. Re-render and repaint the live prompt in place: `zle reset-prompt` re-expands
+# $PROMPT with the fresh $_prompt_kronuz_git -- it runs no precmd and issues no new query.
+function _kronuz_gitstatus_cb {
+  _kronuz_git_inflight=0
+  if [[ "$VCS_STATUS_RESULT" == ok-async ]]; then
+    _kronuz_git_render
+  else
+    _prompt_kronuz_git=''
+    _kronuz_git_last=''
+  fi
+  zle && zle reset-prompt
+}
+
+# Drop the stale cache when the directory changes, so a new dir never briefly shows the
+# previous repo's status while its first query is still in flight.
+function _kronuz_git_chpwd { _kronuz_git_last='' }
+
+function _kronuz_git_segment {
+  # No usable daemon -> blocking direct-git fallback (not installed / not yet ready).
+  if (( ! ${+functions[gitstatus_query]} )) || ! gitstatus_check KRONUZ 2>/dev/null; then
+    _kronuz_git_inflight=0
+    _prompt_kronuz_git=''
+    _kronuz_git_fallback
+    return
+  fi
+  # A query is already outstanding: starting another for the same name is illegal, so show
+  # the last-known status and let the pending callback repaint when it lands.
+  if (( _kronuz_git_inflight )); then
+    _prompt_kronuz_git="$_kronuz_git_last"
+    return
+  fi
+  # Non-blocking query, bounded by the sync-latency budget.
+  if ! gitstatus_query -t ${PROMPT_KRONUZ_GIT_SYNC_TIMEOUT:-0.05} -c _kronuz_gitstatus_cb KRONUZ 2>/dev/null; then
+    _kronuz_git_inflight=0
+    _prompt_kronuz_git=''
+    _kronuz_git_fallback
+    return
+  fi
+  case "$VCS_STATUS_RESULT" in
+    ok-sync)     _kronuz_git_inflight=0; _kronuz_git_render ;;                   # answered in budget
+    norepo-sync) _kronuz_git_inflight=0; _prompt_kronuz_git=''; _kronuz_git_last='' ;;  # not a repo
+    *)           _kronuz_git_inflight=1; _prompt_kronuz_git="$_kronuz_git_last" ;;      # tout: stale now
+  esac
 }
 
 # ---- venv ----
@@ -891,6 +943,7 @@ function _kronuz_setup_lifecycle {
   add-zsh-hook preexec _kronuz_duration_preexec
   add-zsh-hook precmd _kronuz_osc_precmd
   add-zsh-hook preexec _kronuz_osc_preexec
+  add-zsh-hook chpwd _kronuz_git_chpwd
   precmd_functions=(_kronuz_osc_precmd ${precmd_functions:#_kronuz_osc_precmd})
 
   zle -N zle-keymap-select
