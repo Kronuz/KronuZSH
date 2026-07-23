@@ -2,7 +2,7 @@
 
 ## Definitive Developer Font Guide: Rankings & Configuration (2026)
 
-This document ranks the **Top 14 Developer Fonts** based on community consensus (Reddit, Hacker News, surveys) regarding utility, ergonomics, and long-term eye comfort.
+This document ranks the **Top 14 Developer Fonts** based on community consensus (Reddit, Hacker News, surveys) regarding utility, ergonomics, and long-term eye comfort, reordered by my own daily use. My pick, **Hack**, sits at the top.
 
 ---
 
@@ -22,16 +22,19 @@ When choosing your font in **iTerm2** (`Cmd` + `,` > **Profiles** > **Text**), a
 
 *The most engineered, popular, and ergonomic fonts available today.*
 
-- **1. JetBrains Mono (`JetBrainsMono Nerd Font`)**
+- **1. Hack (`Hack Nerd Font`)**
+  - **Best For:** Pure terminal usage. My daily driver.
+  - **Why:** No gimmicks. Crisp, sharp, and distraction-free.
+- **2. JetBrains Mono (`JetBrainsMono Nerd Font`)**
   - **Best For:** Everyone.
   - **Why:** The undisputed champion. Its tall x-height makes it the most readable font for 8+ hour coding sessions.
-- **2. Monaspace (`MonaspiceNe Nerd Font`)**
+- **3. Monaspace (`MonaspiceNe Nerd Font`)**
   - **Best For:** Innovators & GitHub Copilot users.
   - **Why:** GitHub's new "superfamily" (Neon, Argon, Xenon). It features "texture healing," which subtly adjusts pixel spacing to make code look denser and more uniform than any other font.
-- **3. Cascadia Code (`CaskaydiaCove Nerd Font`)**
+- **4. Cascadia Code (`CaskaydiaCove Nerd Font`)**
   - **Best For:** Windows-style aesthetics & cursive lovers.
   - **Why:** Microsoft's default terminal font. It is heavier/bolder than JetBrains, making it incredibly legible on high-res monitors. It supports beautiful cursive italics.
-- **4. Fira Code (`FiraCode Nerd Font`)**
+- **5. Fira Code (`FiraCode Nerd Font`)**
   - **Best For:** Ligature lovers.
   - **Why:** The classic choice for merging symbols (`!=`, `=>`) into clean glyphs.
 
@@ -39,15 +42,12 @@ When choosing your font in **iTerm2** (`Cmd` + `,` > **Profiles** > **Text**), a
 
 *Focus on specific constraints: screen space or low-vision accessibility.*
 
-- **5. Iosevka (`Iosevka Nerd Font`)**
+- **6. Iosevka (`Iosevka Nerd Font`)**
   - **Best For:** Split-screen layouts (tmux/vim).
   - **Why:** The narrowest legible font. Fits 20% more code on screen.
-- **6. Intel One Mono (`IntoneMono Nerd Font`)**
+- **7. Intel One Mono (`IntoneMono Nerd Font`)**
   - **Best For:** Eye fatigue reduction.
   - **Why:** Designed by Intel specifically for low-vision developers. It maximizes clarity and character distinction above all else.
-- **7. Hack (`Hack Nerd Font`)**
-  - **Best For:** Pure terminal usage.
-  - **Why:** No gimmicks. Crisp, sharp, and distraction-free.
 
 ### 🥉 Tier 3: The Stylized & Niche
 
