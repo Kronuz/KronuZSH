@@ -229,7 +229,16 @@ function _kronuz_load_palette {
 # ($_kronuz_nocolor) blanks the built-in defaults (so the layout still renders with zero
 # escapes) while still honouring an explicit override. Recomputed every precmd, so
 # toggling $NO_COLOR / $TERM takes effect on the next prompt.
+typeset -g _kronuz_colors_sig=''
 function prompt_kronuz_colors {
+  # Change-detection: colours are fully determined by $_kronuz_nocolor and the
+  # $PROMPT_KRONUZ_{COLOR,PALETTE}_* overrides (the static $col basics never change after
+  # load), so skip the ~40-entry rebuild when none of those changed since the last prompt.
+  local _sig="${_kronuz_nocolor:-0}" _k
+  for _k in ${(k)parameters[(I)PROMPT_KRONUZ_(COLOR|PALETTE)_*]}; do _sig+=$'\x1f'"$_k=${(P)_k}"; done
+  [[ "$_sig" == "$_kronuz_colors_sig" ]] && return
+  _kronuz_colors_sig="$_sig"
+
   # Apply any per-colour overrides to the 16 ANSI basics (defaults live in the $col
   # palette table above); semantic colours below reference them, and `dim` picks up the
   # same overrides via _kronuz_load_palette.
@@ -299,7 +308,16 @@ function prompt_kronuz_colors {
 # picks the plain set; dumb/unknown terminals force it too. Any single glyph is
 # overridable via $PROMPT_KRONUZ_GLYPH_<NAME> (a character, or '' to hide it).
 typeset -gA glyph glyph_pad
+typeset -g _kronuz_glyphs_sig=''
 function prompt_kronuz_glyphs {
+  # Change-detection: glyphs depend only on terminal dumb-ness, the nerd-font toggle,
+  # $OSTYPE, the legacy $_kronuz_os, and any $PROMPT_KRONUZ_GLYPH_* override. Skip the
+  # rebuild when none of those changed since the last prompt.
+  local _sig="${_kronuz_dumb:-0}|${(L)PROMPT_KRONUZ_NERD_FONT:-1}|$OSTYPE|${+_kronuz_os}:${_kronuz_os-}" _k
+  for _k in ${(k)parameters[(I)PROMPT_KRONUZ_GLYPH_*]}; do _sig+=$'\x1f'"$_k=${(P)_k}"; done
+  [[ "$_sig" == "$_kronuz_glyphs_sig" ]] && return
+  _kronuz_glyphs_sig="$_sig"
+
   local -A g
   local os_nerd=''
   case "$OSTYPE" in
