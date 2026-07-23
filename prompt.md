@@ -144,9 +144,9 @@ string to tune the spacing for your font (e.g. `PROMPT_KRONUZ_GLYPH_PAD_UNTRACKE
 | `tag`        |  ⚑     | `nf-oct-tag` U+F412            | tag ref                           |
 | `commit`     |  @     | `nf-oct-git_commit` U+F417     | detached HEAD                     |
 | `remote`     |  ⇅     | `nf-oct-git_compare` U+F47F    | upstream / remote tracking        |
-| `host_github`    | (⇅) | `nf-fa-github` U+F09B      | remote host GitHub (nerd only; else `remote`)    |
-| `host_gitlab`    | (⇅) | `nf-fa-gitlab` U+F296      | remote host GitLab (nerd only; else `remote`)    |
-| `host_bitbucket` | (⇅) | `nf-fa-bitbucket` U+F171   | remote host Bitbucket (nerd only; else `remote`) |
+| `host_github`    | (⇅) | `nf-fa-github` U+F09B      | remote host GitHub (plain falls back to `remote`)    |
+| `host_gitlab`    | (⇅) | `nf-fa-gitlab` U+F296      | remote host GitLab (plain falls back to `remote`)    |
+| `host_bitbucket` | (⇅) | `nf-fa-bitbucket` U+F171   | remote host Bitbucket (plain falls back to `remote`) |
 | `action`     |  ⚙     | `nf-oct-git_merge` U+F419      | in-progress op (rebase/merge)     |
 | `fallback`   |  ⚠     | `nf-fa-warning` U+F071         | direct-git fallback is active     |
 | `clean`      |  ✔     | ✔ U+2714 (same)                | worktree clean                    |

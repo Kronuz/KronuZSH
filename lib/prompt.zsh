@@ -327,36 +327,39 @@ function prompt_kronuz_glyphs {
   esac
   if (( ${_kronuz_dumb:-0} )) || [[ "${(L)PROMPT_KRONUZ_NERD_FONT:-1}" == (0|no|off|false) ]]; then
     g=(
-      os          ''         # no plain OS glyph; hidden by default
-      branch      $'\u2387'  # ⎇  local branch
-      tag         $'\u2691'  # ⚑  tag ref
-      commit      '@'        # @  detached HEAD
-      remote      $'\u21c5'  # ⇅  upstream / remote tracking
-      action      $'\u2699'  # ⚙  in-progress op (rebase/merge)
-      fallback    $'\u26a0'  # ⚠  direct-git fallback warning
-      clean       $'\u2714'  # ✔  worktree clean
-      dirty       $'\u2717'  # ✗  worktree dirty
-      stashed     $'\u2261'  # ≡  stash entries
-      ahead       $'\u21e1'  # ⇡  commits ahead of upstream
-      behind      $'\u21e3'  # ⇣  commits behind upstream
-      push_ahead  $'\u21e7'  # ⇧  commits ahead of a distinct push remote
-      push_behind $'\u21e9'  # ⇩  commits behind a distinct push remote
-      staged      $'\u271b'  # ✛  staged changes
-      modified    $'\u2734'  # ✴  unstaged changes
-      added       '+'        # +  split view: staged new file
-      changed     '~'        # ~  split view: modified file
-      deleted     '-'        # -  split view: deleted file
-      conflicted  $'\u2756'  # ❖  merge conflicts
-      untracked   $'\u2296'  # ⊖  untracked files
-      unknown     $'\u221e'  # ∞  dirty, count not scanned (index over -m cap)
-      loading     $'\u2026'  # …  async git query in flight
-      venv        'venv'     # active virtualenv
-      vim         'V'        # inside vim
-      emacs       'E'        # inside emacs
-      jobs        '&'        # backgrounded jobs
-      duration    ''         # no glyph; the formatted time stands alone
-      ssh         'ssh'      # inside an SSH session
-      container   'box'      # inside a container
+      os             ''         # no plain OS glyph; hidden by default
+      branch         $'\u2387'  # ⎇  local branch
+      tag            $'\u2691'  # ⚑  tag ref
+      commit         '@'        # @  detached HEAD
+      remote         $'\u21c5'  # ⇅  upstream / remote tracking
+      host_github    ''         # remote host GitHub; no plain logo, uses the remote glyph
+      host_gitlab    ''         # remote host GitLab; no plain logo, uses the remote glyph
+      host_bitbucket ''         # remote host Bitbucket; no plain logo, uses the remote glyph
+      action         $'\u2699'  # ⚙  in-progress op (rebase/merge)
+      fallback       $'\u26a0'  # ⚠  direct-git fallback warning
+      clean          $'\u2714'  # ✔  worktree clean
+      dirty          $'\u2717'  # ✗  worktree dirty
+      stashed        $'\u2261'  # ≡  stash entries
+      ahead          $'\u21e1'  # ⇡  commits ahead of upstream
+      behind         $'\u21e3'  # ⇣  commits behind upstream
+      push_ahead     $'\u21e7'  # ⇧  commits ahead of a distinct push remote
+      push_behind    $'\u21e9'  # ⇩  commits behind a distinct push remote
+      staged         $'\u271b'  # ✛  staged changes
+      modified       $'\u2734'  # ✴  unstaged changes
+      added          '+'        # +  split view: staged new file
+      changed        '~'        # ~  split view: modified file
+      deleted        '-'        # -  split view: deleted file
+      conflicted     $'\u2756'  # ❖  merge conflicts
+      untracked      $'\u2296'  # ⊖  untracked files
+      unknown        $'\u221e'  # ∞  dirty, count not scanned (index over -m cap)
+      loading        $'\u2026'  # …  async git query in flight
+      venv           'venv'     # active virtualenv
+      vim            'V'        # inside vim
+      emacs          'E'        # inside emacs
+      jobs           '&'        # backgrounded jobs
+      duration       ''         # no glyph; the formatted time stands alone
+      ssh            'ssh'      # inside an SSH session
+      container      'box'      # inside a container
     )
   else
     g=(
