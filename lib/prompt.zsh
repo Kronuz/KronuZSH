@@ -403,6 +403,9 @@ function prompt_kronuz_glyphs {
   g[caret_alt]=$'\u276e'  # ❮ prompt caret (vicmd keymap)
   local name ov val padov padval sentinel='__KRONUZ_GLYPH_UNSET__'
   local -i c
+  # Rebuild from scratch: drop any set-specific glyph (e.g. the Nerd-only host_* icons)
+  # left over from a previous mode so it can't leak into the plain set.
+  glyph=() glyph_pad=()
   for name in ${(k)g}; do
     ov="PROMPT_KRONUZ_GLYPH_${name:u}"
     val="${(P)ov-$sentinel}"
