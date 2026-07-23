@@ -327,72 +327,72 @@ function prompt_kronuz_glyphs {
   esac
   if (( ${_kronuz_dumb:-0} )) || [[ "${(L)PROMPT_KRONUZ_NERD_FONT:-1}" == (0|no|off|false) ]]; then
     g=(
-      os         ''         # no plain OS glyph; hidden by default
-      branch     $'\u2387'  # ⎇  local branch
-      tag        $'\u2691'  # ⚑  tag ref
-      commit     '@'        # @  detached HEAD
-      remote     $'\u21c5'  # ⇅  upstream / remote tracking
-      action     $'\u2699'  # ⚙  in-progress op (rebase/merge)
-      fallback   $'\u26a0'  # ⚠  direct-git fallback warning
-      clean      $'\u2714'  # ✔  worktree clean
-      dirty      $'\u2717'  # ✗  worktree dirty
-      stashed    $'\u2261'  # ≡  stash entries
-      ahead      $'\u21e1'  # ⇡  commits ahead of upstream
-      behind     $'\u21e3'  # ⇣  commits behind upstream
-      push_ahead  $'\u21e7' # ⇧  commits ahead of a distinct push remote
-      push_behind $'\u21e9' # ⇩  commits behind a distinct push remote
-      staged     $'\u271b'  # ✛  staged changes
-      modified   $'\u2734'  # ✴  unstaged changes
-      added      '+'        # +  split view: staged new file
-      changed    '~'        # ~  split view: modified file
-      deleted    '-'        # -  split view: deleted file
-      conflicted $'\u2756'  # ❖  merge conflicts
-      untracked  $'\u2296'  # ⊖  untracked files
-      unknown    $'\u221e'  # ∞  dirty, count not scanned (index over -m cap)
-      loading    $'\u2026'  # …  async git query in flight
-      venv       'venv'     # active virtualenv
-      vim        'V'        # inside vim
-      emacs      'E'        # inside emacs
-      jobs       '&'        # backgrounded jobs
-      duration   ''         # no glyph; the formatted time stands alone
-      ssh        'ssh'      # inside an SSH session
-      container  'box'      # inside a container
+      os          ''         # no plain OS glyph; hidden by default
+      branch      $'\u2387'  # ⎇  local branch
+      tag         $'\u2691'  # ⚑  tag ref
+      commit      '@'        # @  detached HEAD
+      remote      $'\u21c5'  # ⇅  upstream / remote tracking
+      action      $'\u2699'  # ⚙  in-progress op (rebase/merge)
+      fallback    $'\u26a0'  # ⚠  direct-git fallback warning
+      clean       $'\u2714'  # ✔  worktree clean
+      dirty       $'\u2717'  # ✗  worktree dirty
+      stashed     $'\u2261'  # ≡  stash entries
+      ahead       $'\u21e1'  # ⇡  commits ahead of upstream
+      behind      $'\u21e3'  # ⇣  commits behind upstream
+      push_ahead  $'\u21e7'  # ⇧  commits ahead of a distinct push remote
+      push_behind $'\u21e9'  # ⇩  commits behind a distinct push remote
+      staged      $'\u271b'  # ✛  staged changes
+      modified    $'\u2734'  # ✴  unstaged changes
+      added       '+'        # +  split view: staged new file
+      changed     '~'        # ~  split view: modified file
+      deleted     '-'        # -  split view: deleted file
+      conflicted  $'\u2756'  # ❖  merge conflicts
+      untracked   $'\u2296'  # ⊖  untracked files
+      unknown     $'\u221e'  # ∞  dirty, count not scanned (index over -m cap)
+      loading     $'\u2026'  # …  async git query in flight
+      venv        'venv'     # active virtualenv
+      vim         'V'        # inside vim
+      emacs       'E'        # inside emacs
+      jobs        '&'        # backgrounded jobs
+      duration    ''         # no glyph; the formatted time stands alone
+      ssh         'ssh'      # inside an SSH session
+      container   'box'      # inside a container
     )
   else
     g=(
-      os         "$os_nerd" # nf-fa-apple / nf-fa-linux by $OSTYPE
-      branch     $'\ue0a0'  # nf-pl-branch           local branch
-      tag        $'\uf412'  # nf-oct-tag             tag ref
-      commit     $'\uf417'  # nf-oct-git_commit      detached HEAD
-      remote     $'\uf47f'  # nf-oct-git_compare     upstream / remote tracking
-      host_github    $'\uf09b'  # nf-fa-github        remote host: GitHub
-      host_gitlab    $'\uf296'  # nf-fa-gitlab        remote host: GitLab
-      host_bitbucket $'\uf171'  # nf-fa-bitbucket     remote host: Bitbucket
-      action     $'\uf419'  # nf-oct-git_merge       in-progress op (rebase/merge)
-      fallback   $'\uf071'  # nf-fa-warning          direct-git fallback warning
-      clean      $'\u2714'  # ✔                      worktree clean
-      dirty      $'\u2717'  # ✗                      worktree dirty
-      stashed    $'\uf187'  # nf-fa-archive          stash entries
-      ahead      $'\u21e1'  # ⇡                      commits ahead of upstream
-      behind     $'\u21e3'  # ⇣                      commits behind upstream
-      push_ahead  $'\u21e7' # ⇧                      commits ahead of a distinct push remote
-      push_behind $'\u21e9' # ⇩                      commits behind a distinct push remote
-      staged     $'\uf457'  # nf-oct-diff_added      staged changes
-      modified   $'\uf040'  # nf-fa-pencil           unstaged changes
-      added      $'\uf457'  # nf-oct-diff_added      split view: staged new file
-      changed    $'\uf459'  # nf-oct-diff_modified   split view: modified file
-      deleted    $'\uf458'  # nf-oct-diff_removed    split view: deleted file
-      conflicted $'\uf071'  # nf-fa-exclamation_tri  merge conflicts
-      untracked  $'\u2296'  # ⊖                      untracked files
-      unknown    $'\u221e'  # ∞ (uncounted)          dirty, scan skipped (-m cap)
-      loading    $'\uf021'  # nf-fa-refresh          async git query in flight
-      venv       $'\ue606'  # nf-seti-python         active virtualenv
-      vim        $'\ue7c5'  # nf-dev-vim             inside vim
-      emacs      $'\ue7cf'  # nf-dev-emacs           inside emacs
-      jobs       $'\uf51e'  # nf-oct-stack           backgrounded jobs
-      duration   $'\uf017'  # nf-fa-clock_o          last command duration
-      ssh        $'\ueb3a'  # nf-cod-remote          inside an SSH session
-      container  $'\uf4b7'  # nf-oct-container       inside a container
+      os             "$os_nerd"  # nf-fa-apple / nf-fa-linux by $OSTYPE
+      branch         $'\ue0a0'   # nf-pl-branch           local branch
+      tag            $'\uf412'   # nf-oct-tag             tag ref
+      commit         $'\uf417'   # nf-oct-git_commit      detached HEAD
+      remote         $'\uf47f'   # nf-oct-git_compare     upstream / remote tracking
+      host_github    $'\uf09b'   # nf-fa-github           remote host: GitHub
+      host_gitlab    $'\uf296'   # nf-fa-gitlab           remote host: GitLab
+      host_bitbucket $'\uf171'   # nf-fa-bitbucket        remote host: Bitbucket
+      action         $'\uf419'   # nf-oct-git_merge       in-progress op (rebase/merge)
+      fallback       $'\uf071'   # nf-fa-warning          direct-git fallback warning
+      clean          $'\u2714'   # ✔                      worktree clean
+      dirty          $'\u2717'   # ✗                      worktree dirty
+      stashed        $'\uf187'   # nf-fa-archive          stash entries
+      ahead          $'\u21e1'   # ⇡                      commits ahead of upstream
+      behind         $'\u21e3'   # ⇣                      commits behind upstream
+      push_ahead     $'\u21e7'   # ⇧                      commits ahead of a distinct push remote
+      push_behind    $'\u21e9'   # ⇩                      commits behind a distinct push remote
+      staged         $'\uf457'   # nf-oct-diff_added      staged changes
+      modified       $'\uf040'   # nf-fa-pencil           unstaged changes
+      added          $'\uf457'   # nf-oct-diff_added      split view: staged new file
+      changed        $'\uf459'   # nf-oct-diff_modified   split view: modified file
+      deleted        $'\uf458'   # nf-oct-diff_removed    split view: deleted file
+      conflicted     $'\uf071'   # nf-fa-exclamation_tri  merge conflicts
+      untracked      $'\u2296'   # ⊖                      untracked files
+      unknown        $'\u221e'   # ∞ (uncounted)          dirty, scan skipped (-m cap)
+      loading        $'\uf021'   # nf-fa-refresh          async git query in flight
+      venv           $'\ue606'   # nf-seti-python         active virtualenv
+      vim            $'\ue7c5'   # nf-dev-vim             inside vim
+      emacs          $'\ue7cf'   # nf-dev-emacs           inside emacs
+      jobs           $'\uf51e'   # nf-oct-stack           backgrounded jobs
+      duration       $'\uf017'   # nf-fa-clock_o          last command duration
+      ssh            $'\ueb3a'   # nf-cod-remote          inside an SSH session
+      container      $'\uf4b7'   # nf-oct-container       inside a container
     )
   fi
   # Mode-independent marks: plain BMP, identical in both sets (still overridable).
