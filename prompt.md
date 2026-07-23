@@ -130,38 +130,38 @@ from this table. The **Plain** column shows the literal fallback glyph; the **Ne
 Font** column gives the icon's Nerd Font name and codepoint (it renders as an icon
 only in a Nerd Font, so it's named here rather than shown):
 
-| Name         | Plain | Nerd Font                       | Meaning                          |
-|--------------|:-----:|---------------------------------|----------------------------------|
-| `os`         | (none) | `nf-fa-apple` / `nf-fa-linux` (by OS) | OS logo by the hostname    |
-| `branch`     |  ⎇    | `nf-pl-branch` U+E0A0           | local branch                     |
-| `tag`        |  ⚑    | `nf-oct-tag` U+F412             | tag ref                          |
-| `commit`     |  @    | `nf-oct-git_commit` U+F417      | detached HEAD                    |
-| `remote`     |  ⇅    | `nf-oct-git_compare` U+F47F     | upstream / remote tracking       |
-| `action`     |  ⚙    | `nf-oct-git_merge` U+F419       | in-progress op (rebase/merge)    |
-| `fallback`   |  ⚠    | `nf-fa-warning` U+F071           | direct-git fallback is active    |
-| `clean`      |  ✔    | ✔ U+2714 (same)                 | worktree clean                   |
-| `dirty`      |  ✗    | ✗ U+2717 (same)                 | worktree dirty                   |
-| `stashed`    |  ≡    | `nf-fa-archive` U+F187          | stash entries                    |
-| `ahead`      |  ⇡    | ⇡ U+21E1 (same)                 | commits ahead of upstream        |
-| `behind`     |  ⇣    | ⇣ U+21E3 (same)                 | commits behind upstream          |
-| `staged`     |  ✛    | `nf-oct-diff_added` U+F457      | staged changes                   |
-| `modified`   |  ✴    | `nf-fa-pencil` U+F040           | unstaged changes                 |
-| `conflicted` |  ❖    | `nf-fa-exclamation_tri` U+F071  | merge conflicts                  |
-| `untracked`  |  ⊖    | `nf-fa-question` U+F128         | untracked files                  |
-| `unknown`    |  ∞    | ∞ U+221E (same)                | dirty, count not scanned (-m cap) |
-| `loading`    |  …    | `nf-fa-refresh` U+F021          | async git query in flight        |
-| `venv`       |  venv | `nf-seti-python` U+E606         | active Python virtualenv         |
-| `vim`        |  V    | `nf-dev-vim` U+E7C5             | inside vim                       |
-| `emacs`      |  E    | `nf-dev-emacs` U+E7CF           | inside emacs                     |
-| `jobs`       |  &    | `nf-oct-stack` U+F51E           | backgrounded jobs                |
-| `duration`   | (none) | `nf-fa-clock_o` U+F017          | last command duration            |
-| `ssh`        |  ssh  | `nf-cod-remote` U+EB3A          | inside an SSH session            |
-| `container`  |  box  | `nf-oct-container` U+F4B7       | inside a container               |
-| `dot`        |  ●    | ● U+25CF (same)                 | command status dot               |
-| `return`     |  ⏎    | ⏎ U+23CE (same)                 | nonzero-exit marker              |
-| `overwrite`  |  ♺    | ♺ U+267A (same)                 | overwrite (replace) editing mode |
-| `caret`      |  ❯    | ❯ U+276F (same)                 | prompt caret (insert keymap)     |
-| `caret_alt`  |  ❮    | ❮ U+276E (same)                 | prompt caret (vicmd keymap)      |
+| Name         | Plain  | Nerd Font                      | Meaning                           |
+|--------------|:------:|--------------------------------|-----------------------------------|
+| `os`         | (none) | `nf-fa-apple` / `nf-fa-linux`  | OS logo by the hostname           |
+| `branch`     |  ⎇     | `nf-pl-branch` U+E0A0          | local branch                      |
+| `tag`        |  ⚑     | `nf-oct-tag` U+F412            | tag ref                           |
+| `commit`     |  @     | `nf-oct-git_commit` U+F417     | detached HEAD                     |
+| `remote`     |  ⇅     | `nf-oct-git_compare` U+F47F    | upstream / remote tracking        |
+| `action`     |  ⚙     | `nf-oct-git_merge` U+F419      | in-progress op (rebase/merge)     |
+| `fallback`   |  ⚠     | `nf-fa-warning` U+F071         | direct-git fallback is active     |
+| `clean`      |  ✔     | ✔ U+2714 (same)                | worktree clean                    |
+| `dirty`      |  ✗     | ✗ U+2717 (same)                | worktree dirty                    |
+| `stashed`    |  ≡     | `nf-fa-archive` U+F187         | stash entries                     |
+| `ahead`      |  ⇡     | ⇡ U+21E1 (same)                | commits ahead of upstream         |
+| `behind`     |  ⇣     | ⇣ U+21E3 (same)                | commits behind upstream           |
+| `staged`     |  ✛     | `nf-oct-diff_added` U+F457     | staged changes                    |
+| `modified`   |  ✴     | `nf-fa-pencil` U+F040          | unstaged changes                  |
+| `conflicted` |  ❖     | `nf-fa-exclamation_tri` U+F071 | merge conflicts                   |
+| `untracked`  |  ⊖     | `nf-fa-question` U+F128        | untracked files                   |
+| `unknown`    |  ∞     | ∞ U+221E (same)                | dirty, count not scanned (-m cap) |
+| `loading`    |  …     | `nf-fa-refresh` U+F021         | async git query in flight         |
+| `venv`       |  venv  | `nf-seti-python` U+E606        | active Python virtualenv          |
+| `vim`        |  V     | `nf-dev-vim` U+E7C5            | inside vim                        |
+| `emacs`      |  E     | `nf-dev-emacs` U+E7CF          | inside emacs                      |
+| `jobs`       |  &     | `nf-oct-stack` U+F51E          | backgrounded jobs                 |
+| `duration`   | (none) | `nf-fa-clock_o` U+F017         | last command duration             |
+| `ssh`        |  ssh   | `nf-cod-remote` U+EB3A         | inside an SSH session             |
+| `container`  |  box   | `nf-oct-container` U+F4B7      | inside a container                |
+| `dot`        |  ●     | ● U+25CF (same)                | command status dot                |
+| `return`     |  ⏎     | ⏎ U+23CE (same)                | nonzero-exit marker               |
+| `overwrite`  |  ♺     | ♺ U+267A (same)                | overwrite (replace) editing mode  |
+| `caret`      |  ❯     | ❯ U+276F (same)                | prompt caret (insert keymap)      |
+| `caret_alt`  |  ❮     | ❮ U+276E (same)                | prompt caret (vicmd keymap)       |
 
 Rows marked "(same)" use the same BMP mark in both sets (they render in any font);
 the rest are true Nerd Font icons in the default set and the Plain glyph otherwise.
