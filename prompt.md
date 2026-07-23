@@ -158,6 +158,9 @@ string to tune the spacing for your font (e.g. `PROMPT_KRONUZ_GLYPH_PAD_UNTRACKE
 | `push_behind` | ⇩     | ⇩ U+21E9 (same)                | commits behind a distinct push remote    |
 | `staged`     |  ✛     | `nf-oct-diff_added` U+F457     | staged changes                    |
 | `modified`   |  ✴     | `nf-fa-pencil` U+F040          | unstaged changes                  |
+| `added`      |  +     | `nf-oct-diff_added` U+F457     | split view: staged new file       |
+| `changed`    |  ~     | `nf-oct-diff_modified` U+F459  | split view: modified file         |
+| `deleted`    |  -     | `nf-oct-diff_removed` U+F458   | split view: deleted file          |
 | `conflicted` |  ❖     | `nf-fa-exclamation_tri` U+F071 | merge conflicts                   |
 | `untracked`  |  ⊖     | ⊖ U+2296 (same)                | untracked files                   |
 | `unknown`    |  ∞     | ∞ U+221E (same)                | dirty, count not scanned (-m cap) |
@@ -542,6 +545,7 @@ fully enumerated in the linked table or directly in the description.
 | `PROMPT_KRONUZ_GLYPH_<NAME>` | per glyph | Override one glyph; `''` hides it. All names are in the [glyph table](#glyphs). |
 | `PROMPT_KRONUZ_GLYPH_PAD_<NAME>` | per glyph | Override a glyph's trailing (right-hand) pad; `''` hugs tight, a space / `$'\u00a0'` / any string tunes it for your font. |
 | `PROMPT_KRONUZ_GIT_SEP` | `' '` (space) | String inserted between the git detail indicators (stash / staged / modified / untracked / ahead-behind …). Set to `'·'`, `':'`, `$'\u00a0'`, or any string; `''` packs them with no separator. |
+| `PROMPT_KRONUZ_GIT_SPLIT` | `0` | `1`/`yes`/`on`/`true` breaks the single staged/unstaged counts into per-type marks — added `+`, changed `~`, deleted `-` — coloured by group (staged green, unstaged red). Off shows one aggregate count per group. |
 | `PROMPT_KRONUZ_COLOR_<NAME>` | per color | Override one semantic color. All public names are in the [color table](#colors). |
 | `PROMPT_KRONUZ_PALETTE_<NAME>` | terminal palette | Override one ANSI base color with `#RRGGBB` or a 0–255 index. Names: `BLACK`, `RED`, `GREEN`, `YELLOW`, `BLUE`, `MAGENTA`, `CYAN`, `GREY`, `DARKGREY`, `LIGHTRED`, `LIGHTGREEN`, `LIGHTYELLOW`, `LIGHTBLUE`, `LIGHTMAGENTA`, `LIGHTCYAN`, `LIGHTGREY`. This changes display colors and the RGB used by `dim`. |
 | `PROMPT_KRONUZ_<SEGMENT>` | built in | Replace one complete segment or outcome item. Names: `OS`, `ERR`, `ERROR`, `DURATION`, `USER`, `HOST`, `IP`, `TIME`, `PWD`, `GIT`, `VENV`, `JOBS`, `CONTEXT`, `ETCTL`, `VIM`, `EMACS`, `OVERWRITE`, `PROMPT`; see [Replacing a whole segment](#replacing-a-whole-segment). |

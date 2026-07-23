@@ -343,6 +343,9 @@ function prompt_kronuz_glyphs {
       push_behind $'\u21e9' # ⇩  commits behind a distinct push remote
       staged     $'\u271b'  # ✛  staged changes
       modified   $'\u2734'  # ✴  unstaged changes
+      added      '+'        # +  split view: staged new file
+      changed    '~'        # ~  split view: modified file
+      deleted    '-'        # -  split view: deleted file
       conflicted $'\u2756'  # ❖  merge conflicts
       untracked  $'\u2296'  # ⊖  untracked files
       unknown    $'\u221e'  # ∞  dirty, count not scanned (index over -m cap)
@@ -376,6 +379,9 @@ function prompt_kronuz_glyphs {
       push_behind $'\u21e9' # ⇩                      commits behind a distinct push remote
       staged     $'\uf457'  # nf-oct-diff_added      staged changes
       modified   $'\uf040'  # nf-fa-pencil           unstaged changes
+      added      $'\uf457'  # nf-oct-diff_added      split view: staged new file
+      changed    $'\uf459'  # nf-oct-diff_modified   split view: modified file
+      deleted    $'\uf458'  # nf-oct-diff_removed    split view: deleted file
       conflicted $'\uf071'  # nf-fa-exclamation_tri  merge conflicts
       untracked  $'\u2296'  # ⊖                      untracked files
       unknown    $'\u221e'  # ∞ (uncounted)          dirty, scan skipped (-m cap)
@@ -523,11 +529,34 @@ function _kronuz_git_render {
     (( VCS_STATUS_PUSH_COMMITS_AHEAD ))  && icons+="${icons:+$isep}${(e)col[ahead]}${glyph[push_ahead]}${glyph_pad[push_ahead]}${VCS_STATUS_PUSH_COMMITS_AHEAD}${none}"
     (( VCS_STATUS_PUSH_COMMITS_BEHIND )) && icons+="${icons:+$isep}${(e)col[behind]}${glyph[push_behind]}${glyph_pad[push_behind]}${VCS_STATUS_PUSH_COMMITS_BEHIND}${none}"
   fi
-  (( VCS_STATUS_NUM_STAGED ))     && icons+="${icons:+$isep}${(e)col[added]}${glyph[staged]}${glyph_pad[staged]}${VCS_STATUS_NUM_STAGED}${none}"
+  # Staged / unstaged detail. With PROMPT_KRONUZ_GIT_SPLIT set, the single staged and
+  # unstaged counts break into per-type marks -- added (+), changed (~), deleted (-) --
+  # coloured by group (staged green, unstaged red); gitstatusd already reports the
+  # *_NEW / *_DELETED breakdown, so this costs no extra git call. Off by default (one
+  # aggregate count per group). The -m-capped "unknown" path keeps the aggregate.
+  local -i split=0
+  [[ "${(L)PROMPT_KRONUZ_GIT_SPLIT:-0}" == (1|yes|on|true) ]] && split=1
+
+  if (( split && ! dirty_unknown )); then
+    local -i s_new=VCS_STATUS_NUM_STAGED_NEW s_del=VCS_STATUS_NUM_STAGED_DELETED
+    local -i s_mod=VCS_STATUS_NUM_STAGED-s_new-s_del
+    (( s_new > 0 )) && icons+="${icons:+$isep}${(e)col[added]}${glyph[added]}${glyph_pad[added]}${s_new}${none}"
+    (( s_mod > 0 )) && icons+="${icons:+$isep}${(e)col[added]}${glyph[changed]}${glyph_pad[changed]}${s_mod}${none}"
+    (( s_del > 0 )) && icons+="${icons:+$isep}${(e)col[added]}${glyph[deleted]}${glyph_pad[deleted]}${s_del}${none}"
+  else
+    (( VCS_STATUS_NUM_STAGED )) && icons+="${icons:+$isep}${(e)col[added]}${glyph[staged]}${glyph_pad[staged]}${VCS_STATUS_NUM_STAGED}${none}"
+  fi
+
   if (( dirty_unknown )); then
     icons+="${icons:+$isep}${(e)col[untracked]}${glyph[unknown]}${glyph_pad[unknown]}${none}"
   else
-    (( VCS_STATUS_NUM_UNSTAGED ))   && icons+="${icons:+$isep}${(e)col[modified]}${glyph[modified]}${glyph_pad[modified]}${VCS_STATUS_NUM_UNSTAGED}${none}"
+    if (( split )); then
+      local -i u_del=VCS_STATUS_NUM_UNSTAGED_DELETED u_mod=VCS_STATUS_NUM_UNSTAGED-u_del
+      (( u_mod > 0 )) && icons+="${icons:+$isep}${(e)col[modified]}${glyph[changed]}${glyph_pad[changed]}${u_mod}${none}"
+      (( u_del > 0 )) && icons+="${icons:+$isep}${(e)col[modified]}${glyph[deleted]}${glyph_pad[deleted]}${u_del}${none}"
+    else
+      (( VCS_STATUS_NUM_UNSTAGED )) && icons+="${icons:+$isep}${(e)col[modified]}${glyph[modified]}${glyph_pad[modified]}${VCS_STATUS_NUM_UNSTAGED}${none}"
+    fi
     (( VCS_STATUS_NUM_CONFLICTED )) && icons+="${icons:+$isep}${(e)col[unmerged]}${glyph[conflicted]}${glyph_pad[conflicted]}${VCS_STATUS_NUM_CONFLICTED}${none}"
     (( VCS_STATUS_NUM_UNTRACKED ))  && icons+="${icons:+$isep}${(e)col[untracked]}${glyph[untracked]}${glyph_pad[untracked]}${VCS_STATUS_NUM_UNTRACKED}${none}"
   fi
