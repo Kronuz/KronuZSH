@@ -460,14 +460,15 @@ function _kronuz_git_fallback {
   remote="$(command git rev-parse --abbrev-ref --symbolic-full-name @{upstream} 2>/dev/null)"
   [[ -n "$remote" ]] && s+=" ${info}${glyph[remote]}${none} ${(e)col[remote]}${remote}${none}"
   local staged='' unstaged='' untracked='' icons=''
+  local isep="${PROMPT_KRONUZ_GIT_SEP-$DEFAULT_PROMPT_KRONUZ_GIT_SEP}"
   command git diff --cached --quiet --ignore-submodules 2>/dev/null || staged=1
   command git diff --quiet --ignore-submodules 2>/dev/null || unstaged=1
   [[ -n "$(command git ls-files --others --exclude-standard 2>/dev/null | head -1)" ]] && untracked=1
   if [[ -n "$staged$unstaged$untracked" ]]; then
     icons+="${(e)col[dirty]}${glyph[dirty]}${none}"
-    [[ -n "$staged" ]]    && icons+="${(e)col[added]}${glyph[staged]}${none}"
-    [[ -n "$unstaged" ]]  && icons+="${(e)col[modified]}${glyph[modified]}${none}"
-    [[ -n "$untracked" ]] && icons+=" ${(e)col[untracked]}${glyph[untracked]}${none}"
+    [[ -n "$staged" ]]    && icons+="${icons:+$isep}${(e)col[added]}${glyph[staged]}${none}"
+    [[ -n "$unstaged" ]]  && icons+="${icons:+$isep}${(e)col[modified]}${glyph[modified]}${none}"
+    [[ -n "$untracked" ]] && icons+="${icons:+$isep}${(e)col[untracked]}${glyph[untracked]}${none}"
   else
     icons="${(e)col[clean]}${glyph[clean]}${none}"
   fi
