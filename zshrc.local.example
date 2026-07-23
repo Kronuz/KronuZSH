@@ -49,6 +49,11 @@ PROMPT_KRONUZ_COLOR_HOST='$col[green]'
 # from colliding with its count. '' hugs tight; a space / $'\u00a0' / any string tunes it:
 # PROMPT_KRONUZ_GLYPH_PAD_UNTRACKED=''       # hug the untracked count against its glyph
 # PROMPT_KRONUZ_GLYPH_PAD_MODIFIED=$'\u00a0' # a non-breaking space, if it renders tighter
+# Separator between the git detail indicators (stash / staged / modified / untracked /
+# ahead-behind ...). Default is a space; '·' or ':' delimits them, '' packs them tight:
+# PROMPT_KRONUZ_GIT_SEP='·'
+# PROMPT_KRONUZ_GIT_SEP=':'
+# PROMPT_KRONUZ_GIT_SEP=$'\u00a0'       # a non-breaking space
 # Replace or hide the complete live keymap indicators (prompt strings may reference
 # the semantic palette and glyph arrays):
 # PROMPT_KRONUZ_KEYMAP_PRIMARY='${col[caret1]}${glyph[caret]}${col[none]}'

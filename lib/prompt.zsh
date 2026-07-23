@@ -481,27 +481,31 @@ function _kronuz_git_render {
   [[ -n "$VCS_STATUS_ACTION" ]] && \
     s+=" ${info}${glyph[action]}${none} ${(e)col[action]}${VCS_STATUS_ACTION}${none}"
 
+  # Indicators inside the (...), joined by $PROMPT_KRONUZ_GIT_SEP (a space by
+  # default, from $DEFAULT_PROMPT_KRONUZ_GIT_SEP; set it to '·', ':', '' or anything
+  # to taste). ${icons:+$isep} inserts the separator before every indicator except the first.
+  local isep="${PROMPT_KRONUZ_GIT_SEP-$DEFAULT_PROMPT_KRONUZ_GIT_SEP}"
   local icons=''
-  (( VCS_STATUS_STASHES )) && icons+="${(e)col[stashed]}${glyph[stashed]}${glyph_pad[stashed]}${VCS_STATUS_STASHES}${none}"
+  (( VCS_STATUS_STASHES )) && icons+="${icons:+$isep}${(e)col[stashed]}${glyph[stashed]}${glyph_pad[stashed]}${VCS_STATUS_STASHES}${none}"
   # gitstatusd reports HAS_* = -1 for unstaged/conflicted/untracked when the index is
   # larger than its -m cap and it skipped the dirty scan (see PROMPT_KRONUZ_GITSTATUS_ARGS
   # in lib/plugins.zsh). Staged is always counted exactly; the rest are then unknown, so
-  # we render the dirty mark plus a single "?" instead of guessing "clean".
+  # we render the dirty mark plus a single "∞" instead of guessing "clean".
   local -i dirty_unknown=$(( ${VCS_STATUS_HAS_UNSTAGED:-0} == -1 ))
   if (( dirty_unknown || VCS_STATUS_NUM_STAGED + VCS_STATUS_NUM_UNSTAGED + VCS_STATUS_NUM_UNTRACKED + VCS_STATUS_NUM_CONFLICTED )); then
-    icons+="${(e)col[dirty]}${glyph[dirty]}${none}"
+    icons+="${icons:+$isep}${(e)col[dirty]}${glyph[dirty]}${none}"
   else
-    icons+="${(e)col[clean]}${glyph[clean]}${none}"
+    icons+="${icons:+$isep}${(e)col[clean]}${glyph[clean]}${none}"
   fi
-  (( VCS_STATUS_COMMITS_AHEAD ))  && icons+="${(e)col[ahead]}${glyph[ahead]}${glyph_pad[ahead]}${VCS_STATUS_COMMITS_AHEAD}${none}"
-  (( VCS_STATUS_COMMITS_BEHIND )) && icons+="${(e)col[behind]}${glyph[behind]}${glyph_pad[behind]}${VCS_STATUS_COMMITS_BEHIND}${none}"
-  (( VCS_STATUS_NUM_STAGED ))     && icons+="${(e)col[added]}${glyph[staged]}${glyph_pad[staged]}${VCS_STATUS_NUM_STAGED}${none}"
+  (( VCS_STATUS_COMMITS_AHEAD ))  && icons+="${icons:+$isep}${(e)col[ahead]}${glyph[ahead]}${glyph_pad[ahead]}${VCS_STATUS_COMMITS_AHEAD}${none}"
+  (( VCS_STATUS_COMMITS_BEHIND )) && icons+="${icons:+$isep}${(e)col[behind]}${glyph[behind]}${glyph_pad[behind]}${VCS_STATUS_COMMITS_BEHIND}${none}"
+  (( VCS_STATUS_NUM_STAGED ))     && icons+="${icons:+$isep}${(e)col[added]}${glyph[staged]}${glyph_pad[staged]}${VCS_STATUS_NUM_STAGED}${none}"
   if (( dirty_unknown )); then
-    icons+=" ${(e)col[untracked]}${glyph[unknown]}${glyph_pad[unknown]}${none}"
+    icons+="${icons:+$isep}${(e)col[untracked]}${glyph[unknown]}${glyph_pad[unknown]}${none}"
   else
-    (( VCS_STATUS_NUM_UNSTAGED ))   && icons+="${(e)col[modified]}${glyph[modified]}${glyph_pad[modified]}${VCS_STATUS_NUM_UNSTAGED}${none}"
-    (( VCS_STATUS_NUM_CONFLICTED )) && icons+="${(e)col[unmerged]}${glyph[conflicted]}${glyph_pad[conflicted]}${VCS_STATUS_NUM_CONFLICTED}${none}"
-    (( VCS_STATUS_NUM_UNTRACKED ))  && icons+=" ${(e)col[untracked]}${glyph[untracked]}${glyph_pad[untracked]}${VCS_STATUS_NUM_UNTRACKED}${none}"
+    (( VCS_STATUS_NUM_UNSTAGED ))   && icons+="${icons:+$isep}${(e)col[modified]}${glyph[modified]}${glyph_pad[modified]}${VCS_STATUS_NUM_UNSTAGED}${none}"
+    (( VCS_STATUS_NUM_CONFLICTED )) && icons+="${icons:+$isep}${(e)col[unmerged]}${glyph[conflicted]}${glyph_pad[conflicted]}${VCS_STATUS_NUM_CONFLICTED}${none}"
+    (( VCS_STATUS_NUM_UNTRACKED ))  && icons+="${icons:+$isep}${(e)col[untracked]}${glyph[untracked]}${glyph_pad[untracked]}${VCS_STATUS_NUM_UNTRACKED}${none}"
   fi
 
   _prompt_kronuz_git="${s}${sep} (${none}${icons}${sep})${none}"
@@ -1124,6 +1128,7 @@ function prompt_kronuz_setup {
   DEFAULT_PROMPT_KRONUZ_HOST="%M"
   DEFAULT_PROMPT_KRONUZ_IP="\${_prompt_kronuz_ip}"
   DEFAULT_PROMPT_KRONUZ_GIT="\${_prompt_kronuz_git:+\${(e)_prompt_kronuz_git}}"
+  DEFAULT_PROMPT_KRONUZ_GIT_SEP=' '
   DEFAULT_PROMPT_KRONUZ_VENV="\${(e)_prompt_kronuz_venv}"
   DEFAULT_PROMPT_KRONUZ_OVERWRITE="\${(e)_prompt_kronuz_overwrite}"
   DEFAULT_PROMPT_KRONUZ_PROMPT="\${(e)_prompt_kronuz_keymap}"
