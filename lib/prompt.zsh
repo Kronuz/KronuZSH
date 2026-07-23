@@ -534,7 +534,7 @@ function _kronuz_git_render {
   fi
   # Staged / unstaged detail. With PROMPT_KRONUZ_GIT_SPLIT set, the single staged and
   # unstaged counts break into per-type marks -- added (+), changed (~), deleted (-) --
-  # coloured by group (staged green, unstaged red); gitstatusd already reports the
+  # coloured by group (staged the added colour, unstaged the modified colour); gitstatusd already reports the
   # *_NEW / *_DELETED breakdown, so this costs no extra git call. Off by default (one
   # aggregate count per group). The -m-capped "unknown" path keeps the aggregate.
   local -i split=0
