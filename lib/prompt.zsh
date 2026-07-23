@@ -342,6 +342,7 @@ function prompt_kronuz_glyphs {
       modified   $'\u2734'  # ✴  unstaged changes
       conflicted $'\u2756'  # ❖  merge conflicts
       untracked  $'\u2296'  # ⊖  untracked files
+      unknown    '?'        # ?  dirty state not scanned (index over -m cap)
       venv       'venv'     # active virtualenv
       vim        'V'        # inside vim
       emacs      'E'        # inside emacs
@@ -368,6 +369,7 @@ function prompt_kronuz_glyphs {
       modified   $'\uf040'  # nf-fa-pencil           unstaged changes
       conflicted $'\uf071'  # nf-fa-exclamation_tri  merge conflicts
       untracked  $'\uf128'  # nf-fa-question         untracked files
+      unknown    $'\uf059'  # nf-fa-question_circle  dirty state not scanned (-m cap)
       venv       $'\ue606'  # nf-seti-python         active virtualenv
       vim        $'\ue7c5'  # nf-dev-vim             inside vim
       emacs      $'\ue7cf'  # nf-dev-emacs           inside emacs
@@ -470,7 +472,12 @@ function _kronuz_git_render {
 
   local icons=''
   (( VCS_STATUS_STASHES )) && icons+="${(e)col[stashed]}${glyph[stashed]}${glyph_pad[stashed]}${VCS_STATUS_STASHES}${none}"
-  if (( VCS_STATUS_NUM_STAGED + VCS_STATUS_NUM_UNSTAGED + VCS_STATUS_NUM_UNTRACKED + VCS_STATUS_NUM_CONFLICTED )); then
+  # gitstatusd reports HAS_* = -1 for unstaged/conflicted/untracked when the index is
+  # larger than its -m cap and it skipped the dirty scan (see PROMPT_KRONUZ_GITSTATUS_ARGS
+  # in lib/plugins.zsh). Staged is always counted exactly; the rest are then unknown, so
+  # we render the dirty mark plus a single "?" instead of guessing "clean".
+  local -i dirty_unknown=$(( ${VCS_STATUS_HAS_UNSTAGED:-0} == -1 ))
+  if (( dirty_unknown || VCS_STATUS_NUM_STAGED + VCS_STATUS_NUM_UNSTAGED + VCS_STATUS_NUM_UNTRACKED + VCS_STATUS_NUM_CONFLICTED )); then
     icons+="${(e)col[dirty]}${glyph[dirty]}${none}"
   else
     icons+="${(e)col[clean]}${glyph[clean]}${none}"
@@ -478,9 +485,13 @@ function _kronuz_git_render {
   (( VCS_STATUS_COMMITS_AHEAD ))  && icons+="${(e)col[ahead]}${glyph[ahead]}${glyph_pad[ahead]}${VCS_STATUS_COMMITS_AHEAD}${none}"
   (( VCS_STATUS_COMMITS_BEHIND )) && icons+="${(e)col[behind]}${glyph[behind]}${glyph_pad[behind]}${VCS_STATUS_COMMITS_BEHIND}${none}"
   (( VCS_STATUS_NUM_STAGED ))     && icons+="${(e)col[added]}${glyph[staged]}${glyph_pad[staged]}${VCS_STATUS_NUM_STAGED}${none}"
-  (( VCS_STATUS_NUM_UNSTAGED ))   && icons+="${(e)col[modified]}${glyph[modified]}${glyph_pad[modified]}${VCS_STATUS_NUM_UNSTAGED}${none}"
-  (( VCS_STATUS_NUM_CONFLICTED )) && icons+="${(e)col[unmerged]}${glyph[conflicted]}${glyph_pad[conflicted]}${VCS_STATUS_NUM_CONFLICTED}${none}"
-  (( VCS_STATUS_NUM_UNTRACKED ))  && icons+=" ${(e)col[untracked]}${glyph[untracked]}${glyph_pad[untracked]}${VCS_STATUS_NUM_UNTRACKED}${none}"
+  if (( dirty_unknown )); then
+    icons+=" ${(e)col[untracked]}${glyph[unknown]}${glyph_pad[unknown]}${none}"
+  else
+    (( VCS_STATUS_NUM_UNSTAGED ))   && icons+="${(e)col[modified]}${glyph[modified]}${glyph_pad[modified]}${VCS_STATUS_NUM_UNSTAGED}${none}"
+    (( VCS_STATUS_NUM_CONFLICTED )) && icons+="${(e)col[unmerged]}${glyph[conflicted]}${glyph_pad[conflicted]}${VCS_STATUS_NUM_CONFLICTED}${none}"
+    (( VCS_STATUS_NUM_UNTRACKED ))  && icons+=" ${(e)col[untracked]}${glyph[untracked]}${glyph_pad[untracked]}${VCS_STATUS_NUM_UNTRACKED}${none}"
+  fi
 
   _prompt_kronuz_git="${s}${sep} (${none}${icons}${sep})${none}"
   _kronuz_git_last="$_prompt_kronuz_git"

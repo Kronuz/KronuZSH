@@ -13,6 +13,10 @@
 # daemon's work in pathological repos (the expensive one is untracked, -d, which walks the
 # working tree); note any finite cap makes large counts show as the cap, not the true
 # number. E.g. PROMPT_KRONUZ_GITSTATUS_ARGS='-s -1 -u -1 -c -1 -d 100 -m 20000'.
+#
+# -m N tells gitstatusd to skip the unstaged/conflicted/untracked scan entirely once the
+# index has more than N files, bounding its cost in huge monorepos. The prompt then shows
+# the branch, exact staged count, and a single "?" for the un-scanned dirty state.
 : ${PROMPT_KRONUZ_GITSTATUS_ARGS="-s -1 -u -1 -c -1 -d -1"}
 source "$KRONUZSH/plugins/gitstatus/gitstatus.plugin.zsh"
 gitstatus_start ${=PROMPT_KRONUZ_GITSTATUS_ARGS} KRONUZ 2>/dev/null
