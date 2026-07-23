@@ -148,6 +148,8 @@ only in a Nerd Font, so it's named here rather than shown):
 | `modified`   |  ✴    | `nf-fa-pencil` U+F040           | unstaged changes                 |
 | `conflicted` |  ❖    | `nf-fa-exclamation_tri` U+F071  | merge conflicts                  |
 | `untracked`  |  ⊖    | `nf-fa-question` U+F128         | untracked files                  |
+| `unknown`    |  ?    | `nf-fa-question_circle` U+F059  | dirty state not scanned (-m cap) |
+| `loading`    |  …    | `nf-fa-refresh` U+F021          | async git query in flight        |
 | `venv`       |  venv | `nf-seti-python` U+E606         | active Python virtualenv         |
 | `vim`        |  V    | `nf-dev-vim` U+E7C5             | inside vim                       |
 | `emacs`      |  E    | `nf-dev-emacs` U+E7CF           | inside emacs                     |
@@ -221,6 +223,7 @@ The semantic names and their defaults:
 | `fallback`                                | gold               | direct-git fallback warning      |
 | `modified` / `unmerged`                   | red                | unstaged changes / conflicts      |
 | `untracked`                               | dark grey          | untracked count                   |
+| `loading`                                 | dark grey          | in-flight async git query mark    |
 | `stashed`                                 | light steel blue   | stash count                       |
 | `venv`                                    | white              | virtualenv name                   |
 | `jobs`                                    | gold               | background-jobs count             |

@@ -280,6 +280,7 @@ function prompt_kronuz_colors {
     unmerged   '$col[red]'
     untracked  '$col[darkgrey]'
     info       '$col[darkgrey]'
+    loading    '$col[darkgrey]'
     sep        '$col[darkgrey]'
     ip         '$col[darkgrey]'
     time       '$col[darkgrey]'
@@ -343,6 +344,7 @@ function prompt_kronuz_glyphs {
       conflicted $'\u2756'  # ❖  merge conflicts
       untracked  $'\u2296'  # ⊖  untracked files
       unknown    '?'        # ?  dirty state not scanned (index over -m cap)
+      loading    $'\u2026'  # …  async git query in flight
       venv       'venv'     # active virtualenv
       vim        'V'        # inside vim
       emacs      'E'        # inside emacs
@@ -370,6 +372,7 @@ function prompt_kronuz_glyphs {
       conflicted $'\uf071'  # nf-fa-exclamation_tri  merge conflicts
       untracked  $'\uf128'  # nf-fa-question         untracked files
       unknown    $'\uf059'  # nf-fa-question_circle  dirty state not scanned (-m cap)
+      loading    $'\uf021'  # nf-fa-refresh          async git query in flight
       venv       $'\ue606'  # nf-seti-python         active virtualenv
       vim        $'\ue7c5'  # nf-dev-vim             inside vim
       emacs      $'\ue7cf'  # nf-dev-emacs           inside emacs
@@ -539,7 +542,11 @@ function _kronuz_git_segment {
   case "$VCS_STATUS_RESULT" in
     ok-sync)     _kronuz_git_inflight=0; _kronuz_git_render ;;                   # answered in budget
     norepo-sync) _kronuz_git_inflight=0; _prompt_kronuz_git=''; _kronuz_git_last='' ;;  # not a repo
-    *)           _kronuz_git_inflight=1; _prompt_kronuz_git="$_kronuz_git_last" ;;      # tout: stale now
+    *)  # tout: a query is in flight. Show the last-known status (if any) plus a subtle
+        # loading mark, so a slow or first paint reads as "refreshing", not blank/frozen.
+        _kronuz_git_inflight=1
+        _prompt_kronuz_git="${_kronuz_git_last} ${(e)col[loading]}${glyph[loading]}${glyph_pad[loading]}${(e)col[none]}"
+        ;;
   esac
 }
 
