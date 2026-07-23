@@ -343,7 +343,7 @@ function prompt_kronuz_glyphs {
       modified   $'\u2734'  # ✴  unstaged changes
       conflicted $'\u2756'  # ❖  merge conflicts
       untracked  $'\u2296'  # ⊖  untracked files
-      unknown    '?'        # ?  dirty state not scanned (index over -m cap)
+      unknown    $'\u221e'  # ∞  dirty, count not scanned (index over -m cap)
       loading    $'\u2026'  # …  async git query in flight
       venv       'venv'     # active virtualenv
       vim        'V'        # inside vim
@@ -371,7 +371,7 @@ function prompt_kronuz_glyphs {
       modified   $'\uf040'  # nf-fa-pencil           unstaged changes
       conflicted $'\uf071'  # nf-fa-exclamation_tri  merge conflicts
       untracked  $'\uf128'  # nf-fa-question         untracked files
-      unknown    $'\uf059'  # nf-fa-question_circle  dirty state not scanned (-m cap)
+      unknown    $'\u221e'  # ∞ (uncounted)          dirty, scan skipped (-m cap)
       loading    $'\uf021'  # nf-fa-refresh          async git query in flight
       venv       $'\ue606'  # nf-seti-python         active virtualenv
       vim        $'\ue7c5'  # nf-dev-vim             inside vim

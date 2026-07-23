@@ -148,7 +148,7 @@ only in a Nerd Font, so it's named here rather than shown):
 | `modified`   |  ✴    | `nf-fa-pencil` U+F040           | unstaged changes                 |
 | `conflicted` |  ❖    | `nf-fa-exclamation_tri` U+F071  | merge conflicts                  |
 | `untracked`  |  ⊖    | `nf-fa-question` U+F128         | untracked files                  |
-| `unknown`    |  ?    | `nf-fa-question_circle` U+F059  | dirty state not scanned (-m cap) |
+| `unknown`    |  ∞    | ∞ U+221E (same)                | dirty, count not scanned (-m cap) |
 | `loading`    |  …    | `nf-fa-refresh` U+F021          | async git query in flight        |
 | `venv`       |  venv | `nf-seti-python` U+E606         | active Python virtualenv         |
 | `vim`        |  V    | `nf-dev-vim` U+E7C5             | inside vim                       |
