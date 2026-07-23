@@ -360,6 +360,9 @@ function prompt_kronuz_glyphs {
       tag        $'\uf412'  # nf-oct-tag             tag ref
       commit     $'\uf417'  # nf-oct-git_commit      detached HEAD
       remote     $'\uf47f'  # nf-oct-git_compare     upstream / remote tracking
+      host_github    $'\uf09b'  # nf-fa-github        remote host: GitHub
+      host_gitlab    $'\uf296'  # nf-fa-gitlab        remote host: GitLab
+      host_bitbucket $'\uf171'  # nf-fa-bitbucket     remote host: Bitbucket
       action     $'\uf419'  # nf-oct-git_merge       in-progress op (rebase/merge)
       fallback   $'\uf071'  # nf-fa-warning          direct-git fallback warning
       clean      $'\u2714'  # ✔                      worktree clean
@@ -476,8 +479,18 @@ function _kronuz_git_render {
   else
     s+=" ${info}${glyph[commit]}${none} ${(e)col[commit]}${VCS_STATUS_COMMIT[1,7]}${none}"
   fi
-  [[ -n "$VCS_STATUS_REMOTE_NAME" ]] && \
-    s+=" ${info}${glyph[remote]}${none} ${(e)col[remote]}${VCS_STATUS_REMOTE_NAME}/${VCS_STATUS_REMOTE_BRANCH}${none}"
+  # Remote tracking branch, tagged with a per-host icon (GitHub / GitLab / Bitbucket)
+  # picked from $VCS_STATUS_REMOTE_URL. Unknown hosts and the plain-Unicode set (which has
+  # no logos) fall back to the generic ${glyph[remote]} mark.
+  if [[ -n "$VCS_STATUS_REMOTE_NAME" ]]; then
+    local rg="${glyph[remote]}"
+    case "$VCS_STATUS_REMOTE_URL" in
+      (*github*)    rg="${glyph[host_github]:-$rg}" ;;
+      (*gitlab*)    rg="${glyph[host_gitlab]:-$rg}" ;;
+      (*bitbucket*) rg="${glyph[host_bitbucket]:-$rg}" ;;
+    esac
+    s+=" ${info}${rg}${none} ${(e)col[remote]}${VCS_STATUS_REMOTE_NAME}/${VCS_STATUS_REMOTE_BRANCH}${none}"
+  fi
   [[ -n "$VCS_STATUS_ACTION" ]] && \
     s+=" ${info}${glyph[action]}${none} ${(e)col[action]}${VCS_STATUS_ACTION}${none}"
 
