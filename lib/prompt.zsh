@@ -585,7 +585,17 @@ function _kronuz_unique_prefix {
   done
   typeset -g REPLY="${name[1,n]}"
 }
+typeset -g _kronuz_pwd_sig=''
 function _kronuz_pwd_segment {
+  # Skip the recompute (for the 'short' style, ~1ms of globbing) when neither the
+  # directory nor the style changed since the last prompt. Keyed on both, so a cd or a
+  # runtime PROMPT_KRONUZ_PWD_STYLE change still refreshes; the cached string persists in
+  # $_prompt_kronuz_pwd. (A new sibling directory sharing your prefix won't re-shorten
+  # until the next cd -- an acceptable staleness for the 'short' style.)
+  local sig="${PROMPT_KRONUZ_PWD_STYLE:-full}|$PWD"
+  [[ "$sig" == "$_kronuz_pwd_sig" ]] && return
+  _kronuz_pwd_sig="$sig"
+
   local p="${(%):-%~}"
   case "${PROMPT_KRONUZ_PWD_STYLE:-full}" in
     base)
