@@ -2,7 +2,7 @@
 # Vim / Neovim: link the colorscheme into each editor's runtime and optionally append
 # a marked, removable activation block to its config.
 
-_kronuz_vim_block() {
+_kz_vim_block() {
   if [ "$1" = lua ]; then
     cat <<'RC'
 
@@ -31,7 +31,7 @@ RC
   fi
 }
 
-_kronuz_vim_wire() {
+_kz_vim_wire() {
   local editor="$1" language="$2" path="$3" replacement enable=0
   local -a config=("$editor config" "$path")
 
@@ -56,7 +56,7 @@ _kronuz_vim_wire() {
     if [ -f "$path" ]; then
       cat "$path" > "$replacement"
     fi
-    _kronuz_vim_block "$language" >> "$replacement"
+    _kz_vim_block "$language" >> "$replacement"
     kz_commit_file "${config[@]}" "$replacement"
     kz_ok "$editor" "colorscheme enabled in $(kz_tilde "$path")"
   fi
@@ -65,7 +65,7 @@ _kronuz_vim_wire() {
   kz_hint "transparent background: set kronuz_transparent before loading the colorscheme"
 }
 
-_kronuz_setup_vim() {
+_kz_setup_vim() {
   local here source nvim_dir
   local -a vim_theme neovim_theme
 
@@ -78,7 +78,7 @@ _kronuz_setup_vim() {
 
   if command -v vim >/dev/null 2>&1; then
     kz_manage_link "${vim_theme[@]}"
-    _kronuz_vim_wire vim vim "$HOME/.vimrc"
+    _kz_vim_wire vim vim "$HOME/.vimrc"
   fi
 
   if command -v nvim >/dev/null 2>&1; then
@@ -86,12 +86,12 @@ _kronuz_setup_vim() {
 
     # Neovim loads init.lua or init.vim, never both.
     if [ -f "$nvim_dir/init.lua" ]; then
-      _kronuz_vim_wire neovim lua "$nvim_dir/init.lua"
+      _kz_vim_wire neovim lua "$nvim_dir/init.lua"
     else
-      _kronuz_vim_wire neovim vim "$nvim_dir/init.vim"
+      _kz_vim_wire neovim vim "$nvim_dir/init.vim"
     fi
   fi
 }
 
-_kronuz_setup_vim
-unset -f _kronuz_setup_vim _kronuz_vim_block _kronuz_vim_wire
+_kz_setup_vim
+unset -f _kz_setup_vim _kz_vim_block _kz_vim_wire

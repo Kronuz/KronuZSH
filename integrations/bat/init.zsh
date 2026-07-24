@@ -5,23 +5,23 @@
 # `MANROFFOPT=-c` avoids the groff/col spacing glitch. The Kronuz theme cache build
 # lives in ./setup.sh; the theme files live in ../themes/ (shared with delta + yazi).
 # install: brew install bat · cargo install bat · apt/dnf install bat
-_kronuz_bat=''
-(( $+commands[bat] ))    && _kronuz_bat=bat
-(( $+commands[batcat] )) && [[ -z $_kronuz_bat ]] && _kronuz_bat=batcat
-if [[ -n $_kronuz_bat ]]; then
+_kz_bat=''
+(( $+commands[bat] ))    && _kz_bat=bat
+(( $+commands[batcat] )) && [[ -z $_kz_bat ]] && _kz_bat=batcat
+if [[ -n $_kz_bat ]]; then
   # Use the bundled Kronuz theme, but only once setup.sh has built bat's cache
   # (themes are read at cache-build time, not live). Guard on the cache file so we
   # never trip bat's "unknown theme" warning on a box where it wasn't built.
   [[ -f ${BAT_CACHE_PATH:-$HOME/.cache/bat}/themes.bin ]] && \
     export BAT_THEME="${BAT_THEME:-Kronuz}"
-  export MANPAGER="sh -c 'col -bx | $_kronuz_bat -l man -p --paging=always'"
+  export MANPAGER="sh -c 'col -bx | $_kz_bat -l man -p --paging=always'"
   export MANROFFOPT='-c'
 
   # Keep cat's byte-stream behavior everywhere it matters. Bat is the pretty path
   # only for option-free files written directly to a terminal; native cat handles
   # every flag (including platform-specific ones), stdin, pipes, and redirections.
-  typeset -g _kronuz_bat_command="$_kronuz_bat"
-  _kronuz_help_native[cat]=cat
+  typeset -g _kz_bat_command="$_kz_bat"
+  _kz_help_native[cat]=cat
   unalias cat 2>/dev/null
   function cat {
     local arg after_options=0
@@ -40,7 +40,7 @@ if [[ -n $_kronuz_bat ]]; then
     for arg in "${(@)@:#--}"; do
       [[ -f "$arg" ]] || { command cat "$@"; return }
     done
-    command "$_kronuz_bat_command" --style=plain --paging=never "$@"
+    command "$_kz_bat_command" --style=plain --paging=never "$@"
   }
 fi
-unset _kronuz_bat
+unset _kz_bat

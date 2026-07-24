@@ -64,10 +64,10 @@ Nerd Font and point your terminal at it — e.g.
   even with the right main font.
 
 Without a Nerd Font, flip the whole prompt to plain-Unicode glyphs that render in
-a normal font: set `PROMPT_KRONUZ_NERD_FONT=0` (also accepts `no`/`off`/`false`) in
+a normal font: set `KZ_PROMPT_NERD_FONT=0` (also accepts `no`/`off`/`false`) in
 `~/.zshrc.local`. You can also retune individual glyphs (in either mode) via
-`PROMPT_KRONUZ_GLYPH_<NAME>` — set one to a character of your choice, or to `''` to
-hide it (e.g. `PROMPT_KRONUZ_GLYPH_MODIFIED='*'`). See the glyph table in
+`KZ_PROMPT_GLYPH_<NAME>` — set one to a character of your choice, or to `''` to
+hide it (e.g. `KZ_PROMPT_GLYPH_MODIFIED='*'`). See the glyph table in
 [prompt.md](prompt.md#glyphs) for the full list of names and both default sets.
 
 Color is handled automatically: a `dumb`/unknown terminal (Emacs `M-x shell`,
@@ -118,7 +118,7 @@ Two tiers, by language:
   that puts a tool on PATH (cargo, `~/.local/bin`, ...) here, so it's set before
   `.zshrc` runs and `integrations/init.zsh` can detect the tool.
 - **`~/.zshrc.local`** — zsh-only interactive machine tweaks (the
-  `PROMPT_KRONUZ_COLOR_HOST` and other `PROMPT_KRONUZ_*` overrides, zstyles, tool
+  `KZ_PROMPT_COLOR_HOST` and other `KZ_PROMPT_*` overrides, zstyles, tool
   hooks like `direnv`). Sourced last, if present. Copy the template and edit:
 
   ```bash

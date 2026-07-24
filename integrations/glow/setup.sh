@@ -3,7 +3,7 @@
 # The CLI does not honor $GLAMOUR_STYLE, so both settings must live in glow's
 # own config file.
 
-_kronuz_setup_glow() {
+_kz_setup_glow() {
   command -v glow >/dev/null 2>&1 || return 0
 
   local here style config_path current_style='' current_width='' temp set_style=
@@ -77,5 +77,5 @@ _kronuz_setup_glow() {
   fi
 }
 
-_kronuz_setup_glow
-unset -f _kronuz_setup_glow
+_kz_setup_glow
+unset -f _kz_setup_glow

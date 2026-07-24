@@ -3,16 +3,16 @@
 # history-substring-search next, fast-syntax-highlighting LAST.
 
 # gitstatus: a fast git status daemon (powers the prompt's git segment). The prompt
-# queries it *non-blockingly* (see _kronuz_git_segment): it waits at most
-# $PROMPT_KRONUZ_GIT_SYNC_TIMEOUT (default 50ms) for an answer, then shows the last known
+# queries it *non-blockingly* (see _kz_git_segment): it waits at most
+# $KZ_PROMPT_GIT_SYNC_TIMEOUT (default 50ms) for an answer, then shows the last known
 # status and repaints when the daemon catches up. That sync-latency budget -- not the
 # counter limits below -- is what keeps the prompt responsive in large/dirty repos.
 #
 # The -1 limits mean "report exact counts" for staged/unstaged/conflicted/untracked, which
-# is what the prompt's counters display. Override $PROMPT_KRONUZ_GITSTATUS_ARGS to cap the
+# is what the prompt's counters display. Override $KZ_PROMPT_GITSTATUS_ARGS to cap the
 # daemon's work in pathological repos (the expensive one is untracked, -d, which walks the
 # working tree); note any finite cap makes large counts show as the cap, not the true
-# number. E.g. PROMPT_KRONUZ_GITSTATUS_ARGS='-s -1 -u -1 -c -1 -d 100 -m 20000'.
+# number. E.g. KZ_PROMPT_GITSTATUS_ARGS='-s -1 -u -1 -c -1 -d 100 -m 20000'.
 #
 # -m N tells gitstatusd to skip the unstaged/conflicted/untracked scan entirely once the
 # index has more than N files, bounding its cost in huge monorepos. The prompt then shows
@@ -23,9 +23,9 @@
 # heavier plugins below load (fast-syntax-highlighting alone is ~90ms). A second, plain
 # gitstatus_start at the end of this file finalizes the handshake -- fast, because the
 # daemon is ready by then -- so login pays ~14ms for gitstatus instead of ~48ms.
-: ${PROMPT_KRONUZ_GITSTATUS_ARGS="-s -1 -u -1 -c -1 -d -1"}
+: ${KZ_PROMPT_GITSTATUS_ARGS="-s -1 -u -1 -c -1 -d -1"}
 source "$KRONUZSH/plugins/gitstatus/gitstatus.plugin.zsh"
-gitstatus_start -a ${=PROMPT_KRONUZ_GITSTATUS_ARGS} KRONUZ 2>/dev/null
+gitstatus_start -a ${=KZ_PROMPT_GITSTATUS_ARGS} KRONUZ 2>/dev/null
 
 # zsh-autosuggestions: fish-style suggestions from history. Dim grey (Kronuz) so the
 # ghost suggestion sits behind what you're typing. The plugin stack is fixed and fsh
@@ -54,4 +54,4 @@ source "$KRONUZSH/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plug
 # The args are inert here when completing an existing daemon, but are passed so that if
 # the async start above failed, this fresh start still uses the configured limits rather
 # than gitstatus's defaults (which cap every count at 1).
-gitstatus_start ${=PROMPT_KRONUZ_GITSTATUS_ARGS} KRONUZ 2>/dev/null
+gitstatus_start ${=KZ_PROMPT_GITSTATUS_ARGS} KRONUZ 2>/dev/null

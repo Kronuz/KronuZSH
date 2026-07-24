@@ -2,7 +2,7 @@
 # git-delta: configure Git to use delta when available, with a less/cat fallback on
 # machines where the binary is absent. The settings are idempotent.
 
-_kronuz_setup_delta() {
+_kz_setup_delta() {
   command -v git >/dev/null 2>&1 || return 0
 
   local config_origin
@@ -31,5 +31,5 @@ _kronuz_setup_delta() {
   kz_manage_file "git config" "${config_origin#file:}"
 }
 
-_kronuz_setup_delta
-unset -f _kronuz_setup_delta
+_kz_setup_delta
+unset -f _kz_setup_delta

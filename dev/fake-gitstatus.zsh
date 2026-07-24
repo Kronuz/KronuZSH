@@ -5,7 +5,7 @@
 # demo repo's state. This stubs the gitstatus_* entry points prompt.zsh calls
 # (gitstatus_check / gitstatus_query / gitstatus_start) and backs them with a fixed,
 # representative VCS_STATUS_* snapshot, so the git segment renders through the real
-# _kronuz_git_render path -- synchronously, identically, and with no repo on disk.
+# _kz_git_render path -- synchronously, identically, and with no repo on disk.
 #
 # Edit the snapshot below to preview a different repo state.
 

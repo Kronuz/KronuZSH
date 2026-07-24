@@ -2,7 +2,7 @@
 # fast-syntax-highlighting: compile the bundled Kronuz theme into the plugin's active
 # theme cache. The plugin and zsh must both be available.
 
-_kronuz_setup_fsh() {
+_kz_setup_fsh() {
   command -v zsh >/dev/null 2>&1 || return 0
 
   local here plugin cache
@@ -19,5 +19,5 @@ _kronuz_setup_fsh() {
   fi
 }
 
-_kronuz_setup_fsh
-unset -f _kronuz_setup_fsh
+_kz_setup_fsh
+unset -f _kz_setup_fsh

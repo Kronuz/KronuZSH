@@ -31,7 +31,7 @@ unsetopt BG_NICE HUP CHECK_JOBS
 # Prompt
 # KronuZSH's segments are deferred ${(e)...} strings. PROMPT_SUBST expands them on
 # every display; the remaining options provide normal prompt escapes, clean redraws,
-# and partial-line preservation. Keep these global: prompt_kronuz_setup uses
+# and partial-line preservation. Keep these global: kz_prompt_setup uses
 # LOCAL_OPTIONS, so setting them inside that function would not survive its return.
 setopt PROMPT_SUBST         # Expand parameters and substitutions in prompt strings.
 setopt PROMPT_PERCENT       # Interpret `%` prompt escapes.

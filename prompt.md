@@ -54,25 +54,25 @@ The tweaks people reach for first, all in `~/.zshrc.local`:
 
 ```zsh
 # No Nerd Font installed? Flip the whole prompt to plain-Unicode glyphs:
-PROMPT_KRONUZ_NERD_FONT=0
+KZ_PROMPT_NERD_FONT=0
 
 # Show a command's duration sooner (default: only when it ran 3s+):
-PROMPT_KRONUZ_CMD_DURATION_MIN=1
+KZ_PROMPT_CMD_DURATION_MIN=1
 
 # Past commands collapse to a faded caret. Make the faded command grey instead
 # of dimmed, or turn the whole transient behavior off:
-PROMPT_KRONUZ_TRANSIENT_STYLE=mute
-PROMPT_KRONUZ_TRANSIENT_PROMPT=''
+KZ_PROMPT_TRANSIENT_STYLE=mute
+KZ_PROMPT_TRANSIENT_PROMPT=''
 
 # Swap just the collapsed caret for an emoji (the pwd stays; symmetric to the live caret):
-PROMPT_KRONUZ_TRANSIENT_CARET='🚀'
+KZ_PROMPT_TRANSIENT_CARET='🚀'
 
 # Recolor a segment (any name from the color table below):
-PROMPT_KRONUZ_COLOR_HOST='$kz[FG.chartreuse]'
+KZ_PROMPT_COLOR_HOST='$kz[FG.chartreuse]'
 
 # Swap or hide a single glyph:
-PROMPT_KRONUZ_GLYPH_MODIFIED='*'
-PROMPT_KRONUZ_GLYPH_OS=''
+KZ_PROMPT_GLYPH_MODIFIED='*'
+KZ_PROMPT_GLYPH_OS=''
 ```
 
 Start a new shell after editing the file. For a quick preview in the current shell,
@@ -103,10 +103,10 @@ The complete indicators can be replaced or hidden independently. Values are prom
 strings, so palette and glyph references remain deferred:
 
 ```zsh
-PROMPT_KRONUZ_KEYMAP_PRIMARY='${kz[BOLD]}${kz[FG.red]}${kz[GLYPH.caret]}${kz[RESET]}'
-PROMPT_KRONUZ_KEYMAP_ALTERNATE='${kz[BOLD]}${kz[FG.red]}${kz[GLYPH.caret_alt]}${kz[RESET]}'
-PROMPT_KRONUZ_KEYMAP_OVERWRITE='${kz[FG.red]}>>>${kz[RESET]}' # overwrite caret
-PROMPT_KRONUZ_OVERWRITE=''   # hide only the RPROMPT marker
+KZ_PROMPT_KEYMAP_PRIMARY='${kz[BOLD]}${kz[FG.red]}${kz[GLYPH.caret]}${kz[RESET]}'
+KZ_PROMPT_KEYMAP_ALTERNATE='${kz[BOLD]}${kz[FG.red]}${kz[GLYPH.caret_alt]}${kz[RESET]}'
+KZ_PROMPT_KEYMAP_OVERWRITE='${kz[FG.red]}>>>${kz[RESET]}' # overwrite caret
+KZ_PROMPT_OVERWRITE=''   # hide only the RPROMPT marker
 ```
 
 Direct assignments take effect on the next prompt or keymap transition; no export is
@@ -121,10 +121,10 @@ The prompt ships two full glyph sets and picks one automatically:
   installed and selected in your terminal (see [README](README.md#fonts-nerd-font)
   and [nerd_fonts.md](nerd_fonts.md)).
 - **Plain Unicode**: BMP symbols that render in any normal font. Switch to it with
-  `PROMPT_KRONUZ_NERD_FONT=0` (also accepts `no`, `off`, `false`). It's also forced
+  `KZ_PROMPT_NERD_FONT=0` (also accepts `no`, `off`, `false`). It's also forced
   automatically on a `dumb`/unknown terminal, where Nerd Font glyphs would be tofu.
 
-Override any single glyph in either set with `PROMPT_KRONUZ_GLYPH_<NAME>`: set it to
+Override any single glyph in either set with `KZ_PROMPT_GLYPH_<NAME>`: set it to
 a character of your choice, or to `''` to hide it. The name is the uppercased key
 from this table. The **Plain** column shows the literal fallback glyph; the **Nerd
 Font** column gives the icon's Nerd Font name and codepoint (it renders as an icon
@@ -132,9 +132,9 @@ only in a Nerd Font, so it's named here rather than shown):
 
 Each glyph also has a trailing **pad** (a right-hand space that keeps a wide Nerd Font
 icon from colliding with an adjacent count). It's added automatically for wide glyphs
-and omitted for normal ones; override it per glyph with `PROMPT_KRONUZ_GLYPH_PAD_<NAME>`.
+and omitted for normal ones; override it per glyph with `KZ_PROMPT_GLYPH_PAD_<NAME>`.
 Set it to `''` to hug tight, or to a space, a non-breaking space (`$'\u00a0'`), or any
-string to tune the spacing for your font (e.g. `PROMPT_KRONUZ_GLYPH_PAD_UNTRACKED=''`).
+string to tune the spacing for your font (e.g. `KZ_PROMPT_GLYPH_PAD_UNTRACKED=''`).
 
 
 | Name             | Plain  | Nerd Font                      | Meaning                                              |
@@ -199,18 +199,18 @@ Color is fully automatic. There are two layers:
    downsampled by `zsh/nearcolor` on terminals that can't do truecolor.
 2. A **semantic layer** that maps each part of the prompt to a base color.
 
-Override any semantic color with `PROMPT_KRONUZ_COLOR_<NAME>`. The value is
+Override any semantic color with `KZ_PROMPT_COLOR_<NAME>`. The value is
 evaluated, so you can reference a base-palette name or write a raw escape:
 
 ```zsh
-PROMPT_KRONUZ_COLOR_HOST='$kz[FG.chartreuse]'   # by palette name
-PROMPT_KRONUZ_COLOR_TIME='%F{45}'             # by raw zsh color
-PROMPT_KRONUZ_COLOR_BRANCH='%B$kz[FG.white]'    # %B = bold
-PROMPT_KRONUZ_COLOR_TRANSCARET='$kz[FG.cyan]'   # collapsed caret
-PROMPT_KRONUZ_COLOR_TRANSMUTED='$kz[FG.grey]'   # mute-style prompt text
+KZ_PROMPT_COLOR_HOST='$kz[FG.chartreuse]'   # by palette name
+KZ_PROMPT_COLOR_TIME='%F{45}'             # by raw zsh color
+KZ_PROMPT_COLOR_BRANCH='%B$kz[FG.white]'    # %B = bold
+KZ_PROMPT_COLOR_TRANSCARET='$kz[FG.cyan]'   # collapsed caret
+KZ_PROMPT_COLOR_TRANSMUTED='$kz[FG.grey]'   # mute-style prompt text
 ```
 
-You can also define or override a **base hue** with `PROMPT_KRONUZ_PALETTE_<NAME>` (a
+You can also define or override a **base hue** with `KZ_PROMPT_PALETTE_<NAME>` (a
 `#RRGGBB` or a 0-255 index). Built-ins include `RED`, `BLUE`, `LIGHTGREEN`, and the
 rest of the 16 ANSI names, and custom names are valid too. This pins that hue across
 the whole prompt (everything built on it) and tells `dim` its real RGB, which is the
@@ -218,8 +218,8 @@ clean way to match a terminal whose palette can't be queried (see
 [Transient prompt](#transient-prompt)):
 
 ```zsh
-PROMPT_KRONUZ_PALETTE_RED='#ff5c57'   # fixed red, instead of the theme's %F{1}
-PROMPT_KRONUZ_PALETTE_OCEAN='#3a7bd5' # new custom hue, used as $kz[FG.ocean]
+KZ_PROMPT_PALETTE_RED='#ff5c57'   # fixed red, instead of the theme's %F{1}
+KZ_PROMPT_PALETTE_OCEAN='#3a7bd5' # new custom hue, used as $kz[FG.ocean]
 ```
 
 Use `$kz[FG.ocean]` / `$kz[BG.ocean]` for custom RGB in prompt strings. The prompt blanks
@@ -276,13 +276,13 @@ the info row, with its exit code (`⏎<code>`) and/or duration. On a quick, clea
 command that line is absent entirely. With transient prompts enabled, submitting the
 next command keeps the result line in scrollback above that command's collapsed prompt.
 The line stays outside the prompt's OSC 133 `A`/`B` region, so it does not acquire a
-terminal mark. Set `PROMPT_KRONUZ_STATUS=0` to retain the older live-only
+terminal mark. Set `KZ_PROMPT_STATUS=0` to retain the older live-only
 behavior. With transience disabled, the option instead controls whether status/duration
 are shown in the static prompt (shown by default, hidden when false).
 
 ### Command duration
 
-After a command runs longer than `PROMPT_KRONUZ_CMD_DURATION_MIN` seconds
+After a command runs longer than `KZ_PROMPT_CMD_DURATION_MIN` seconds
 (default `3`), the status line above shows how long it took, formatted compactly:
 `3.2s`, `1m05s`, `1h02m03s`. Set the threshold to `0` to always show it.
 
@@ -306,7 +306,7 @@ remote session a shell belongs to.
 ### Working directory
 
 The path segment shows the full working directory with `$HOME` abbreviated to `~`
-(`~/.config/KronuZSH/integrations/bat`). `PROMPT_KRONUZ_PWD_STYLE` shortens it:
+(`~/.config/KronuZSH/integrations/bat`). `KZ_PROMPT_PWD_STYLE` shortens it:
 
 | Value            | Example                                          |                                                                                                                                                                              |
 | ---------------- | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -316,11 +316,11 @@ The path segment shows the full working directory with `$HOME` abbreviated to `~
 | `absolute`       | `/home/kronuz/.config/KronuZSH/integrations/bat` | the whole path with `$HOME` expanded                                                                                                                                         |
 
 ```zsh
-PROMPT_KRONUZ_PWD_STYLE=short
+KZ_PROMPT_PWD_STYLE=short
 ```
 
 For full control of the segment (a fixed prompt string, `%`-escapes), override
-`PROMPT_KRONUZ_PWD` instead — see [Replacing a whole segment](#replacing-a-whole-segment).
+`KZ_PROMPT_PWD` instead — see [Replacing a whole segment](#replacing-a-whole-segment).
 
 ## Transient prompt
 
@@ -334,17 +334,17 @@ next command, that outcome line is discarded with the rest of the full prompt so
 does not create another terminal mark. In iTerm2, the command's mark still retains its
 exit status and calculated running time for later inspection.
 
-The collapsed path reuses your `PROMPT_KRONUZ_PWD_STYLE` (so `short`/`base` shorten it
+The collapsed path reuses your `KZ_PROMPT_PWD_STYLE` (so `short`/`base` shorten it
 there too) and uses the live `pwd` colour (so it matches the prompt and honours
-`PROMPT_KRONUZ_COLOR_PWD`).
+`KZ_PROMPT_COLOR_PWD`).
 
 The collapsed line is built the same way as the live prompt, and is configured
-symmetrically: `PROMPT_KRONUZ_TRANSIENT_PROMPT` is the whole string (like `PROMPT`) and
-`PROMPT_KRONUZ_TRANSIENT_CARET` is just the caret piece (like `PROMPT_KRONUZ_CARET` is
+symmetrically: `KZ_PROMPT_TRANSIENT_PROMPT` is the whole string (like `PROMPT`) and
+`KZ_PROMPT_TRANSIENT_CARET` is just the caret piece (like `KZ_PROMPT_CARET` is
 the live caret), so you can swap the caret for an emoji without rebuilding the rest. Both
 take deferred `${...}` segments and are re-evaluated on every Enter, and the whole
-resolved line — pwd, caret, and your own `PROMPT_KRONUZ_TRANSIENT_PROMPT` if you set one — is
-restyled together by `PROMPT_KRONUZ_TRANSIENT_STYLE`.
+resolved line — pwd, caret, and your own `KZ_PROMPT_TRANSIENT_PROMPT` if you set one — is
+restyled together by `KZ_PROMPT_TRANSIENT_STYLE`.
 
 ```
 ~/project ❯ cd src
@@ -363,12 +363,12 @@ styles below, and listed in full in the option reference):
 
 | Variable                         | Default | Effect                                                                                                                                                                                                                                                                                                                                  |
 | -------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PROMPT_KRONUZ_TRANSIENT_PROMPT` | `pwd ❯` | The whole collapsed prompt string (by default the directory the command ran in, then a caret), built like `PROMPT` from deferred `${...}` segments. Set to `''` to disable transience entirely (past prompts stay full), or to any string for a custom collapsed prompt (which is itself restyled per `PROMPT_KRONUZ_TRANSIENT_STYLE`). |
-| `PROMPT_KRONUZ_TRANSIENT_CARET`  | `❯`     | Just the caret piece of the default collapsed line — symmetric to `PROMPT_KRONUZ_CARET` for the live prompt. Set to an emoji or any string to change the caret without touching the rest. Ignored if you override the whole `PROMPT_KRONUZ_TRANSIENT_PROMPT`.                                                                           |
-| `PROMPT_KRONUZ_STATUS`           | `1`     | Keep a failed exit status and/or slow-command duration in scrollback when the next command collapses, or show it in the static prompt when transience is disabled; `0`/`no`/`off`/`false` makes it live-only with transience and hides it without transience.                                                                           |
-| `PROMPT_KRONUZ_TRANSIENT_STYLE`  | `dim`   | How the collapsed line — the pwd, caret, and the just-run **command** — is restyled: `dim`, `mute`, or `keep`.                                                                                                                                                                                                                          |
-| `PROMPT_KRONUZ_TRANSIENT_DIM`    | `0.7`   | For `dim`: darkness factor, `0` = black, `1` = unchanged. Lower is darker.                                                                                                                                                                                                                                                              |
-| `PROMPT_KRONUZ_TRANSIENT_HL`     | `fg=8`  | For `mute`: the `region_highlight` spec to paint the command with (default = grey).                                                                                                                                                                                                                                                     |
+| `KZ_PROMPT_TRANSIENT_PROMPT` | `pwd ❯` | The whole collapsed prompt string (by default the directory the command ran in, then a caret), built like `PROMPT` from deferred `${...}` segments. Set to `''` to disable transience entirely (past prompts stay full), or to any string for a custom collapsed prompt (which is itself restyled per `KZ_PROMPT_TRANSIENT_STYLE`). |
+| `KZ_PROMPT_TRANSIENT_CARET`  | `❯`     | Just the caret piece of the default collapsed line — symmetric to `KZ_PROMPT_CARET` for the live prompt. Set to an emoji or any string to change the caret without touching the rest. Ignored if you override the whole `KZ_PROMPT_TRANSIENT_PROMPT`.                                                                           |
+| `KZ_PROMPT_STATUS`           | `1`     | Keep a failed exit status and/or slow-command duration in scrollback when the next command collapses, or show it in the static prompt when transience is disabled; `0`/`no`/`off`/`false` makes it live-only with transience and hides it without transience.                                                                           |
+| `KZ_PROMPT_TRANSIENT_STYLE`  | `dim`   | How the collapsed line — the pwd, caret, and the just-run **command** — is restyled: `dim`, `mute`, or `keep`.                                                                                                                                                                                                                          |
+| `KZ_PROMPT_TRANSIENT_DIM`    | `0.7`   | For `dim`: darkness factor, `0` = black, `1` = unchanged. Lower is darker.                                                                                                                                                                                                                                                              |
+| `KZ_PROMPT_TRANSIENT_HL`     | `fg=8`  | For `mute`: the `region_highlight` spec to paint the command with (default = grey).                                                                                                                                                                                                                                                     |
 
 The three styles:
 
@@ -376,27 +376,27 @@ The three styles:
   reads as faded history without losing its shape. The default factor (`0.7`) is a
   moderate fade; go lower (`0.4` to `0.5`) for darker, higher (`0.85`+) for subtler.
   To darken the right hue, the prompt needs your terminal's real 16 ANSI colors. It
-  gets each from its `PROMPT_KRONUZ_PALETTE_<NAME>` override if you set one, else from
+  gets each from its `KZ_PROMPT_PALETTE_<NAME>` override if you set one, else from
   an on-disk cache, else a one-time **OSC 4** query of the terminal (cached afterward
-  for `PROMPT_KRONUZ_PALETTE_TTL`); if nothing answers it falls back to the xterm
+  for `KZ_PROMPT_PALETTE_TTL`); if nothing answers it falls back to the xterm
   defaults. Over a remote shell (e.g. SSH or Eternal Terminal) the query round-trip is
-  network-bound, so the cache and a generous `PROMPT_KRONUZ_PALETTE_TIMEOUT` matter; if
+  network-bound, so the cache and a generous `KZ_PROMPT_PALETTE_TIMEOUT` matter; if
   your terminal still can't be queried, just pin the 16 base colors in `~/.zshrc.local`
   (which also fixes the displayed colors, and skips the query entirely):
 
   ```zsh
   # iTerm "Snazzy" — your terminal's 16 ANSI colors as #RRGGBB.
-  PROMPT_KRONUZ_PALETTE_BLACK='#000000'    PROMPT_KRONUZ_PALETTE_DARKGREY='#686868'
-  PROMPT_KRONUZ_PALETTE_RED='#ff5c57'      PROMPT_KRONUZ_PALETTE_LIGHTRED='#ff5c57'
-  PROMPT_KRONUZ_PALETTE_GREEN='#5af78e'    PROMPT_KRONUZ_PALETTE_LIGHTGREEN='#5af78e'
-  PROMPT_KRONUZ_PALETTE_YELLOW='#f3f99d'   PROMPT_KRONUZ_PALETTE_LIGHTYELLOW='#f3f99d'
-  PROMPT_KRONUZ_PALETTE_BLUE='#57c7ff'     PROMPT_KRONUZ_PALETTE_LIGHTBLUE='#57c7ff'
-  PROMPT_KRONUZ_PALETTE_MAGENTA='#ff6ac1'  PROMPT_KRONUZ_PALETTE_LIGHTMAGENTA='#ff6ac1'
-  PROMPT_KRONUZ_PALETTE_CYAN='#9aedfe'     PROMPT_KRONUZ_PALETTE_LIGHTCYAN='#9aedfe'
-  PROMPT_KRONUZ_PALETTE_GREY='#f1f1f0'     PROMPT_KRONUZ_PALETTE_LIGHTGREY='#eff0eb'
+  KZ_PROMPT_PALETTE_BLACK='#000000'    KZ_PROMPT_PALETTE_DARKGREY='#686868'
+  KZ_PROMPT_PALETTE_RED='#ff5c57'      KZ_PROMPT_PALETTE_LIGHTRED='#ff5c57'
+  KZ_PROMPT_PALETTE_GREEN='#5af78e'    KZ_PROMPT_PALETTE_LIGHTGREEN='#5af78e'
+  KZ_PROMPT_PALETTE_YELLOW='#f3f99d'   KZ_PROMPT_PALETTE_LIGHTYELLOW='#f3f99d'
+  KZ_PROMPT_PALETTE_BLUE='#57c7ff'     KZ_PROMPT_PALETTE_LIGHTBLUE='#57c7ff'
+  KZ_PROMPT_PALETTE_MAGENTA='#ff6ac1'  KZ_PROMPT_PALETTE_LIGHTMAGENTA='#ff6ac1'
+  KZ_PROMPT_PALETTE_CYAN='#9aedfe'     KZ_PROMPT_PALETTE_LIGHTCYAN='#9aedfe'
+  KZ_PROMPT_PALETTE_GREY='#f1f1f0'     KZ_PROMPT_PALETTE_LIGHTGREY='#eff0eb'
   ```
 - **`mute`** repaints the whole command in one flat color (grey by default; change
-  it with `PROMPT_KRONUZ_TRANSIENT_HL`).
+  it with `KZ_PROMPT_TRANSIENT_HL`).
 - **`keep`** leaves the syntax colors untouched.
 
 ### The exit code is live; the terminal keeps the history
@@ -450,7 +450,7 @@ To verify command tracking, run `false`. The next prompt should show KronuZSH's
 `⏎1` status, and—with **Show mark indicators** enabled—the mark beside that command
 should turn red. Then run `printf 'hello\n'` and press **Command-Shift-A**; only
 `hello` should be selected. If neither feature works, ensure
-`PROMPT_KRONUZ_TERMINAL_INTEGRATION` is not disabled and test outside ordinary
+`KZ_PROMPT_TERMINAL_INTEGRATION` is not disabled and test outside ordinary
 `tmux`/`screen`, which can swallow shell-integration sequences.
 
 ### iTerm2 preferences
@@ -468,7 +468,7 @@ integration:
 To opt out of terminal integration entirely, add this to `~/.zshrc.local`:
 
 ```zsh
-PROMPT_KRONUZ_TERMINAL_INTEGRATION=0
+KZ_PROMPT_TERMINAL_INTEGRATION=0
 ```
 
 That disables all terminal metadata emitted by the prompt: OSC 7 current-directory
@@ -479,60 +479,60 @@ Values `0`, `no`, `off`, and `false` disable it; the default is `1`.
 ## Replacing a whole segment
 
 Beyond colors and glyphs, you can override a segment's entire content with
-`PROMPT_KRONUZ_<SEGMENT>`. The value is a prompt string (zsh `%`-escapes and
+`KZ_PROMPT_<SEGMENT>`. The value is a prompt string (zsh `%`-escapes and
 `$kz[...]` references work). Use single quotes in
 `~/.zshrc.local` when the value contains `$kz`; that keeps the reference
 deferred so it is resolved whenever the prompt is drawn.
 
 | Segment option            | Built-in content                                                                     |
 | ------------------------- | ------------------------------------------------------------------------------------ |
-| `PROMPT_KRONUZ_OS`        | OS glyph before the hostname                                                         |
-| `PROMPT_KRONUZ_ERR`       | green/red status dot for the previous command                                        |
-| `PROMPT_KRONUZ_ERROR`     | nonzero exit-code item on the conditional outcome line                               |
-| `PROMPT_KRONUZ_DURATION`  | elapsed-time item on the conditional outcome line                                    |
-| `PROMPT_KRONUZ_USER`      | username (`%n`)                                                                      |
-| `PROMPT_KRONUZ_HOST`      | hostname (`%M`)                                                                      |
-| `PROMPT_KRONUZ_IP`        | cached LAN address inside the hostname's parentheses                                 |
-| `PROMPT_KRONUZ_TIME`      | current time (`[%*]`)                                                                |
-| `PROMPT_KRONUZ_PWD`       | working directory generated according to `PROMPT_KRONUZ_PWD_STYLE`                   |
-| `PROMPT_KRONUZ_GIT`       | generated git status                                                                 |
-| `PROMPT_KRONUZ_VENV`      | active Python virtualenv                                                             |
-| `PROMPT_KRONUZ_JOBS`      | background-job glyph and count                                                       |
-| `PROMPT_KRONUZ_CONTEXT`   | container and SSH badges                                                             |
-| `PROMPT_KRONUZ_ETCTL`     | Eternal Terminal session label                                                       |
-| `PROMPT_KRONUZ_VIM`       | right-prompt Vim indicator                                                           |
-| `PROMPT_KRONUZ_EMACS`     | right-prompt Emacs indicator                                                         |
-| `PROMPT_KRONUZ_OVERWRITE` | right-prompt overwrite indicator; `''` hides it                                      |
-| `PROMPT_KRONUZ_CARET`     | complete live input caret; replacing it bypasses the primary/alternate keymap carets |
+| `KZ_PROMPT_OS`        | OS glyph before the hostname                                                         |
+| `KZ_PROMPT_ERR`       | green/red status dot for the previous command                                        |
+| `KZ_PROMPT_ERROR`     | nonzero exit-code item on the conditional outcome line                               |
+| `KZ_PROMPT_DURATION`  | elapsed-time item on the conditional outcome line                                    |
+| `KZ_PROMPT_USER`      | username (`%n`)                                                                      |
+| `KZ_PROMPT_HOST`      | hostname (`%M`)                                                                      |
+| `KZ_PROMPT_IP`        | cached LAN address inside the hostname's parentheses                                 |
+| `KZ_PROMPT_TIME`      | current time (`[%*]`)                                                                |
+| `KZ_PROMPT_PWD`       | working directory generated according to `KZ_PROMPT_PWD_STYLE`                   |
+| `KZ_PROMPT_GIT`       | generated git status                                                                 |
+| `KZ_PROMPT_VENV`      | active Python virtualenv                                                             |
+| `KZ_PROMPT_JOBS`      | background-job glyph and count                                                       |
+| `KZ_PROMPT_CONTEXT`   | container and SSH badges                                                             |
+| `KZ_PROMPT_ETCTL`     | Eternal Terminal session label                                                       |
+| `KZ_PROMPT_VIM`       | right-prompt Vim indicator                                                           |
+| `KZ_PROMPT_EMACS`     | right-prompt Emacs indicator                                                         |
+| `KZ_PROMPT_OVERWRITE` | right-prompt overwrite indicator; `''` hides it                                      |
+| `KZ_PROMPT_CARET`     | complete live input caret; replacing it bypasses the primary/alternate keymap carets |
 
-The host display composes `PROMPT_KRONUZ_OS`, `PROMPT_KRONUZ_HOST`, and
-`PROMPT_KRONUZ_IP`; recolor the hostname with `PROMPT_KRONUZ_COLOR_HOST`. The outcome
+The host display composes `KZ_PROMPT_OS`, `KZ_PROMPT_HOST`, and
+`KZ_PROMPT_IP`; recolor the hostname with `KZ_PROMPT_COLOR_HOST`. The outcome
 line itself owns the conditional layout:
-`PROMPT_KRONUZ_ERROR` is used only for a nonzero exit, and `PROMPT_KRONUZ_DURATION`
+`KZ_PROMPT_ERROR` is used only for a nonzero exit, and `KZ_PROMPT_DURATION`
 only after the duration threshold is reached. Their values control the contents of
 those items; the status line supplies their default colors, spacing, newline, and
 conditional layout. Set either to `''` to hide that item without disabling the other.
 
 ```zsh
 # A 24-hour clock with seconds instead of the default [%*]:
-PROMPT_KRONUZ_TIME='[%D{%H:%M:%S}]'
+KZ_PROMPT_TIME='[%D{%H:%M:%S}]'
 
-# Just the basename of the cwd (or simpler: PROMPT_KRONUZ_PWD_STYLE=base; for the
-# shortest-unique-prefix ~/.c/K/i/bat, PROMPT_KRONUZ_PWD_STYLE=short):
-PROMPT_KRONUZ_PWD='%1~'
+# Just the basename of the cwd (or simpler: KZ_PROMPT_PWD_STYLE=base; for the
+# shortest-unique-prefix ~/.c/K/i/bat, KZ_PROMPT_PWD_STYLE=short):
+KZ_PROMPT_PWD='%1~'
 
 # Add a label before the normal username:
-PROMPT_KRONUZ_USER='dev:%n'
+KZ_PROMPT_USER='dev:%n'
 
 # Replace the status dot with literal text, colored by the result:
-PROMPT_KRONUZ_ERR='%(?.${kz[FG.green]}OK.${kz[FG.red]}ERR)${kz[RESET]}'
+KZ_PROMPT_ERR='%(?.${kz[FG.green]}OK.${kz[FG.red]}ERR)${kz[RESET]}'
 
 # Spell out failures, or omit the duration glyph while keeping the formatted time:
-PROMPT_KRONUZ_ERROR='exit ${_prompt_kronuz_last_exit}'
-PROMPT_KRONUZ_DURATION='${_prompt_kronuz_duration}'
+KZ_PROMPT_ERROR='exit ${_kz_prompt_last_exit}'
+KZ_PROMPT_DURATION='${_kz_prompt_duration}'
 
 # Use one fixed caret and ignore editor-keymap changes:
-PROMPT_KRONUZ_CARET='${kz[BOLD]}${kz[FG.green]}›${kz[RESET]}'
+KZ_PROMPT_CARET='${kz[BOLD]}${kz[FG.green]}›${kz[RESET]}'
 ```
 
 For deeper changes (adding a brand-new segment, reordering the line), edit
@@ -547,29 +547,29 @@ fully enumerated in the linked table or directly in the description.
 
 | Variable                             | Default          | What it does                                                                                                                                                                                                                                                                                                                                                                                         |
 | ------------------------------------ | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PROMPT_KRONUZ_NERD_FONT`            | `1`              | `0`/`no`/`off`/`false` switches to the plain-Unicode glyph set.                                                                                                                                                                                                                                                                                                                                      |
-| `PROMPT_KRONUZ_GLYPH_<NAME>`         | per glyph        | Override one glyph; `''` hides it. All names are in the [glyph table](#glyphs).                                                                                                                                                                                                                                                                                                                      |
-| `PROMPT_KRONUZ_GLYPH_PAD_<NAME>`     | per glyph        | Override a glyph's trailing (right-hand) pad; `''` hugs tight, a space / `$'\u00a0'` / any string tunes it for your font.                                                                                                                                                                                                                                                                            |
-| `PROMPT_KRONUZ_GIT_SEP`              | `' '` (space)    | String inserted between the git detail indicators (stash / staged / modified / untracked / ahead-behind …). Set to `'·'`, `':'`, `$'\u00a0'`, or any string; `''` packs them with no separator.                                                                                                                                                                                                      |
-| `PROMPT_KRONUZ_GIT_SPLIT`            | `0`              | `1`/`yes`/`on`/`true` breaks the single staged/unstaged counts into per-type marks — added `+`, changed `~`, deleted `-` — coloured by group (the staged and modified colours). Off shows one aggregate count per group.                                                                                                                                                                             |
-| `PROMPT_KRONUZ_COLOR_<NAME>`         | per color        | Override one semantic color. All public names are in the [color table](#colors).                                                                                                                                                                                                                                                                                                                     |
-| `PROMPT_KRONUZ_PALETTE_<NAME>`       | terminal palette | Define or override a base hue with `#RRGGBB` or a 0–255 index. Built-in names include `BLACK`, `RED`, `GREEN`, `YELLOW`, `BLUE`, `MAGENTA`, `CYAN`, `GREY`, `DARKGREY`, `LIGHTRED`, `LIGHTGREEN`, `LIGHTYELLOW`, `LIGHTBLUE`, `LIGHTMAGENTA`, `LIGHTCYAN`, `LIGHTGREY`; custom names work too and become `$kz[FG.<name>]` / `$kz[BG.<name>]`. This changes display colors and the RGB used by `dim`. |
-| `PROMPT_KRONUZ_<SEGMENT>`            | built in         | Replace one complete segment or outcome item. Names: `OS`, `ERR`, `ERROR`, `DURATION`, `USER`, `HOST`, `IP`, `TIME`, `PWD`, `GIT`, `VENV`, `JOBS`, `CONTEXT`, `ETCTL`, `VIM`, `EMACS`, `OVERWRITE`, `PROMPT`; see [Replacing a whole segment](#replacing-a-whole-segment).                                                                                                                           |
-| `PROMPT_KRONUZ_PWD_STYLE`            | `full`           | Working-directory shortening: `full`, `short` (shortest unique prefix, `~/.c/K/i/bat`), `base` (current dir name), or `absolute` (`$HOME` expanded).                                                                                                                                                                                                                                                 |
-| `PROMPT_KRONUZ_CMD_DURATION_MIN`     | `3`              | Seconds a command must run before its duration is shown. `0` = always.                                                                                                                                                                                                                                                                                                                               |
-| `PROMPT_KRONUZ_IP_TTL`               | `60`             | Seconds the LAN-IP lookup is cached; lower it if prompt-time address changes must appear sooner.                                                                                                                                                                                                                                                                                                     |
-| `PROMPT_KRONUZ_TRANSIENT_PROMPT`     | `pwd ❯`          | The whole collapsed past-prompt string (default: the run directory + caret), built like `PROMPT`; `''` disables transience.                                                                                                                                                                                                                                                                          |
-| `PROMPT_KRONUZ_TRANSIENT_CARET`      | `❯`              | Just the caret piece of the default collapsed line (symmetric to `PROMPT_KRONUZ_CARET`); set to an emoji or any string.                                                                                                                                                                                                                                                                              |
-| `PROMPT_KRONUZ_STATUS`               | `1`              | Keep the previous failed status and/or duration above the next collapsed command, or show it in the static prompt when transience is disabled; false values make it live-only with transience and hide it without transience.                                                                                                                                                                        |
-| `PROMPT_KRONUZ_TRANSIENT_STYLE`      | `dim`            | Restyle of the collapsed line (pwd, caret, command): `dim`, `mute`, or `keep`.                                                                                                                                                                                                                                                                                                                       |
-| `PROMPT_KRONUZ_TRANSIENT_DIM`        | `0.7`            | `dim` darkness factor (`0` black .. `1` unchanged).                                                                                                                                                                                                                                                                                                                                                  |
-| `PROMPT_KRONUZ_TRANSIENT_HL`         | `fg=8`           | `mute` color, as a `region_highlight` spec.                                                                                                                                                                                                                                                                                                                                                          |
-| `PROMPT_KRONUZ_PALETTE_TTL`          | `86400`          | Seconds the queried palette is cached on disk (per terminal); `0` disables the cache.                                                                                                                                                                                                                                                                                                                |
-| `PROMPT_KRONUZ_PALETTE_TIMEOUT`      | `0.6`            | Seconds to wait for the OSC 4 palette answer; bump it for a slow/remote terminal.                                                                                                                                                                                                                                                                                                                    |
-| `PROMPT_KRONUZ_TERMINAL_INTEGRATION` | `1`              | `0`/`no`/`off`/`false` disables OSC 7 cwd reporting, OSC 133 command marks, and iTerm2 OSC 1337 metadata.                                                                                                                                                                                                                                                                                            |
-| `PROMPT_KRONUZ_KEYMAP_PRIMARY`       | `❯❯❯`            | The live caret in the primary keymap (emacs / vi-insert), as a prompt string. `''` hides it.                                                                                                                                                                                                                                                                                                         |
-| `PROMPT_KRONUZ_KEYMAP_ALTERNATE`     | `❮❮❮`            | The live caret in the vi-command keymap. `''` hides it.                                                                                                                                                                                                                                                                                                                                              |
-| `PROMPT_KRONUZ_KEYMAP_OVERWRITE`     | red `❯❯❯`        | The complete live caret used in overwrite mode. It stays three cells wide by default.                                                                                                                                                                                                                                                                                                                |
+| `KZ_PROMPT_NERD_FONT`            | `1`              | `0`/`no`/`off`/`false` switches to the plain-Unicode glyph set.                                                                                                                                                                                                                                                                                                                                      |
+| `KZ_PROMPT_GLYPH_<NAME>`         | per glyph        | Override one glyph; `''` hides it. All names are in the [glyph table](#glyphs).                                                                                                                                                                                                                                                                                                                      |
+| `KZ_PROMPT_GLYPH_PAD_<NAME>`     | per glyph        | Override a glyph's trailing (right-hand) pad; `''` hugs tight, a space / `$'\u00a0'` / any string tunes it for your font.                                                                                                                                                                                                                                                                            |
+| `KZ_PROMPT_GIT_SEP`              | `' '` (space)    | String inserted between the git detail indicators (stash / staged / modified / untracked / ahead-behind …). Set to `'·'`, `':'`, `$'\u00a0'`, or any string; `''` packs them with no separator.                                                                                                                                                                                                      |
+| `KZ_PROMPT_GIT_SPLIT`            | `0`              | `1`/`yes`/`on`/`true` breaks the single staged/unstaged counts into per-type marks — added `+`, changed `~`, deleted `-` — coloured by group (the staged and modified colours). Off shows one aggregate count per group.                                                                                                                                                                             |
+| `KZ_PROMPT_COLOR_<NAME>`         | per color        | Override one semantic color. All public names are in the [color table](#colors).                                                                                                                                                                                                                                                                                                                     |
+| `KZ_PROMPT_PALETTE_<NAME>`       | terminal palette | Define or override a base hue with `#RRGGBB` or a 0–255 index. Built-in names include `BLACK`, `RED`, `GREEN`, `YELLOW`, `BLUE`, `MAGENTA`, `CYAN`, `GREY`, `DARKGREY`, `LIGHTRED`, `LIGHTGREEN`, `LIGHTYELLOW`, `LIGHTBLUE`, `LIGHTMAGENTA`, `LIGHTCYAN`, `LIGHTGREY`; custom names work too and become `$kz[FG.<name>]` / `$kz[BG.<name>]`. This changes display colors and the RGB used by `dim`. |
+| `KZ_PROMPT_<SEGMENT>`            | built in         | Replace one complete segment or outcome item. Names: `OS`, `ERR`, `ERROR`, `DURATION`, `USER`, `HOST`, `IP`, `TIME`, `PWD`, `GIT`, `VENV`, `JOBS`, `CONTEXT`, `ETCTL`, `VIM`, `EMACS`, `OVERWRITE`, `PROMPT`; see [Replacing a whole segment](#replacing-a-whole-segment).                                                                                                                           |
+| `KZ_PROMPT_PWD_STYLE`            | `full`           | Working-directory shortening: `full`, `short` (shortest unique prefix, `~/.c/K/i/bat`), `base` (current dir name), or `absolute` (`$HOME` expanded).                                                                                                                                                                                                                                                 |
+| `KZ_PROMPT_CMD_DURATION_MIN`     | `3`              | Seconds a command must run before its duration is shown. `0` = always.                                                                                                                                                                                                                                                                                                                               |
+| `KZ_PROMPT_IP_TTL`               | `60`             | Seconds the LAN-IP lookup is cached; lower it if prompt-time address changes must appear sooner.                                                                                                                                                                                                                                                                                                     |
+| `KZ_PROMPT_TRANSIENT_PROMPT`     | `pwd ❯`          | The whole collapsed past-prompt string (default: the run directory + caret), built like `PROMPT`; `''` disables transience.                                                                                                                                                                                                                                                                          |
+| `KZ_PROMPT_TRANSIENT_CARET`      | `❯`              | Just the caret piece of the default collapsed line (symmetric to `KZ_PROMPT_CARET`); set to an emoji or any string.                                                                                                                                                                                                                                                                              |
+| `KZ_PROMPT_STATUS`               | `1`              | Keep the previous failed status and/or duration above the next collapsed command, or show it in the static prompt when transience is disabled; false values make it live-only with transience and hide it without transience.                                                                                                                                                                        |
+| `KZ_PROMPT_TRANSIENT_STYLE`      | `dim`            | Restyle of the collapsed line (pwd, caret, command): `dim`, `mute`, or `keep`.                                                                                                                                                                                                                                                                                                                       |
+| `KZ_PROMPT_TRANSIENT_DIM`        | `0.7`            | `dim` darkness factor (`0` black .. `1` unchanged).                                                                                                                                                                                                                                                                                                                                                  |
+| `KZ_PROMPT_TRANSIENT_HL`         | `fg=8`           | `mute` color, as a `region_highlight` spec.                                                                                                                                                                                                                                                                                                                                                          |
+| `KZ_PROMPT_PALETTE_TTL`          | `86400`          | Seconds the queried palette is cached on disk (per terminal); `0` disables the cache.                                                                                                                                                                                                                                                                                                                |
+| `KZ_PROMPT_PALETTE_TIMEOUT`      | `0.6`            | Seconds to wait for the OSC 4 palette answer; bump it for a slow/remote terminal.                                                                                                                                                                                                                                                                                                                    |
+| `KZ_PROMPT_TERMINAL_INTEGRATION` | `1`              | `0`/`no`/`off`/`false` disables OSC 7 cwd reporting, OSC 133 command marks, and iTerm2 OSC 1337 metadata.                                                                                                                                                                                                                                                                                            |
+| `KZ_PROMPT_KEYMAP_PRIMARY`       | `❯❯❯`            | The live caret in the primary keymap (emacs / vi-insert), as a prompt string. `''` hides it.                                                                                                                                                                                                                                                                                                         |
+| `KZ_PROMPT_KEYMAP_ALTERNATE`     | `❮❮❮`            | The live caret in the vi-command keymap. `''` hides it.                                                                                                                                                                                                                                                                                                                                              |
+| `KZ_PROMPT_KEYMAP_OVERWRITE`     | red `❯❯❯`        | The complete live caret used in overwrite mode. It stays three cells wide by default.                                                                                                                                                                                                                                                                                                                |
 | `COLORTERM`                          | (terminal)       | `24bit`/`truecolor` keeps the hex palette at 24-bit; otherwise colors degrade to 256/16 via `zsh/nearcolor`.                                                                                                                                                                                                                                                                                         |
 | `TERM`                               | (terminal)       | `dumb`/`unknown`/empty forces the plain-glyph set and no color (see no-color mode).                                                                                                                                                                                                                                                                                                                  |
 | `NO_COLOR`                           | (unset)          | Standard env var; when set, renders with no color escapes.                                                                                                                                                                                                                                                                                                                                           |
@@ -578,5 +578,5 @@ Anything not set falls back to its built-in default. These are shell parameters,
 environment settings, so they do not need `export`. Most are recomputed on each prompt
 or keymap transition and can be previewed by assigning them directly. The palette used
 to dim transient prompts is loaded only once, on a shell's first prompt; start a new
-shell after changing `PROMPT_KRONUZ_PALETTE_*`, `PROMPT_KRONUZ_PALETTE_TTL`, or
-`PROMPT_KRONUZ_PALETTE_TIMEOUT` when you need the dimmed colors to be recalculated.
+shell after changing `KZ_PROMPT_PALETTE_*`, `KZ_PROMPT_PALETTE_TTL`, or
+`KZ_PROMPT_PALETTE_TIMEOUT` when you need the dimmed colors to be recalculated.

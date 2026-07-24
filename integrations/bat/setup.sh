@@ -2,7 +2,7 @@
 # bat (+ delta): build bat's shared theme cache from integrations/themes. Debian ships
 # bat as `batcat`, so either executable is accepted.
 
-_kronuz_setup_bat() {
+_kz_setup_bat() {
   local bat integration_dir cache_dir
 
   if command -v bat >/dev/null 2>&1; then
@@ -26,5 +26,5 @@ _kronuz_setup_bat() {
   fi
 }
 
-_kronuz_setup_bat
-unset -f _kronuz_setup_bat
+_kz_setup_bat
+unset -f _kz_setup_bat

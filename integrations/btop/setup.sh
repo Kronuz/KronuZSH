@@ -2,7 +2,7 @@
 # btop: link the Kronuz theme and select it in btop.conf. The config rewrite preserves
 # every unrelated setting and follows the shared backup policy.
 
-_kronuz_setup_btop() {
+_kz_setup_btop() {
   command -v btop >/dev/null 2>&1 || return 0
 
   local here config_dir config temp
@@ -46,5 +46,5 @@ _kronuz_setup_btop() {
   fi
 }
 
-_kronuz_setup_btop
-unset -f _kronuz_setup_btop
+_kz_setup_btop
+unset -f _kz_setup_btop

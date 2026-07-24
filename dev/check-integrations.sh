@@ -7,8 +7,8 @@ files=(integrations/*/setup.sh)
 failed=0
 
 for file in "${files[@]}"; do
-  if ! grep -Eq '^_kronuz_setup_[a-z0-9_]+\(\)' "$file"; then
-    printf '%s: setup must be wrapped in _kronuz_setup_<tool>()\n' "$file" >&2
+  if ! grep -Eq '^_kz_setup_[a-z0-9_]+\(\)' "$file"; then
+    printf '%s: setup must be wrapped in _kz_setup_<tool>()\n' "$file" >&2
     failed=1
   fi
 done

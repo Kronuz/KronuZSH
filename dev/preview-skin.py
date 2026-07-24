@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Preview a KronuZSH prompt skin and verify its terminal integration.
 
-A skin is a snippet that sets PROMPT_KRONUZ_PROMPT / PROMPT_KRONUZ_RPROMPT /
-PROMPT_KRONUZ_TRANSIENT_PROMPT (see ../skins). This renders one in a throwaway,
+A skin is a snippet that sets KZ_PROMPT_PROMPT / KZ_PROMPT_RPROMPT /
+KZ_PROMPT_TRANSIENT_PROMPT (see ../skins). This renders one in a throwaway,
 fully isolated shell (its own HOME, ZDOTDIR and demo git repo), then:
 
   * prints the live PROMPT, the right prompt (RPROMPT) and the collapsed transient
@@ -66,13 +66,13 @@ def render(
     verification, while skipping the slow, HOME-sensitive parts (compinit) that a
     throwaway shell trips over. The fake makes the git segment render synchronously from
     a fixed snapshot, so there is no daemon or async query to wait on and every run looks
-    the same. The skin is sourced after prompt_kronuz_setup, exactly as a real
+    the same. The skin is sourced after kz_prompt_setup, exactly as a real
     ~/.zshrc.local would be. iTerm is announced so the iTerm OSC path is tested."""
     skin_line = f'source "{os.path.abspath(skin)}"\n' if skin else ""
     if fallback:
         # No gitstatus_query defined -> the segment takes the direct-git fallback, which
         # we point at the fake git so it renders without a repo on disk.
-        git_setup = f'export PROMPT_KRONUZ_GIT_CMD="{REPO}/dev/fake-git"\n'
+        git_setup = f'export KZ_PROMPT_GIT_CMD="{REPO}/dev/fake-git"\n'
     else:
         git_setup = f'source "{REPO}/dev/fake-gitstatus.zsh"\n'
     zshrc = (
@@ -81,7 +81,7 @@ def render(
         "setopt PROMPT_SUBST\n"
         f"{git_setup}"
         'source "$KRONUZSH/lib/prompt.zsh"\n'
-        "prompt_kronuz_setup\n"
+        "kz_prompt_setup\n"
         f"{skin_line}"
     )
     with open(os.path.join(home, ".zshrc"), "w") as fh:
@@ -176,15 +176,15 @@ def render(
         )
         wait_for(b"\x01END\x02", timeout=3.0, frm=frm)
 
-    grab("PROMPT", "${(e)${(e)PROMPT_KRONUZ_PROMPT-$DEFAULT_PROMPT_KRONUZ_PROMPT}}")
-    grab("RPROMPT", "${(e)${(e)PROMPT_KRONUZ_RPROMPT-$DEFAULT_PROMPT_KRONUZ_RPROMPT}}")
+    grab("PROMPT", "${(e)${(e)KZ_PROMPT_PROMPT-$DEFAULT_KZ_PROMPT_PROMPT}}")
+    grab("RPROMPT", "${(e)${(e)KZ_PROMPT_RPROMPT-$DEFAULT_KZ_PROMPT_RPROMPT}}")
     grab(
         "TRANS",
-        "${(e)${(e)PROMPT_KRONUZ_TRANSIENT_PROMPT-$DEFAULT_PROMPT_KRONUZ_TRANSIENT_PROMPT}}",
+        "${(e)${(e)KZ_PROMPT_TRANSIENT_PROMPT-$DEFAULT_KZ_PROMPT_TRANSIENT_PROMPT}}",
     )
     grab(
         "TRANS-R",
-        "${(e)${(e)PROMPT_KRONUZ_TRANSIENT_RPROMPT-$DEFAULT_PROMPT_KRONUZ_TRANSIENT_RPROMPT}}",
+        "${(e)${(e)KZ_PROMPT_TRANSIENT_RPROMPT-$DEFAULT_KZ_PROMPT_TRANSIENT_RPROMPT}}",
     )
     send("exit\r")
     os.close(fd)

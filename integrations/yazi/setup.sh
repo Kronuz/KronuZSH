@@ -2,7 +2,7 @@
 # Yazi: link the Kronuz UI theme and its syntect preview theme into Yazi's config.
 # Existing files are preserved through the shared managed-link backup policy.
 
-_kronuz_setup_yazi() {
+_kz_setup_yazi() {
   command -v yazi >/dev/null 2>&1 || return 0
 
   local here config_dir active=0
@@ -41,5 +41,5 @@ _kronuz_setup_yazi() {
   fi
 }
 
-_kronuz_setup_yazi
-unset -f _kronuz_setup_yazi
+_kz_setup_yazi
+unset -f _kz_setup_yazi

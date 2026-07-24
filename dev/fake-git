@@ -1,7 +1,7 @@
 #!/bin/sh
 # Fake git for previewing/testing the prompt's direct-git fallback (the path
-# _kronuz_git_fallback takes when gitstatusd isn't available). Point the prompt at it
-# with PROMPT_KRONUZ_GIT_CMD=/path/to/dev/fake-git; see dev/preview-skin.py --fallback.
+# _kz_git_fallback takes when gitstatusd isn't available). Point the prompt at it
+# with KZ_PROMPT_GIT_CMD=/path/to/dev/fake-git; see dev/preview-skin.py --fallback.
 #
 # It answers only the handful of queries the fallback makes, with a fixed dirty-repo
 # state (branch main, upstream origin/main, staged + unstaged + untracked changes), so

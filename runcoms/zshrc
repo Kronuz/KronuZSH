@@ -21,9 +21,9 @@ source "$KRONUZSH/lib/plugins.zsh"
 source "$KRONUZSH/integrations/init.zsh"   # optional external tools (fzf, zoxide, ...), each guarded
 source "$KRONUZSH/lib/prompt.zsh"
 
-prompt_kronuz_setup
+kz_prompt_setup
 
-# Machine-local, non-public config (tool hooks, corp URLs, PROMPT_KRONUZ_* overrides).
+# Machine-local, non-public config (tool hooks, corp URLs, KZ_PROMPT_* overrides).
 # Tracked example: zshrc.local.example. The real ~/.zshrc.local is yours, in $HOME.
 [[ -r "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
 

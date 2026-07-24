@@ -2,7 +2,7 @@
 # tealdeer (tldr): merge the Kronuz style into tealdeer's config and enable automatic
 # cache updates while preserving every unrelated setting.
 
-_kronuz_tldr_merge() {
+_kz_tldr_merge() {
   local theme="$1" config="$2" output="$3" rest
 
   rest="$(mktemp)"
@@ -43,7 +43,7 @@ _kronuz_tldr_merge() {
   rm -f "$rest"
 }
 
-_kronuz_setup_tldr() {
+_kz_setup_tldr() {
   command -v tldr >/dev/null 2>&1 || return 0
 
   local here theme config_path replacement apply=0
@@ -85,7 +85,7 @@ _kronuz_setup_tldr() {
 
   if [ "$apply" -eq 1 ]; then
     replacement="$(mktemp)"
-    _kronuz_tldr_merge "$theme" "$config_path" "$replacement"
+    _kz_tldr_merge "$theme" "$config_path" "$replacement"
     kz_commit_file "${config[@]}" "$replacement"
     kz_ok "tldr" "Kronuz theme set in $(kz_tilde "$config_path")"
   fi
@@ -97,5 +97,5 @@ _kronuz_setup_tldr() {
   fi
 }
 
-_kronuz_setup_tldr
-unset -f _kronuz_setup_tldr _kronuz_tldr_merge
+_kz_setup_tldr
+unset -f _kz_setup_tldr _kz_tldr_merge

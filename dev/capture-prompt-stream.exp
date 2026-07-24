@@ -38,11 +38,11 @@ spawn -noecho env \
   TERM_PROGRAM=$term_program \
   LC_TERMINAL=$lc_terminal \
   NO_COLOR=1 \
-  PROMPT_KRONUZ_PALETTE_TIMEOUT=0 \
-  PROMPT_KRONUZ_TERMINAL_INTEGRATION=$integration \
-  PROMPT_KRONUZ_GIT=\$\{:-\} \
-  PROMPT_KRONUZ_IP=\$\{:-\} \
-  PROMPT_KRONUZ_TIME=FIXED_TIME \
+  KZ_PROMPT_PALETTE_TIMEOUT=0 \
+  KZ_PROMPT_TERMINAL_INTEGRATION=$integration \
+  KZ_PROMPT_GIT=\$\{:-\} \
+  KZ_PROMPT_IP=\$\{:-\} \
+  KZ_PROMPT_TIME=FIXED_TIME \
   zsh -f
 
 expect "% "
@@ -50,7 +50,7 @@ send -- "source $root/runcoms/zshrc\r"
 expect "❯❯❯ "
 
 if {[string match "*-static" $scenario]} {
-  send -- "PROMPT_KRONUZ_TRANSIENT_PROMPT=''\r"
+  send -- "KZ_PROMPT_TRANSIENT_PROMPT=''\r"
   expect "❯❯❯ "
 }
 

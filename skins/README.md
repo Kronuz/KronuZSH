@@ -20,9 +20,9 @@ Three knobs, each a deferred `${...}` string re-evaluated every render:
 
 | Variable                         | What it is                                            |
 | -------------------------------- | ----------------------------------------------------- |
-| `PROMPT_KRONUZ_PROMPT`           | the live left prompt (one line, or two via `$kz[nl]`) |
-| `PROMPT_KRONUZ_RPROMPT`          | the right prompt                                      |
-| `PROMPT_KRONUZ_TRANSIENT_PROMPT` | the collapsed scrollback prompt (`''` disables it)    |
+| `KZ_PROMPT_PROMPT`           | the live left prompt (one line, or two via `$kz[nl]`) |
+| `KZ_PROMPT_RPROMPT`          | the right prompt                                      |
+| `KZ_PROMPT_TRANSIENT_PROMPT` | the collapsed scrollback prompt (`''` disables it)    |
 
 Compose them from the unified `$kz` array:
 
@@ -38,8 +38,8 @@ layout that arranges these pieces.
 Custom RGB colors go through the palette so they stay `NO_COLOR`-safe:
 
 ```zsh
-PROMPT_KRONUZ_PALETTE_OCEAN='#3a7bd5'
-PROMPT_KRONUZ_PROMPT='${kz[FG.ocean]}${kz[pwd]}${kz[RESET]} ${kz[caret]}'
+KZ_PROMPT_PALETTE_OCEAN='#3a7bd5'
+KZ_PROMPT_PROMPT='${kz[FG.ocean]}${kz[pwd]}${kz[RESET]} ${kz[caret]}'
 ```
 
 That creates `$kz[FG.ocean]` and `$kz[BG.ocean]`. Prefer those over raw `%F{#...}` /
@@ -47,7 +47,7 @@ That creates `$kz[FG.ocean]` and `$kz[BG.ocean]`. Prefer those over raw `%F{#...
 
 Single `$kz[<name>]` segments resolve because the doubled `${(e)${(e)...}}` in
 `PROMPT` runs two expansion passes: first the layout, then the segments it names. You can
-also override an individual segment (`PROMPT_KRONUZ_GIT`, `PROMPT_KRONUZ_PWD`, ...) to
+also override an individual segment (`KZ_PROMPT_GIT`, `KZ_PROMPT_PWD`, ...) to
 reshape just that piece.
 
 ## Verify it
@@ -63,7 +63,7 @@ dev/preview-skin.py skins/minimal.zsh   # prints a preview and asserts the marks
 
 Most skins just place `$kz[git]` (the engine's own git segment) in the layout. To
 render git *differently* (robbyrussell's `git:(branch)`, an emoji, a powerline segment),
-override `PROMPT_KRONUZ_GIT` and compose it from the git-state keys the engine
+override `KZ_PROMPT_GIT` and compose it from the git-state keys the engine
 computes every prompt (from gitstatusd, or the direct-git fallback):
 
 | Variable                                                                               | Value                                      |
@@ -78,7 +78,7 @@ Each is empty when absent, so a plain `${var:+...}` tests it — no hook, no ari
 and it works under both gitstatusd and the fallback:
 
 ```zsh
-PROMPT_KRONUZ_GIT='${kz[git.branch]:+ ${kz[FG.blue]}git:(${kz[FG.red]}${kz[git.branch]}${kz[FG.blue]})${kz[RESET]}${kz[git.dirty]:+ ${kz[FG.yellow]}✗${kz[RESET]}}}'
+KZ_PROMPT_GIT='${kz[git.branch]:+ ${kz[FG.blue]}git:(${kz[FG.red]}${kz[git.branch]}${kz[FG.blue]})${kz[RESET]}${kz[git.dirty]:+ ${kz[FG.yellow]}✗${kz[RESET]}}}'
 ```
 
 **Use `${kz[FG.name]}` for colour inside a `${var:+...}` conditional, not a literal

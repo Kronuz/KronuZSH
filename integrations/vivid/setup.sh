@@ -2,7 +2,7 @@
 # vivid: expose the source theme to vivid. Runtime uses the committed ls_colors file,
 # so vivid itself is needed only when regenerating that file after a theme edit.
 
-_kronuz_setup_vivid() {
+_kz_setup_vivid() {
   command -v vivid >/dev/null 2>&1 || return 0
 
   local here destination hint active=0
@@ -31,5 +31,5 @@ _kronuz_setup_vivid() {
   fi
 }
 
-_kronuz_setup_vivid
-unset -f _kronuz_setup_vivid
+_kz_setup_vivid
+unset -f _kz_setup_vivid

@@ -17,7 +17,7 @@
 # Tools that need no shell wiring (lazygit, hyperfine, jq/yq, dust, duf, btop, procs,
 # tokei, sd, tldr, xh) have no init.zsh — some still have install-time setup; see
 # integrations.md for the full catalog.
-for _kronuz_i in "$KRONUZSH"/integrations/*/init.zsh(N); do
-  [[ -r $_kronuz_i ]] && source "$_kronuz_i"
+for _kz_i in "$KRONUZSH"/integrations/*/init.zsh(N); do
+  [[ -r $_kz_i ]] && source "$_kz_i"
 done
-unset _kronuz_i
+unset _kz_i
