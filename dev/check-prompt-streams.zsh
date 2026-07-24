@@ -33,9 +33,9 @@ for scenario in $scenarios; do
     else
       root=$current
     fi
-    /usr/bin/expect "$current/scripts/capture-prompt-stream.exp" \
+    /usr/bin/expect "$current/dev/capture-prompt-stream.exp" \
       "$work/${scenario}.${side}.raw" "$scenario" "$root" >/dev/null
-    zsh "$current/scripts/normalize-prompt-stream.zsh" \
+    zsh "$current/dev/normalize-prompt-stream.zsh" \
       "$work/${scenario}.${side}.raw" "$work/${scenario}.${side}.norm" "$root"
   done
   if cmp -s "$work/${scenario}.reference.norm" "$work/${scenario}.current.norm"; then

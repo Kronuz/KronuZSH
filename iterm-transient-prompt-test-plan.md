@@ -79,7 +79,7 @@ Before each batch, record:
 
 ## Layer 1: raw protocol fixtures
 
-Create `scripts/iterm-mark-lab.zsh` with these operations:
+Create `dev/iterm-mark-lab.zsh` with these operations:
 
 ```text
 --list                     list stable case IDs and parameters

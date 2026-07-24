@@ -235,7 +235,7 @@ tested in the real iTerm UI, including several byte-correct sequences that still
 produced duplicate blue triangles. Continue with the controlled raw-stream and ZLE
 matrix in `iterm-transient-prompt-test-plan.md`, not ad hoc prompt edits.
 
-For prompt lifecycle refactors, run `scripts/check-prompt-streams.zsh <reference-tree>`.
+For prompt lifecycle refactors, run `dev/check-prompt-streams.zsh <reference-tree>`.
 It drives fresh interactive ZLE sessions through failure, success, blank Enter, and
 exit in six modes: transient/static/disabled integration across iTerm and generic
 terminal paths. It normalizes only fixed machine/time/root values, then compares every
