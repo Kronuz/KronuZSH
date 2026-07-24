@@ -409,6 +409,33 @@ one integration's temporary state from leaking into the next.
   ZLE. To preview it without ZLE, resolve `PROMPT_KRONUZ_KEYMAP_PRIMARY` (or its
   `DEFAULT_` counterpart) into `_prompt_kronuz_keymap` and re-render.
 
+### dev/ (contributor tooling)
+
+Not shipped to users — harnesses for working on the prompt, kept in `dev/`. All run
+headlessly (a pty or `expect`), so none needs a real terminal. Reach for these before
+hand-rolling a new capture script:
+
+- **`dev/preview-skin.py [SKIN...]`** — render a skin (or the built-in layout, with no
+  arg) in a throwaway, fully isolated shell and print its PS1 / RPS1 / transient as a
+  readable, ANSI-stripped preview (`--raw` also dumps the raw bytes). It then asserts the
+  OSC 133 `A`/`B`/`C`/`D` shell-integration marks and iTerm's OSC 1337 survive the skin,
+  **exiting non-zero if a skin breaks integration**. Loads only the prompt engine (fast,
+  no `compinit`), announces iTerm so the iTerm path is exercised, and builds its own demo
+  git repo so the git segment has state. Run it on any skin or prompt-rendering change.
+- **`dev/check-prompt-streams.zsh <reference-tree>`** — golden regression. Drives fresh
+  ZLE sessions through failure / success / blank-Enter / exit in six modes
+  (transient/static/disabled × iTerm/generic) for both a reference tree and this
+  checkout, then `cmp`s every byte that isn't time/host/root. Run it for any
+  prompt-lifecycle or OSC refactor. Uses the two helpers below.
+- **`dev/capture-prompt-stream.exp OUTPUT SCENARIO [ROOT]`** — the `expect` harness that
+  captures one real interactive scenario's raw byte stream (one fresh shell per case so
+  OSC state cannot leak between them).
+- **`dev/normalize-prompt-stream.zsh IN OUT [ROOT]`** — replaces only the values that
+  must vary between runs (wall-clock time, host, repo root) while preserving every
+  control byte, so a protocol or cursor-motion change still fails the golden compare.
+- **`dev/check-integrations.sh`** — sanity-checks the external-tool integration wiring
+  (also referenced from `CONTRIBUTING.md`).
+
 ## gitstatusd deployment
 
 Downloaded, not compiled: the plugin fetches a prebuilt binary for the platform
