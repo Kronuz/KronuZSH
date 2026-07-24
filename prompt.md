@@ -137,46 +137,46 @@ Set it to `''` to hug tight, or to a space, a non-breaking space (`$'\u00a0'`), 
 string to tune the spacing for your font (e.g. `PROMPT_KRONUZ_GLYPH_PAD_UNTRACKED=''`).
 
 
-| Name         | Plain  | Nerd Font                      | Meaning                           |
-|--------------|:------:|--------------------------------|-----------------------------------|
-| `os`         | (none) | `nf-fa-apple` / `nf-fa-linux`  | OS logo by the hostname           |
-| `branch`     |  ⎇     | `nf-pl-branch` U+E0A0          | local branch                      |
-| `tag`        |  ⚑     | `nf-oct-tag` U+F412            | tag ref                           |
-| `commit`     |  @     | `nf-oct-git_commit` U+F417     | detached HEAD                     |
-| `remote`     |  ⇅     | `nf-oct-git_compare` U+F47F    | upstream / remote tracking        |
-| `host_github`    | (⇅) | `nf-fa-github` U+F09B      | remote host GitHub (plain falls back to `remote`)    |
-| `host_gitlab`    | (⇅) | `nf-fa-gitlab` U+F296      | remote host GitLab (plain falls back to `remote`)    |
-| `host_bitbucket` | (⇅) | `nf-fa-bitbucket` U+F171   | remote host Bitbucket (plain falls back to `remote`) |
-| `action`     |  ⚙     | `nf-oct-git_merge` U+F419      | in-progress op (rebase/merge)     |
-| `fallback`   |  ⚠     | `nf-fa-warning` U+F071         | direct-git fallback is active     |
-| `clean`      |  ✔     | ✔ U+2714 (same)                | worktree clean                    |
-| `dirty`      |  ✗     | ✗ U+2717 (same)                | worktree dirty                    |
-| `stashed`    |  ≡     | `nf-fa-archive` U+F187         | stash entries                     |
-| `ahead`      |  ⇡     | ⇡ U+21E1 (same)                | commits ahead of upstream         |
-| `behind`     |  ⇣     | ⇣ U+21E3 (same)                | commits behind upstream           |
-| `push_ahead`  | ⇧     | ⇧ U+21E7 (same)                | commits ahead of a distinct push remote  |
-| `push_behind` | ⇩     | ⇩ U+21E9 (same)                | commits behind a distinct push remote    |
-| `staged`     |  ✛     | `nf-oct-diff_added` U+F457     | staged changes                    |
-| `modified`   |  ✴     | `nf-fa-pencil` U+F040          | unstaged changes                  |
-| `added`      |  +     | `nf-oct-diff_added` U+F457     | split view: staged new file       |
-| `changed`    |  ~     | `nf-oct-diff_modified` U+F459  | split view: modified file         |
-| `deleted`    |  -     | `nf-oct-diff_removed` U+F458   | split view: deleted file          |
-| `conflicted` |  ❖     | `nf-fa-exclamation_tri` U+F071 | merge conflicts                   |
-| `untracked`  |  ⊖     | ⊖ U+2296 (same)                | untracked files                   |
-| `unknown`    |  ∞     | ∞ U+221E (same)                | dirty, count not scanned (-m cap) |
-| `loading`    |  …     | `nf-fa-refresh` U+F021         | async git query in flight         |
-| `venv`       |  venv  | `nf-seti-python` U+E606        | active Python virtualenv          |
-| `vim`        |  V     | `nf-dev-vim` U+E7C5            | inside vim                        |
-| `emacs`      |  E     | `nf-dev-emacs` U+E7CF          | inside emacs                      |
-| `jobs`       |  &     | `nf-oct-stack` U+F51E          | backgrounded jobs                 |
-| `duration`   | (none) | `nf-fa-clock_o` U+F017         | last command duration             |
-| `ssh`        |  ssh   | `nf-cod-remote` U+EB3A         | inside an SSH session             |
-| `container`  |  box   | `nf-oct-container` U+F4B7      | inside a container                |
-| `dot`        |  ●     | ● U+25CF (same)                | command status dot                |
-| `return`     |  ⏎     | ⏎ U+23CE (same)                | nonzero-exit marker               |
-| `overwrite`  |  ♺     | ♺ U+267A (same)                | overwrite (replace) editing mode  |
-| `caret`      |  ❯     | ❯ U+276F (same)                | prompt caret (insert keymap)      |
-| `caret_alt`  |  ❮     | ❮ U+276E (same)                | prompt caret (vicmd keymap)       |
+| Name             | Plain  | Nerd Font                      | Meaning                                              |
+| ---------------- | :----: | ------------------------------ | ---------------------------------------------------- |
+| `os`             | (none) | `nf-fa-apple` / `nf-fa-linux`  | OS logo by the hostname                              |
+| `branch`         |   ⎇    | `nf-pl-branch` U+E0A0          | local branch                                         |
+| `tag`            |   ⚑    | `nf-oct-tag` U+F412            | tag ref                                              |
+| `commit`         |   @    | `nf-oct-git_commit` U+F417     | detached HEAD                                        |
+| `remote`         |   ⇅    | `nf-oct-git_compare` U+F47F    | upstream / remote tracking                           |
+| `host_github`    |  (⇅)   | `nf-fa-github` U+F09B          | remote host GitHub (plain falls back to `remote`)    |
+| `host_gitlab`    |  (⇅)   | `nf-fa-gitlab` U+F296          | remote host GitLab (plain falls back to `remote`)    |
+| `host_bitbucket` |  (⇅)   | `nf-fa-bitbucket` U+F171       | remote host Bitbucket (plain falls back to `remote`) |
+| `action`         |   ⚙    | `nf-oct-git_merge` U+F419      | in-progress op (rebase/merge)                        |
+| `fallback`       |   ⚠    | `nf-fa-warning` U+F071         | direct-git fallback is active                        |
+| `clean`          |   ✔    | ✔ U+2714 (same)                | worktree clean                                       |
+| `dirty`          |   ✗    | ✗ U+2717 (same)                | worktree dirty                                       |
+| `stashed`        |   ≡    | `nf-fa-archive` U+F187         | stash entries                                        |
+| `ahead`          |   ⇡    | ⇡ U+21E1 (same)                | commits ahead of upstream                            |
+| `behind`         |   ⇣    | ⇣ U+21E3 (same)                | commits behind upstream                              |
+| `push_ahead`     |   ⇧    | ⇧ U+21E7 (same)                | commits ahead of a distinct push remote              |
+| `push_behind`    |   ⇩    | ⇩ U+21E9 (same)                | commits behind a distinct push remote                |
+| `staged`         |   ✛    | `nf-oct-diff_added` U+F457     | staged changes                                       |
+| `modified`       |   ✴    | `nf-fa-pencil` U+F040          | unstaged changes                                     |
+| `added`          |   +    | `nf-oct-diff_added` U+F457     | split view: staged new file                          |
+| `changed`        |   ~    | `nf-oct-diff_modified` U+F459  | split view: modified file                            |
+| `deleted`        |   -    | `nf-oct-diff_removed` U+F458   | split view: deleted file                             |
+| `conflicted`     |   ❖    | `nf-fa-exclamation_tri` U+F071 | merge conflicts                                      |
+| `untracked`      |   ⊖    | ⊖ U+2296 (same)                | untracked files                                      |
+| `unknown`        |   ∞    | ∞ U+221E (same)                | dirty, count not scanned (-m cap)                    |
+| `loading`        |   …    | `nf-fa-refresh` U+F021         | async git query in flight                            |
+| `venv`           |  venv  | `nf-seti-python` U+E606        | active Python virtualenv                             |
+| `vim`            |   V    | `nf-dev-vim` U+E7C5            | inside vim                                           |
+| `emacs`          |   E    | `nf-dev-emacs` U+E7CF          | inside emacs                                         |
+| `jobs`           |   &    | `nf-oct-stack` U+F51E          | backgrounded jobs                                    |
+| `duration`       | (none) | `nf-fa-clock_o` U+F017         | last command duration                                |
+| `ssh`            |  ssh   | `nf-cod-remote` U+EB3A         | inside an SSH session                                |
+| `container`      |  box   | `nf-oct-container` U+F4B7      | inside a container                                   |
+| `dot`            |   ●    | ● U+25CF (same)                | command status dot                                   |
+| `return`         |   ⏎    | ⏎ U+23CE (same)                | nonzero-exit marker                                  |
+| `overwrite`      |   ♺    | ♺ U+267A (same)                | overwrite (replace) editing mode                     |
+| `caret`          |   ❯    | ❯ U+276F (same)                | prompt caret (insert keymap)                         |
+| `caret_alt`      |   ❮    | ❮ U+276E (same)                | prompt caret (vicmd keymap)                          |
 
 Rows marked "(same)" use the same BMP mark in both sets (they render in any font);
 the rest are true Nerd Font icons in the default set and the Plain glyph otherwise.
@@ -222,34 +222,34 @@ PROMPT_KRONUZ_PALETTE_RED='#ff5c57'   # fixed red, instead of the theme's %F{1}
 
 The semantic names and their defaults:
 
-| Name(s)                                   | Default            | Used for                          |
-|-------------------------------------------|--------------------|-----------------------------------|
-| `host`                                    | silver             | hostname (colour it per machine to tell boxes apart) |
-| `ip`                                      | dark grey          | LAN IP next to the host           |
-| `user`                                    | bold white         | username                          |
-| `pwd`                                     | white (red as root) | working directory                |
-| `time`                                    | dark grey          | `[clock]`                         |
-| `info`, `sep`                             | dark grey          | the "at" / separators             |
-| `status_ok` / `status_err`                | green / red        | the status dot and exit code      |
-| `branch`, `remote`, `commit`              | white              | git ref names                     |
-| `clean` / `dirty`                         | forest green / brown | worktree state icon             |
-| `ahead` / `behind`                        | chartreuse / deep pink | upstream distance             |
-| `added` / `action`                        | dark orange        | staged changes / in-progress operation |
-| `fallback`                                | gold               | direct-git fallback warning      |
-| `modified` / `unmerged`                   | red                | unstaged changes / conflicts      |
-| `untracked`                               | dark grey          | untracked count                   |
-| `loading`                                 | dark grey          | in-flight async git query mark    |
-| `stashed`                                 | light steel blue   | stash count                       |
-| `venv`                                    | white              | virtualenv name                   |
-| `jobs`                                    | gold               | background-jobs count             |
-| `duration`                                | goldenrod          | command duration                  |
-| `ssh` / `container`                       | medium purple / deep sky blue | session badge          |
-| `etctl`                                   | bold magenta       | the `etctl:<name>` tag            |
-| `vim` / `emacs`                           | bold green         | shell-running-inside-editor indicators |
-| `overwrite`                               | red                | overwrite-mode mark               |
-| `transcaret`                              | bold white         | the collapsed transient caret     |
-| `transmuted`                              | dark grey          | flat prompt color used by the `mute` transient style |
-| `caret1/2/3`                              | red/yellow/green   | the three carets of `❯❯❯`         |
+| Name(s)                      | Default                       | Used for                                             |
+| ---------------------------- | ----------------------------- | ---------------------------------------------------- |
+| `host`                       | silver                        | hostname (colour it per machine to tell boxes apart) |
+| `ip`                         | dark grey                     | LAN IP next to the host                              |
+| `user`                       | bold white                    | username                                             |
+| `pwd`                        | white (red as root)           | working directory                                    |
+| `time`                       | dark grey                     | `[clock]`                                            |
+| `info`, `sep`                | dark grey                     | the "at" / separators                                |
+| `status_ok` / `status_err`   | green / red                   | the status dot and exit code                         |
+| `branch`, `remote`, `commit` | white                         | git ref names                                        |
+| `clean` / `dirty`            | forest green / brown          | worktree state icon                                  |
+| `ahead` / `behind`           | chartreuse / deep pink        | upstream distance                                    |
+| `added` / `action`           | dark orange                   | staged changes / in-progress operation               |
+| `fallback`                   | gold                          | direct-git fallback warning                          |
+| `modified` / `unmerged`      | red                           | unstaged changes / conflicts                         |
+| `untracked`                  | dark grey                     | untracked count                                      |
+| `loading`                    | dark grey                     | in-flight async git query mark                       |
+| `stashed`                    | light steel blue              | stash count                                          |
+| `venv`                       | white                         | virtualenv name                                      |
+| `jobs`                       | gold                          | background-jobs count                                |
+| `duration`                   | goldenrod                     | command duration                                     |
+| `ssh` / `container`          | medium purple / deep sky blue | session badge                                        |
+| `etctl`                      | bold magenta                  | the `etctl:<name>` tag                               |
+| `vim` / `emacs`              | bold green                    | shell-running-inside-editor indicators               |
+| `overwrite`                  | red                           | overwrite-mode mark                                  |
+| `transcaret`                 | bold white                    | the collapsed transient caret                        |
+| `transmuted`                 | dark grey                     | flat prompt color used by the `mute` transient style |
+| `caret1/2/3`                 | red/yellow/green              | the three carets of `❯❯❯`                            |
 
 (`caret1/2/3` are also swapped to all-red when running as root, via a `%(!..)`
 test, as are `pwd` and `user`.)
@@ -302,12 +302,12 @@ remote session a shell belongs to.
 The path segment shows the full working directory with `$HOME` abbreviated to `~`
 (`~/.config/KronuZSH/integrations/bat`). `PROMPT_KRONUZ_PWD_STYLE` shortens it:
 
-| Value | Example | |
-|-------|---------|--|
-| `full` (default) | `~/.config/KronuZSH/integrations/bat` | the whole path, home as `~` |
-| `short` | `~/.c/K/i/bat` | shortest-unique-prefix (like Powerlevel10k's `truncate_to_unique`): each parent shrunk only as far as it stays unambiguous among its siblings, the current directory in full |
-| `base` | `bat` | just the current directory's name |
-| `absolute` | `/home/kronuz/.config/KronuZSH/integrations/bat` | the whole path with `$HOME` expanded |
+| Value            | Example                                          |                                                                                                                                                                              |
+| ---------------- | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `full` (default) | `~/.config/KronuZSH/integrations/bat`            | the whole path, home as `~`                                                                                                                                                  |
+| `short`          | `~/.c/K/i/bat`                                   | shortest-unique-prefix (like Powerlevel10k's `truncate_to_unique`): each parent shrunk only as far as it stays unambiguous among its siblings, the current directory in full |
+| `base`           | `bat`                                            | just the current directory's name                                                                                                                                            |
+| `absolute`       | `/home/kronuz/.config/KronuZSH/integrations/bat` | the whole path with `$HOME` expanded                                                                                                                                         |
 
 ```zsh
 PROMPT_KRONUZ_PWD_STYLE=short
@@ -355,14 +355,14 @@ restyled together by `PROMPT_KRONUZ_TRANSIENT_STYLE`.
 These variables control it (the palette knobs `dim` relies on are described under the
 styles below, and listed in full in the option reference):
 
-| Variable                       | Default            | Effect                                            |
-|--------------------------------|--------------------|---------------------------------------------------|
-| `PROMPT_KRONUZ_TRANSIENT`      | `pwd ❯`            | The whole collapsed prompt string (by default the directory the command ran in, then a caret), built like `PROMPT` from deferred `${...}` segments. Set to `''` to disable transience entirely (past prompts stay full), or to any string for a custom collapsed prompt (which is itself restyled per `PROMPT_KRONUZ_TRANSIENT_STYLE`). |
-| `PROMPT_KRONUZ_TRANSCARET`| `❯`                | Just the caret piece of the default collapsed line — symmetric to `PROMPT_KRONUZ_CARET` for the live prompt. Set to an emoji or any string to change the caret without touching the rest. Ignored if you override the whole `PROMPT_KRONUZ_TRANSIENT`. |
-| `PROMPT_KRONUZ_STATUS`          | `1`                | Keep a failed exit status and/or slow-command duration in scrollback when the next command collapses, or show it in the static prompt when transience is disabled; `0`/`no`/`off`/`false` makes it live-only with transience and hides it without transience. |
-| `PROMPT_KRONUZ_TRANSIENT_STYLE`| `dim`              | How the collapsed line — the pwd, caret, and the just-run **command** — is restyled: `dim`, `mute`, or `keep`. |
-| `PROMPT_KRONUZ_TRANSIENT_DIM`  | `0.7`              | For `dim`: darkness factor, `0` = black, `1` = unchanged. Lower is darker. |
-| `PROMPT_KRONUZ_TRANSIENT_HL`   | `fg=8`             | For `mute`: the `region_highlight` spec to paint the command with (default = grey). |
+| Variable                        | Default | Effect                                                                                                                                                                                                                                                                                                                                  |
+| ------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PROMPT_KRONUZ_TRANSIENT`       | `pwd ❯` | The whole collapsed prompt string (by default the directory the command ran in, then a caret), built like `PROMPT` from deferred `${...}` segments. Set to `''` to disable transience entirely (past prompts stay full), or to any string for a custom collapsed prompt (which is itself restyled per `PROMPT_KRONUZ_TRANSIENT_STYLE`). |
+| `PROMPT_KRONUZ_TRANSCARET`      | `❯`     | Just the caret piece of the default collapsed line — symmetric to `PROMPT_KRONUZ_CARET` for the live prompt. Set to an emoji or any string to change the caret without touching the rest. Ignored if you override the whole `PROMPT_KRONUZ_TRANSIENT`.                                                                                  |
+| `PROMPT_KRONUZ_STATUS`          | `1`     | Keep a failed exit status and/or slow-command duration in scrollback when the next command collapses, or show it in the static prompt when transience is disabled; `0`/`no`/`off`/`false` makes it live-only with transience and hides it without transience.                                                                           |
+| `PROMPT_KRONUZ_TRANSIENT_STYLE` | `dim`   | How the collapsed line — the pwd, caret, and the just-run **command** — is restyled: `dim`, `mute`, or `keep`.                                                                                                                                                                                                                          |
+| `PROMPT_KRONUZ_TRANSIENT_DIM`   | `0.7`   | For `dim`: darkness factor, `0` = black, `1` = unchanged. Lower is darker.                                                                                                                                                                                                                                                              |
+| `PROMPT_KRONUZ_TRANSIENT_HL`    | `fg=8`  | For `mute`: the `region_highlight` spec to paint the command with (default = grey).                                                                                                                                                                                                                                                     |
 
 The three styles:
 
@@ -478,26 +478,26 @@ Beyond colors and glyphs, you can override a segment's entire content with
 `~/.zshrc.local` when the value contains `$fcol` or `$glyph`; that keeps the reference
 deferred so it is resolved whenever the prompt is drawn.
 
-| Segment option | Built-in content |
-|----------------|------------------|
-| `PROMPT_KRONUZ_OS` | OS glyph before the hostname |
-| `PROMPT_KRONUZ_ERR` | green/red status dot for the previous command |
-| `PROMPT_KRONUZ_ERROR` | nonzero exit-code item on the conditional outcome line |
-| `PROMPT_KRONUZ_DURATION` | elapsed-time item on the conditional outcome line |
-| `PROMPT_KRONUZ_USER` | username (`%n`) |
-| `PROMPT_KRONUZ_HOST` | hostname (`%M`) |
-| `PROMPT_KRONUZ_IP` | cached LAN address inside the hostname's parentheses |
-| `PROMPT_KRONUZ_TIME` | current time (`[%*]`) |
-| `PROMPT_KRONUZ_PWD` | working directory generated according to `PROMPT_KRONUZ_PWD_STYLE` |
-| `PROMPT_KRONUZ_GIT` | generated git status |
-| `PROMPT_KRONUZ_VENV` | active Python virtualenv |
-| `PROMPT_KRONUZ_JOBS` | background-job glyph and count |
-| `PROMPT_KRONUZ_CONTEXT` | container and SSH badges |
-| `PROMPT_KRONUZ_ETCTL` | Eternal Terminal session label |
-| `PROMPT_KRONUZ_VIM` | right-prompt Vim indicator |
-| `PROMPT_KRONUZ_EMACS` | right-prompt Emacs indicator |
-| `PROMPT_KRONUZ_OVERWRITE` | right-prompt overwrite indicator; `''` hides it |
-| `PROMPT_KRONUZ_CARET` | complete live input caret; replacing it bypasses the primary/alternate keymap carets |
+| Segment option            | Built-in content                                                                     |
+| ------------------------- | ------------------------------------------------------------------------------------ |
+| `PROMPT_KRONUZ_OS`        | OS glyph before the hostname                                                         |
+| `PROMPT_KRONUZ_ERR`       | green/red status dot for the previous command                                        |
+| `PROMPT_KRONUZ_ERROR`     | nonzero exit-code item on the conditional outcome line                               |
+| `PROMPT_KRONUZ_DURATION`  | elapsed-time item on the conditional outcome line                                    |
+| `PROMPT_KRONUZ_USER`      | username (`%n`)                                                                      |
+| `PROMPT_KRONUZ_HOST`      | hostname (`%M`)                                                                      |
+| `PROMPT_KRONUZ_IP`        | cached LAN address inside the hostname's parentheses                                 |
+| `PROMPT_KRONUZ_TIME`      | current time (`[%*]`)                                                                |
+| `PROMPT_KRONUZ_PWD`       | working directory generated according to `PROMPT_KRONUZ_PWD_STYLE`                   |
+| `PROMPT_KRONUZ_GIT`       | generated git status                                                                 |
+| `PROMPT_KRONUZ_VENV`      | active Python virtualenv                                                             |
+| `PROMPT_KRONUZ_JOBS`      | background-job glyph and count                                                       |
+| `PROMPT_KRONUZ_CONTEXT`   | container and SSH badges                                                             |
+| `PROMPT_KRONUZ_ETCTL`     | Eternal Terminal session label                                                       |
+| `PROMPT_KRONUZ_VIM`       | right-prompt Vim indicator                                                           |
+| `PROMPT_KRONUZ_EMACS`     | right-prompt Emacs indicator                                                         |
+| `PROMPT_KRONUZ_OVERWRITE` | right-prompt overwrite indicator; `''` hides it                                      |
+| `PROMPT_KRONUZ_CARET`     | complete live input caret; replacing it bypasses the primary/alternate keymap carets |
 
 The host display composes `PROMPT_KRONUZ_OS`, `PROMPT_KRONUZ_HOST`, and
 `PROMPT_KRONUZ_IP`; recolor the hostname with `PROMPT_KRONUZ_COLOR_HOST`. The outcome
@@ -539,34 +539,34 @@ These are all of the public KronuZSH prompt parameters, followed by the standard
 terminal environment signals the prompt reads. Names represented by `<NAME>` are
 fully enumerated in the linked table or directly in the description.
 
-| Variable | Default | What it does |
-|----------|---------|--------------|
-| `PROMPT_KRONUZ_NERD_FONT` | `1` | `0`/`no`/`off`/`false` switches to the plain-Unicode glyph set. |
-| `PROMPT_KRONUZ_GLYPH_<NAME>` | per glyph | Override one glyph; `''` hides it. All names are in the [glyph table](#glyphs). |
-| `PROMPT_KRONUZ_GLYPH_PAD_<NAME>` | per glyph | Override a glyph's trailing (right-hand) pad; `''` hugs tight, a space / `$'\u00a0'` / any string tunes it for your font. |
-| `PROMPT_KRONUZ_GIT_SEP` | `' '` (space) | String inserted between the git detail indicators (stash / staged / modified / untracked / ahead-behind …). Set to `'·'`, `':'`, `$'\u00a0'`, or any string; `''` packs them with no separator. |
-| `PROMPT_KRONUZ_GIT_SPLIT` | `0` | `1`/`yes`/`on`/`true` breaks the single staged/unstaged counts into per-type marks — added `+`, changed `~`, deleted `-` — coloured by group (the staged and modified colours). Off shows one aggregate count per group. |
-| `PROMPT_KRONUZ_COLOR_<NAME>` | per color | Override one semantic color. All public names are in the [color table](#colors). |
-| `PROMPT_KRONUZ_PALETTE_<NAME>` | terminal palette | Override one ANSI base color with `#RRGGBB` or a 0–255 index. Names: `BLACK`, `RED`, `GREEN`, `YELLOW`, `BLUE`, `MAGENTA`, `CYAN`, `GREY`, `DARKGREY`, `LIGHTRED`, `LIGHTGREEN`, `LIGHTYELLOW`, `LIGHTBLUE`, `LIGHTMAGENTA`, `LIGHTCYAN`, `LIGHTGREY`. This changes display colors and the RGB used by `dim`. |
-| `PROMPT_KRONUZ_<SEGMENT>` | built in | Replace one complete segment or outcome item. Names: `OS`, `ERR`, `ERROR`, `DURATION`, `USER`, `HOST`, `IP`, `TIME`, `PWD`, `GIT`, `VENV`, `JOBS`, `CONTEXT`, `ETCTL`, `VIM`, `EMACS`, `OVERWRITE`, `PROMPT`; see [Replacing a whole segment](#replacing-a-whole-segment). |
-| `PROMPT_KRONUZ_PWD_STYLE` | `full` | Working-directory shortening: `full`, `short` (shortest unique prefix, `~/.c/K/i/bat`), `base` (current dir name), or `absolute` (`$HOME` expanded). |
-| `PROMPT_KRONUZ_CMD_DURATION_MIN` | `3` | Seconds a command must run before its duration is shown. `0` = always. |
-| `PROMPT_KRONUZ_IP_TTL` | `60` | Seconds the LAN-IP lookup is cached; lower it if prompt-time address changes must appear sooner. |
-| `PROMPT_KRONUZ_TRANSIENT` | `pwd ❯` | The whole collapsed past-prompt string (default: the run directory + caret), built like `PROMPT`; `''` disables transience. |
-| `PROMPT_KRONUZ_TRANSCARET` | `❯` | Just the caret piece of the default collapsed line (symmetric to `PROMPT_KRONUZ_CARET`); set to an emoji or any string. |
-| `PROMPT_KRONUZ_STATUS` | `1` | Keep the previous failed status and/or duration above the next collapsed command, or show it in the static prompt when transience is disabled; false values make it live-only with transience and hide it without transience. |
-| `PROMPT_KRONUZ_TRANSIENT_STYLE` | `dim` | Restyle of the collapsed line (pwd, caret, command): `dim`, `mute`, or `keep`. |
-| `PROMPT_KRONUZ_TRANSIENT_DIM` | `0.7` | `dim` darkness factor (`0` black .. `1` unchanged). |
-| `PROMPT_KRONUZ_TRANSIENT_HL` | `fg=8` | `mute` color, as a `region_highlight` spec. |
-| `PROMPT_KRONUZ_PALETTE_TTL` | `86400` | Seconds the queried palette is cached on disk (per terminal); `0` disables the cache. |
-| `PROMPT_KRONUZ_PALETTE_TIMEOUT` | `0.6` | Seconds to wait for the OSC 4 palette answer; bump it for a slow/remote terminal. |
-| `PROMPT_KRONUZ_TERMINAL_INTEGRATION` | `1` | `0`/`no`/`off`/`false` disables OSC 7 cwd reporting, OSC 133 command marks, and iTerm2 OSC 1337 metadata. |
-| `PROMPT_KRONUZ_KEYMAP_PRIMARY` | `❯❯❯` | The live caret in the primary keymap (emacs / vi-insert), as a prompt string. `''` hides it. |
-| `PROMPT_KRONUZ_KEYMAP_ALTERNATE` | `❮❮❮` | The live caret in the vi-command keymap. `''` hides it. |
-| `PROMPT_KRONUZ_KEYMAP_OVERWRITE` | red `❯❯❯` | The complete live caret used in overwrite mode. It stays three cells wide by default. |
-| `COLORTERM` | (terminal) | `24bit`/`truecolor` keeps the hex palette at 24-bit; otherwise colors degrade to 256/16 via `zsh/nearcolor`. |
-| `TERM` | (terminal) | `dumb`/`unknown`/empty forces the plain-glyph set and no color (see no-color mode). |
-| `NO_COLOR` | (unset) | Standard env var; when set, renders with no color escapes. |
+| Variable                             | Default          | What it does                                                                                                                                                                                                                                                                                                  |
+| ------------------------------------ | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PROMPT_KRONUZ_NERD_FONT`            | `1`              | `0`/`no`/`off`/`false` switches to the plain-Unicode glyph set.                                                                                                                                                                                                                                               |
+| `PROMPT_KRONUZ_GLYPH_<NAME>`         | per glyph        | Override one glyph; `''` hides it. All names are in the [glyph table](#glyphs).                                                                                                                                                                                                                               |
+| `PROMPT_KRONUZ_GLYPH_PAD_<NAME>`     | per glyph        | Override a glyph's trailing (right-hand) pad; `''` hugs tight, a space / `$'\u00a0'` / any string tunes it for your font.                                                                                                                                                                                     |
+| `PROMPT_KRONUZ_GIT_SEP`              | `' '` (space)    | String inserted between the git detail indicators (stash / staged / modified / untracked / ahead-behind …). Set to `'·'`, `':'`, `$'\u00a0'`, or any string; `''` packs them with no separator.                                                                                                               |
+| `PROMPT_KRONUZ_GIT_SPLIT`            | `0`              | `1`/`yes`/`on`/`true` breaks the single staged/unstaged counts into per-type marks — added `+`, changed `~`, deleted `-` — coloured by group (the staged and modified colours). Off shows one aggregate count per group.                                                                                      |
+| `PROMPT_KRONUZ_COLOR_<NAME>`         | per color        | Override one semantic color. All public names are in the [color table](#colors).                                                                                                                                                                                                                              |
+| `PROMPT_KRONUZ_PALETTE_<NAME>`       | terminal palette | Override one ANSI base color with `#RRGGBB` or a 0–255 index. Names: `BLACK`, `RED`, `GREEN`, `YELLOW`, `BLUE`, `MAGENTA`, `CYAN`, `GREY`, `DARKGREY`, `LIGHTRED`, `LIGHTGREEN`, `LIGHTYELLOW`, `LIGHTBLUE`, `LIGHTMAGENTA`, `LIGHTCYAN`, `LIGHTGREY`. This changes display colors and the RGB used by `dim`. |
+| `PROMPT_KRONUZ_<SEGMENT>`            | built in         | Replace one complete segment or outcome item. Names: `OS`, `ERR`, `ERROR`, `DURATION`, `USER`, `HOST`, `IP`, `TIME`, `PWD`, `GIT`, `VENV`, `JOBS`, `CONTEXT`, `ETCTL`, `VIM`, `EMACS`, `OVERWRITE`, `PROMPT`; see [Replacing a whole segment](#replacing-a-whole-segment).                                    |
+| `PROMPT_KRONUZ_PWD_STYLE`            | `full`           | Working-directory shortening: `full`, `short` (shortest unique prefix, `~/.c/K/i/bat`), `base` (current dir name), or `absolute` (`$HOME` expanded).                                                                                                                                                          |
+| `PROMPT_KRONUZ_CMD_DURATION_MIN`     | `3`              | Seconds a command must run before its duration is shown. `0` = always.                                                                                                                                                                                                                                        |
+| `PROMPT_KRONUZ_IP_TTL`               | `60`             | Seconds the LAN-IP lookup is cached; lower it if prompt-time address changes must appear sooner.                                                                                                                                                                                                              |
+| `PROMPT_KRONUZ_TRANSIENT`            | `pwd ❯`          | The whole collapsed past-prompt string (default: the run directory + caret), built like `PROMPT`; `''` disables transience.                                                                                                                                                                                   |
+| `PROMPT_KRONUZ_TRANSCARET`           | `❯`              | Just the caret piece of the default collapsed line (symmetric to `PROMPT_KRONUZ_CARET`); set to an emoji or any string.                                                                                                                                                                                       |
+| `PROMPT_KRONUZ_STATUS`               | `1`              | Keep the previous failed status and/or duration above the next collapsed command, or show it in the static prompt when transience is disabled; false values make it live-only with transience and hide it without transience.                                                                                 |
+| `PROMPT_KRONUZ_TRANSIENT_STYLE`      | `dim`            | Restyle of the collapsed line (pwd, caret, command): `dim`, `mute`, or `keep`.                                                                                                                                                                                                                                |
+| `PROMPT_KRONUZ_TRANSIENT_DIM`        | `0.7`            | `dim` darkness factor (`0` black .. `1` unchanged).                                                                                                                                                                                                                                                           |
+| `PROMPT_KRONUZ_TRANSIENT_HL`         | `fg=8`           | `mute` color, as a `region_highlight` spec.                                                                                                                                                                                                                                                                   |
+| `PROMPT_KRONUZ_PALETTE_TTL`          | `86400`          | Seconds the queried palette is cached on disk (per terminal); `0` disables the cache.                                                                                                                                                                                                                         |
+| `PROMPT_KRONUZ_PALETTE_TIMEOUT`      | `0.6`            | Seconds to wait for the OSC 4 palette answer; bump it for a slow/remote terminal.                                                                                                                                                                                                                             |
+| `PROMPT_KRONUZ_TERMINAL_INTEGRATION` | `1`              | `0`/`no`/`off`/`false` disables OSC 7 cwd reporting, OSC 133 command marks, and iTerm2 OSC 1337 metadata.                                                                                                                                                                                                     |
+| `PROMPT_KRONUZ_KEYMAP_PRIMARY`       | `❯❯❯`            | The live caret in the primary keymap (emacs / vi-insert), as a prompt string. `''` hides it.                                                                                                                                                                                                                  |
+| `PROMPT_KRONUZ_KEYMAP_ALTERNATE`     | `❮❮❮`            | The live caret in the vi-command keymap. `''` hides it.                                                                                                                                                                                                                                                       |
+| `PROMPT_KRONUZ_KEYMAP_OVERWRITE`     | red `❯❯❯`        | The complete live caret used in overwrite mode. It stays three cells wide by default.                                                                                                                                                                                                                         |
+| `COLORTERM`                          | (terminal)       | `24bit`/`truecolor` keeps the hex palette at 24-bit; otherwise colors degrade to 256/16 via `zsh/nearcolor`.                                                                                                                                                                                                  |
+| `TERM`                               | (terminal)       | `dumb`/`unknown`/empty forces the plain-glyph set and no color (see no-color mode).                                                                                                                                                                                                                           |
+| `NO_COLOR`                           | (unset)          | Standard env var; when set, renders with no color escapes.                                                                                                                                                                                                                                                    |
 
 Anything not set falls back to its built-in default. These are shell parameters, not
 environment settings, so they do not need `export`. Most are recomputed on each prompt
