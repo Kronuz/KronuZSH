@@ -50,7 +50,7 @@ send -- "source $root/runcoms/zshrc\r"
 expect "❯❯❯ "
 
 if {[string match "*-static" $scenario]} {
-  send -- "PROMPT_KRONUZ_TRANSIENT=''\r"
+  send -- "PROMPT_KRONUZ_TRANSIENT_PROMPT=''\r"
   expect "❯❯❯ "
 }
 

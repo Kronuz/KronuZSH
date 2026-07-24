@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Preview a KronuZSH prompt skin and verify its terminal integration.
 
-A skin is a snippet that sets PROMPT_KRONUZ_PS1 / PROMPT_KRONUZ_RPS1 /
-PROMPT_KRONUZ_TRANSIENT (see ../skins). This renders one in a throwaway,
+A skin is a snippet that sets PROMPT_KRONUZ_PROMPT / PROMPT_KRONUZ_RPROMPT /
+PROMPT_KRONUZ_TRANSIENT_PROMPT (see ../skins). This renders one in a throwaway,
 fully isolated shell (its own HOME, ZDOTDIR and demo git repo), then:
 
-  * prints the live PS1, the right prompt (RPS1) and the collapsed transient
+  * prints the live PROMPT, the right prompt (RPROMPT) and the collapsed transient
     prompt, both as raw ANSI (--raw) and as a stripped, readable preview, and
   * asserts the OSC 133 A/B/C/D shell-integration marks and iTerm's OSC 1337
     still survive the skin. A skin that breaks them exits non-zero.
@@ -176,10 +176,15 @@ def render(
         )
         wait_for(b"\x01END\x02", timeout=3.0, frm=frm)
 
-    grab("PS1", "${(e)${(e)PROMPT_KRONUZ_PS1-$DEFAULT_PROMPT_KRONUZ_PS1}}")
-    grab("RPS1", "${(e)${(e)PROMPT_KRONUZ_RPS1-$DEFAULT_PROMPT_KRONUZ_RPS1}}")
+    grab("PROMPT", "${(e)${(e)PROMPT_KRONUZ_PROMPT-$DEFAULT_PROMPT_KRONUZ_PROMPT}}")
+    grab("RPROMPT", "${(e)${(e)PROMPT_KRONUZ_RPROMPT-$DEFAULT_PROMPT_KRONUZ_RPROMPT}}")
     grab(
-        "TRANS", "${(e)${(e)PROMPT_KRONUZ_TRANSIENT-$DEFAULT_PROMPT_KRONUZ_TRANSIENT}}"
+        "TRANS",
+        "${(e)${(e)PROMPT_KRONUZ_TRANSIENT_PROMPT-$DEFAULT_PROMPT_KRONUZ_TRANSIENT_PROMPT}}",
+    )
+    grab(
+        "TRANS-R",
+        "${(e)${(e)PROMPT_KRONUZ_TRANSIENT_RPROMPT-$DEFAULT_PROMPT_KRONUZ_TRANSIENT_RPROMPT}}",
     )
     send("exit\r")
     os.close(fd)
@@ -193,7 +198,9 @@ def render(
         m = re.search(rb"\x01" + label.encode() + rb"\x02(.*?)\x01END\x02", tail, re.S)
         return (m.group(1) if m else b"").replace(b"\r", b"").strip(b"\n")
 
-    layers = {label: between(label) for label in ("PS1", "RPS1", "TRANS")}
+    layers = {
+        label: between(label) for label in ("PROMPT", "RPROMPT", "TRANS", "TRANS-R")
+    }
     osc = {mk: (b"\x1b]" + mk.encode()) in raw_cycle for mk in OSC_MARKS}
     return layers, osc
 
@@ -228,10 +235,10 @@ def main() -> int:
             layers, osc = render(skin, home, repo_dir, fallback=args.fallback)
             name = os.path.basename(skin) if skin else "DEFAULT layout"
             print(f"\n=== {name} ===")
-            for label in ("PS1", "RPS1", "TRANS"):
+            for label in ("PROMPT", "RPROMPT", "TRANS", "TRANS-R"):
                 v = layers[label]
                 preview = strip(v).replace("\n", " \u23ce ") or "(empty)"
-                print(f"  {label:<5} {preview}")
+                print(f"  {label:<7} {preview}")
                 if args.raw:
                     sys.stdout.flush()
                     sys.stdout.buffer.write(b"        raw: " + v + b"\n")

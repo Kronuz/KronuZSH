@@ -18,16 +18,16 @@ Or copy the two or three lines you like straight into `~/.zshrc.local` and tweak
 
 Three knobs, each a deferred `${...}` string re-evaluated every render:
 
-| Variable                  | What it is                                                |
-| ------------------------- | --------------------------------------------------------- |
-| `PROMPT_KRONUZ_PS1`       | the live left prompt (one line, or two via `$kronuz[nl]`) |
-| `PROMPT_KRONUZ_RPS1`      | the right prompt                                          |
-| `PROMPT_KRONUZ_TRANSIENT` | the collapsed scrollback prompt (`''` disables it)        |
+| Variable                         | What it is                                                |
+| -------------------------------- | --------------------------------------------------------- |
+| `PROMPT_KRONUZ_PROMPT`           | the live left prompt (one line, or two via `$kronuz[nl]`) |
+| `PROMPT_KRONUZ_RPROMPT`          | the right prompt                                          |
+| `PROMPT_KRONUZ_TRANSIENT_PROMPT` | the collapsed scrollback prompt (`''` disables it)        |
 
 Compose them from the segment palette `$kronuz[<name>]` — `os err info context etctl git
-venv jobs nl time pwd caret transcaret overwrite vim emacs` — plus any `$fcol[...]` (foreground) /
+venv jobs nl time pwd caret transient_caret overwrite vim emacs` — plus any `$fcol[...]` (foreground) /
 `$bcol[...]` (background) / `$glyph[...]` or normal zsh prompt escapes (`%~`, `%n`, `%m`,
-`%c`, `%F{...}`, `%K{...}`). `$kronuz[]` is the palette (the composed segments); PS1/RPS1
+`%c`, `%F{...}`, `%K{...}`). `$kronuz[]` is the palette (the composed segments); PROMPT/RPROMPT
 are the layout that arranges them.
 
 Single `$kronuz[<name>]` segments resolve because the doubled `${(e)${(e)...}}` in

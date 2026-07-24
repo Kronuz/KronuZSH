@@ -266,17 +266,17 @@ because iTerm's OSC 7 handler creates a second prompt mark; all protocols are ga
 `PROMPT_KRONUZ_TERMINAL_INTEGRATION`, and iTerm detection/announcement happens on the
 first enabled precmd so `~/.zshrc.local` can opt out), and the **transient prompt** (an accept-line
 widget on `^M`/`^J` that swaps `$PROMPT` to the resolved
-`${(e)PROMPT_KRONUZ_TRANSIENT-$DEFAULT_PROMPT_KRONUZ_TRANSIENT}` and `reset-prompt`s,
+`${(e)PROMPT_KRONUZ_TRANSIENT_PROMPT-$DEFAULT_PROMPT_KRONUZ_TRANSIENT_PROMPT}` and `reset-prompt`s,
 wrapping the collapsed redraw in fresh OSC 133 `A`/`B` boundaries so iTerm2 keeps the
 command mark and its eventual `D;<status>` attached to the relocated prompt,
-restored in precmd; configured symmetrically to the live prompt — `PROMPT_KRONUZ_TRANSIENT`
-is the whole string like `PROMPT`, `PROMPT_KRONUZ_TRANSCARET` is just the caret piece
+restored in precmd; configured symmetrically to the live prompt — `PROMPT_KRONUZ_TRANSIENT_PROMPT`
+is the whole string like `PROMPT`, `PROMPT_KRONUZ_TRANSIENT_CARET` is just the caret piece
 like `PROMPT_KRONUZ_CARET`, both deferred `${...}` strings re-evaluated per accept. By
 default it leaves the **pwd + caret** in scrollback so history shows where each command
 ran — reusing `$_prompt_kronuz_pwd` so it honors `PROMPT_KRONUZ_PWD_STYLE`, in the live
 `pwd` colour (so it matches the prompt and honours `PROMPT_KRONUZ_COLOR_PWD`); the caret
-piece defaults to `transcaret`. `''` disables transience. The whole resolved line — pwd,
-caret, and a custom `PROMPT_KRONUZ_TRANSIENT` alike — is restyled by `_kronuz_dim_string`
+piece defaults to `transient_caret`. `''` disables transience. The whole resolved line — pwd,
+caret, and a custom `PROMPT_KRONUZ_TRANSIENT_PROMPT` alike — is restyled by `_kronuz_dim_string`
 (the general string dimmer; `_kronuz_dim_col` is a thin by-name wrapper) along with the
 just-run command, per `PROMPT_KRONUZ_TRANSIENT_STYLE` — `dim` (darken each fg to truecolor
 hex, since zsh
@@ -373,16 +373,16 @@ the conditional early).
 The whole visible layout is deferred and overridable end to end, so a skin reshapes the
 prompt with no rebuild. Three knobs, each a `${...}` string re-evaluated every render:
 
-- `PROMPT_KRONUZ_PS1` — the live left prompt (one line, or two via `$kronuz[nl]`).
-- `PROMPT_KRONUZ_RPS1` — the right prompt.
-- `PROMPT_KRONUZ_TRANSIENT` — the collapsed scrollback prompt (`''` disables transience).
+- `PROMPT_KRONUZ_PROMPT` — the live left prompt (one line, or two via `$kronuz[nl]`).
+- `PROMPT_KRONUZ_RPROMPT` — the right prompt.
+- `PROMPT_KRONUZ_TRANSIENT_PROMPT` — the collapsed scrollback prompt (`''` disables transience).
 
-`DEFAULT_PROMPT_KRONUZ_PS1`/`RPS1`/`TRANSIENT` hold the built-in layout; a skin sets the
+`DEFAULT_PROMPT_KRONUZ_PROMPT`/`RPROMPT`/`TRANSIENT_PROMPT` hold the built-in layout; a skin sets the
 non-`DEFAULT_` ones from `~/.zshrc.local` (sourced after `prompt_kronuz_setup`, so it
 takes effect at the next render). It composes the segment palette `$kronuz[<name>]` — os
-err info context etctl git venv jobs nl time pwd caret transcaret overwrite vim emacs — plus any
+err info context etctl git venv jobs nl time pwd caret transient_caret overwrite vim emacs — plus any
 `$fcol[...]`/`$glyph[...]`/prompt escapes. Keep the split in mind: `$kronuz[]` is the
-palette (the composed segments); PS1/RPS1 are the layout that arranges them.
+palette (the composed segments); PROMPT/RPROMPT are the layout that arranges them.
 
 Why it resolves: `PROMPT` wraps the chosen layout in a doubled `${(e)${(e)...}}` so one
 PROMPT_SUBST pass evaluates both levels — first the layout string, then the
@@ -463,7 +463,7 @@ headlessly (a pty or `expect`), so none needs a real terminal. Reach for these b
 hand-rolling a new capture script:
 
 - **`dev/preview-skin.py [SKIN...]`** — render a skin (or the built-in layout, with no
-  arg) in a throwaway, fully isolated shell and print its PS1 / RPS1 / transient as a
+  arg) in a throwaway, fully isolated shell and print its PROMPT / RPROMPT / transient as a
   readable, ANSI-stripped preview (`--raw` also dumps the raw bytes). It then asserts the
   OSC 133 `A`/`B`/`C`/`D` shell-integration marks and iTerm's OSC 1337 survive the skin,
   **exiting non-zero if a skin breaks integration**. Loads only the prompt engine (fast,

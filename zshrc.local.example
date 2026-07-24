@@ -75,9 +75,9 @@ PROMPT_KRONUZ_PWD_STYLE=short
 # Disable OSC 7/133 terminal metadata and iTerm2's OSC 1337 integration completely:
 # PROMPT_KRONUZ_TERMINAL_INTEGRATION=0
 # Transient prompt: past prompts collapse to the run directory + a caret; '' turns it off.
-# PROMPT_KRONUZ_TRANSIENT=''
+# PROMPT_KRONUZ_TRANSIENT_PROMPT=''
 # Swap just the collapsed caret for an emoji or any string (the rest stays the default):
-# PROMPT_KRONUZ_TRANSCARET='🚀'
+# PROMPT_KRONUZ_TRANSIENT_CARET='🚀'
 # Set to 0 to discard ⏎/duration instead of keeping it in command history:
 # PROMPT_KRONUZ_STATUS=0
 # How the whole collapsed line (pwd, caret, command) is restyled: dim (default), mute, keep.
