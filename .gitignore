@@ -7,3 +7,7 @@
 
 # stray history
 .zsh_history
+
+# Python bytecode (dev/ tooling)
+__pycache__/
+*.pyc
