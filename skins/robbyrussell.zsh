@@ -1,7 +1,7 @@
 # robbyrussell — oh-my-zsh's flagship theme: a green arrow (red after a failure), the
 # directory basename in cyan, then git:(branch) in blue/red with a yellow ✗ when dirty.
-# ${fcol[...]} everywhere (a literal %F{...} would end the git conditional early).
-PROMPT_KRONUZ_GIT='${_prompt_kronuz_git_branch:+ ${fcol[blue]}git:(${fcol[red]}${_prompt_kronuz_git_branch}${fcol[blue]})${fcol[none]}${_prompt_kronuz_git_dirty:+ ${fcol[yellow]}✗${fcol[none]}}}'
-PROMPT_KRONUZ_PROMPT='%(?.${fcol[green]}.${fcol[red]})➜%f  ${fcol[cyan]}%c%f$kronuz[git] '
+# ${kz[FG.*]} everywhere (a literal %F{...} would end the git conditional early).
+PROMPT_KRONUZ_GIT='${kz[git.branch]:+ ${kz[FG.blue]}git:(${kz[FG.red]}${kz[git.branch]}${kz[FG.blue]})${kz[RESET]}${kz[git.dirty]:+ ${kz[FG.yellow]}✗${kz[RESET]}}}'
+PROMPT_KRONUZ_PROMPT='%(?.${kz[FG.green]}.${kz[FG.red]})➜%f  ${kz[FG.cyan]}%c%f$kz[git] '
 PROMPT_KRONUZ_RPROMPT=''
-PROMPT_KRONUZ_TRANSIENT_PROMPT='${fcol[green]}➜%f  ${fcol[cyan]}%c%f '
+PROMPT_KRONUZ_TRANSIENT_PROMPT='${kz[FG.green]}➜%f  ${kz[FG.cyan]}%c%f '

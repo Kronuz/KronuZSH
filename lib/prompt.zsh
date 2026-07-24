@@ -20,8 +20,8 @@
 #   ${(e)PROMPT_KRONUZ_<NAME>:-$DEFAULT_PROMPT_KRONUZ_<NAME>}
 # i.e. a user override or the built-in default, re-expanded ((e) flag) every render.
 # Two arrays feed the segments, each element overridable:
-#   $fcol    named colour palette         ($fcol[red], $fcol[chartreuse], ...)
-#   $glyph  icon set, Nerd Font or plain  ($glyph[branch], $glyph[venv], ...)
+#   $fcol    named colour palette         ($kz[FG.red], $kz[FG.chartreuse], ...)
+#   $glyph  icon set, Nerd Font or plain  ($kz[GLYPH.branch], $kz[GLYPH.venv], ...)
 #
 # Naming: $_prompt_kronuz_* holds a rendered segment string spliced into $PROMPT;
 # $_kronuz_* holds internal state and flags.
@@ -35,79 +35,79 @@
 # Colours
 # ============================================================================
 
-# Base palette: named %F{...} entries, populated at load so $fcol is usable immediately.
-# A snapshot ($_fcol_base, just below) is the immutable source that every colour rebuild
-# copies back into $fcol (in prompt_kronuz_colors), blanking every entry in no-colour mode
-# so a skin's ${fcol[green]} (and the derived ${bcol[green]}) emit nothing. ANSI 0..15 stay
-# symbolic so they track the terminal theme; 16..255 are exact hex (truecolor), downsampled
-# by zsh/nearcolor on non-truecolor terminals. $fcol is public; users reference $fcol[name]
-# in their $PROMPT_KRONUZ_COLOR_* overrides.
-unset fcol _fcol_base
-typeset -gA fcol=(
-  black                '%F{0}'        red                  '%F{1}'
-  lightgreen           '%F{10}'       olive                '%F{#878700}'
-  darkkhaki            '%F{#87875f}'  gray                 '%F{#878787}'
-  lavender             '%F{#8787af}'  mediumpurple         '%F{#8787d7}'
-  mediumslateblue      '%F{#8787ff}'  darkolivegreen       '%F{#87af5f}'
-  darkseagreen         '%F{#87af87}'  powderblue           '%F{#87afaf}'
-  lightyellow          '%F{11}'       skyblue              '%F{#87afd7}'
-  cornflowerblue       '%F{#87afff}'  lawngreen            '%F{#87d700}'
-  palegreen            '%F{#87d787}'  mediumaquamarine     '%F{#87d7af}'
-  cadetblue            '%F{#87d7d7}'  lightskyblue         '%F{#87d7ff}'
-  chartreuse           '%F{#87ff00}'  limegreen            '%F{#87ff5f}'
-  lightblue            '%F{12}'       aquamarine           '%F{#87ffaf}'
-  darkred              '%F{#af0000}'  mediumvioletred      '%F{#af005f}'
-  darkmagenta          '%F{#af0087}'  purple               '%F{#af00af}'
-  darkviolet           '%F{#af00d7}'  fuchsia              '%F{#af00ff}'
-  lightmagenta         '%F{13}'       chocolate            '%F{#af5f00}'
-  lightcoral           '%F{#af5f5f}'  palevioletred        '%F{#af5f87}'
-  orchid               '%F{#af5faf}'  mediumorchid         '%F{#af5fd7}'
-  darkorchid           '%F{#af5fff}'  darkgoldenrod        '%F{#af8700}'
-  burlywood            '%F{#af875f}'  rosybrown            '%F{#af8787}'
-  plum                 '%F{#af87af}'  lightcyan            '%F{14}'
-  violet               '%F{#af87d7}'  khaki                '%F{#afaf5f}'
-  palegoldenrod        '%F{#afaf87}'  darkgray             '%F{#afafaf}'
-  slategray            '%F{#afafd7}'  lightsteelblue       '%F{#afafff}'
-  yellowgreen          '%F{#afd75f}'  lightgrey            '%F{15}'
-  honeydew             '%F{#afd7af}'  paleturquoise        '%F{#afd7d7}'
-  greenyellow          '%F{#afff5f}'  dimgray              '%F{#000000}'
-  tomato               '%F{#d70000}'  deeppink             '%F{#d7005f}'
-  darkorange           '%F{#d75f00}'  indianred            '%F{#d75f5f}'
-  hotpink              '%F{#d75f87}'  navy                 '%F{#00005f}'
-  goldenrod            '%F{#d78700}'  lightsalmon          '%F{#d7875f}'
-  lightpink            '%F{#d787af}'  gold                 '%F{#d7af00}'
-  sandybrown           '%F{#d7af5f}'  darkblue             '%F{#000087}'
-  tan                  '%F{#d7af87}'  mistyrose            '%F{#d7afaf}'
-  thistle              '%F{#d7afd7}'  lemonchiffon         '%F{#d7d7af}'
-  whitesmoke           '%F{#d7d7d7}'  ghostwhite           '%F{#d7d7ff}'
-  mediumblue           '%F{#0000af}'  azure                '%F{#d7ffff}'
-  orangered            '%F{#ff0000}'  crimson              '%F{#ff005f}'
-  green                '%F{2}'        salmon               '%F{#ff5f5f}'
-  orange               '%F{#ff8700}'  coral                '%F{#ff875f}'
-  peru                 '%F{#ffaf5f}'  darksalmon           '%F{#ffaf87}'
-  pink                 '%F{#ffafd7}'  darkgreen            '%F{#005f00}'
-  navajowhite          '%F{#ffd7af}'  peachpuff            '%F{#ffd7d7}'
-  teal                 '%F{#005f5f}'  lightgoldenrodyellow '%F{#ffffd7}'
-  white                '%F{#ffffff}'  darkcyan             '%F{#005f87}'
-  deepskyblue          '%F{#005faf}'  silver               '%F{#bcbcbc}'
-  lightgray            '%F{#c6c6c6}'  gainsboro            '%F{#d0d0d0}'
-  dodgerblue           '%F{#005fd7}'  yellow               '%F{3}'
-  darkturquoise        '%F{#0087af}'  mediumspringgreen    '%F{#00af5f}'
-  aqua                 '%F{#00afff}'  blue                 '%F{4}'
-  lime                 '%F{#00d700}'  springgreen          '%F{#00d75f}'
-  magenta              '%F{5}'        maroon               '%F{#5f0000}'
-  indigo               '%F{#5f0087}'  cyan                 '%F{6}'
-  lightslategray       '%F{#5f5f87}'  darkslateblue        '%F{#5f5faf}'
-  slateblue            '%F{#5f5fd7}'  darkslategray        '%F{#5f8787}'
-  steelblue            '%F{#5f87d7}'  royalblue            '%F{#5f87ff}'
-  grey                 '%F{7}'        mediumseagreen       '%F{#5fd787}'
-  darkgrey             '%F{8}'        mediumturquoise      '%F{#5fd7d7}'
-  forestgreen          '%F{#5fff5f}'  turquoise            '%F{#5fffd7}'
-  lightred             '%F{9}'        blueviolet           '%F{#8700ff}'
-  brown                '%F{#875f00}'
+# Base palette: named neutral colour codes, populated at load. A snapshot ($_col_base,
+# just below) is the immutable source that every rebuild wraps into $kz[FG.<name>] /
+# $kz[BG.<name>] (in prompt_kronuz_colors), blanking every entry in no-colour mode so a
+# skin's ${kz[FG.green]} (and ${kz[BG.green]}) emit nothing. ANSI 0..15 stay symbolic so
+# they track the terminal theme; 16..255 are exact hex (truecolor), downsampled by
+# zsh/nearcolor on non-truecolor terminals. $col is the internal code palette; a skin
+# defines/overrides a hue with $PROMPT_KRONUZ_PALETTE_<NAME> and uses $kz[FG.<name>].
+unset col _col_base
+typeset -gA col=(
+  black                '0'        red                  '1'
+  lightgreen           '10'       olive                '#878700'
+  darkkhaki            '#87875f'  gray                 '#878787'
+  lavender             '#8787af'  mediumpurple         '#8787d7'
+  mediumslateblue      '#8787ff'  darkolivegreen       '#87af5f'
+  darkseagreen         '#87af87'  powderblue           '#87afaf'
+  lightyellow          '11'       skyblue              '#87afd7'
+  cornflowerblue       '#87afff'  lawngreen            '#87d700'
+  palegreen            '#87d787'  mediumaquamarine     '#87d7af'
+  cadetblue            '#87d7d7'  lightskyblue         '#87d7ff'
+  chartreuse           '#87ff00'  limegreen            '#87ff5f'
+  lightblue            '12'       aquamarine           '#87ffaf'
+  darkred              '#af0000'  mediumvioletred      '#af005f'
+  darkmagenta          '#af0087'  purple               '#af00af'
+  darkviolet           '#af00d7'  fuchsia              '#af00ff'
+  lightmagenta         '13'       chocolate            '#af5f00'
+  lightcoral           '#af5f5f'  palevioletred        '#af5f87'
+  orchid               '#af5faf'  mediumorchid         '#af5fd7'
+  darkorchid           '#af5fff'  darkgoldenrod        '#af8700'
+  burlywood            '#af875f'  rosybrown            '#af8787'
+  plum                 '#af87af'  lightcyan            '14'
+  violet               '#af87d7'  khaki                '#afaf5f'
+  palegoldenrod        '#afaf87'  darkgray             '#afafaf'
+  slategray            '#afafd7'  lightsteelblue       '#afafff'
+  yellowgreen          '#afd75f'  lightgrey            '15'
+  honeydew             '#afd7af'  paleturquoise        '#afd7d7'
+  greenyellow          '#afff5f'  dimgray              '#000000'
+  tomato               '#d70000'  deeppink             '#d7005f'
+  darkorange           '#d75f00'  indianred            '#d75f5f'
+  hotpink              '#d75f87'  navy                 '#00005f'
+  goldenrod            '#d78700'  lightsalmon          '#d7875f'
+  lightpink            '#d787af'  gold                 '#d7af00'
+  sandybrown           '#d7af5f'  darkblue             '#000087'
+  tan                  '#d7af87'  mistyrose            '#d7afaf'
+  thistle              '#d7afd7'  lemonchiffon         '#d7d7af'
+  whitesmoke           '#d7d7d7'  ghostwhite           '#d7d7ff'
+  mediumblue           '#0000af'  azure                '#d7ffff'
+  orangered            '#ff0000'  crimson              '#ff005f'
+  green                '2'        salmon               '#ff5f5f'
+  orange               '#ff8700'  coral                '#ff875f'
+  peru                 '#ffaf5f'  darksalmon           '#ffaf87'
+  pink                 '#ffafd7'  darkgreen            '#005f00'
+  navajowhite          '#ffd7af'  peachpuff            '#ffd7d7'
+  teal                 '#005f5f'  lightgoldenrodyellow '#ffffd7'
+  white                '#ffffff'  darkcyan             '#005f87'
+  deepskyblue          '#005faf'  silver               '#bcbcbc'
+  lightgray            '#c6c6c6'  gainsboro            '#d0d0d0'
+  dodgerblue           '#005fd7'  yellow               '3'
+  darkturquoise        '#0087af'  mediumspringgreen    '#00af5f'
+  aqua                 '#00afff'  blue                 '4'
+  lime                 '#00d700'  springgreen          '#00d75f'
+  magenta              '5'        maroon               '#5f0000'
+  indigo               '#5f0087'  cyan                 '6'
+  lightslategray       '#5f5f87'  darkslateblue        '#5f5faf'
+  slateblue            '#5f5fd7'  darkslategray        '#5f8787'
+  steelblue            '#5f87d7'  royalblue            '#5f87ff'
+  grey                 '7'        mediumseagreen       '#5fd787'
+  darkgrey             '8'        mediumturquoise      '#5fd7d7'
+  forestgreen          '#5fff5f'  turquoise            '#5fffd7'
+  lightred             '9'        blueviolet           '#8700ff'
+  brown                '#875f00'
 )
 # Immutable snapshot of the base palette; prompt_kronuz_colors rebuilds $fcol from it.
-typeset -gA _fcol_base=("${(@kv)fcol}")
+typeset -gA _col_base=("${(@kv)col}")
 
 # The 16 ANSI colours, by palette name -> index. They default to symbolic %F{N} (above)
 # so they track the terminal theme, but each is overridable to a concrete colour via
@@ -228,12 +228,13 @@ function _kronuz_load_palette {
 }
 
 # Semantic colours: map each prompt element to a base-palette colour, resolved with
-# the live palette into the same $fcol array the segments read ($fcol[host], $fcol[branch],
+# the live palette into the same $fcol array the segments read ($_ksem[host], $_ksem[branch],
 # ...). Mirrors prompt_kronuz_glyphs: a defaults table, then one loop that applies any
 # $PROMPT_KRONUZ_COLOR_<NAME> override and writes the final value. No-colour mode
 # ($_kronuz_nocolor) blanks the built-in defaults (so the layout still renders with zero
 # escapes) while still honouring an explicit override. Recomputed every precmd, so
 # toggling $NO_COLOR / $TERM takes effect on the next prompt.
+typeset -gA _ksem
 typeset -g _kronuz_colors_sig=''
 function prompt_kronuz_colors {
   # Change-detection: colours are fully determined by $_kronuz_nocolor and the
@@ -244,63 +245,65 @@ function prompt_kronuz_colors {
   [[ "$_sig" == "$_kronuz_colors_sig" ]] && return
   _kronuz_colors_sig="$_sig"
 
-  # Rebuild the public $fcol from the $_fcol_base source. In no-colour mode every base
-  # colour blanks, so a skin's ${fcol[green]} (and the derived ${bcol[green]}) emit nothing
-  # and the layout still renders with zero escapes; otherwise each is its source value, and
-  # the 16 ANSI basics then take any PROMPT_KRONUZ_PALETTE_* override (which `dim` also
-  # reads via _kronuz_load_palette).
-  local _cn
+  # Live neutral code palette: the immutable base plus any PROMPT_KRONUZ_PALETTE_<NAME>,
+  # which may redefine a built-in hue or define a brand-new one (a #RRGGBB or 0-255 index).
+  local _cn _pv
+  col=("${(@kv)_col_base}")
+  for _k in ${(k)parameters[(I)PROMPT_KRONUZ_PALETTE_*]}; do
+    _pv="${(P)_k}"; _cn="${${_k#PROMPT_KRONUZ_PALETTE_}:l}"
+    [[ -n "$_pv" ]] && col[$_cn]="$_pv"
+  done
+
+  # Public styling in $kz: FG./BG. wrap each code (no %F->%K string surgery); the attribute
+  # setters and RESET are the raw zsh escapes. All blank in no-colour, so ${kz[FG.green]} /
+  # ${kz[BG.green]} emit nothing and the layout still renders with zero escapes.
   if (( ${_kronuz_nocolor:-0} )); then
-    for _cn in ${(k)_fcol_base}; do fcol[$_cn]=''; done
+    for _cn in ${(k)col}; do kz[FG.$_cn]='' kz[BG.$_cn]=''; done
+    kz[RESET]='' kz[BOLD]='' kz[UNDERLINE]='' kz[STANDOUT]=''
   else
-    for _cn in ${(k)_fcol_base}; do fcol[$_cn]=$_fcol_base[$_cn]; done
-    local bn bov
-    for bn in ${(k)_kronuz_basic}; do
-      bov="PROMPT_KRONUZ_PALETTE_${bn:u}"
-      [[ -n "${(P)bov}" ]] && fcol[$bn]="%F{${(P)bov}}"
-    done
+    for _cn in ${(k)col}; do kz[FG.$_cn]="%F{$col[$_cn]}" kz[BG.$_cn]="%K{$col[$_cn]}"; done
+    kz[RESET]='%b%u%s%f%k' kz[BOLD]='%B' kz[UNDERLINE]='%U' kz[STANDOUT]='%S'
   fi
 
   local -A d=(
-    caret1     '%(!.%B$fcol[red].%B$fcol[red])'
-    caret2     '%(!.%B$fcol[red].%B$fcol[yellow])'
-    caret3     '%(!.$fcol[red].%B$fcol[green])'
-    status_err '$fcol[red]'
-    status_ok  '$fcol[green]'
-    venv       '$fcol[white]'
-    vim        '%B$fcol[green]'
-    emacs      '%B$fcol[green]'
-    etctl      '%B$fcol[magenta]'
-    overwrite  '$fcol[red]'
-    jobs       '$fcol[gold]'
-    duration   '$fcol[goldenrod]'
-    ssh        '$fcol[mediumpurple]'
-    container  '$fcol[deepskyblue]'
-    transmuted '$fcol[darkgrey]'
-    transient_caret '%B$fcol[white]'
-    action     '$fcol[darkorange]'
-    fallback   '$fcol[gold]'
-    added      '$fcol[darkorange]'
-    ahead      '$fcol[chartreuse]'
-    behind     '$fcol[deeppink]'
-    dirty      '$fcol[brown]'
-    clean      '$fcol[forestgreen]'
-    branch     '%B$fcol[white]'
-    remote     '$fcol[white]'
-    commit     '$fcol[white]'
-    modified   '$fcol[red]'
-    stashed    '$fcol[lightsteelblue]'
-    unmerged   '$fcol[red]'
-    untracked  '$fcol[darkgrey]'
-    info       '$fcol[darkgrey]'
-    loading    '$fcol[darkgrey]'
-    sep        '$fcol[darkgrey]'
-    ip         '$fcol[darkgrey]'
-    time       '$fcol[darkgrey]'
-    host       '$fcol[silver]'
-    pwd        '%(!.$fcol[tomato].$fcol[white])'
-    user       '%(!.%B$fcol[tomato].%B$fcol[white])'
-    none       '%b%u%s%f%k'
+    caret1     '%(!.%B$kz[FG.red].%B$kz[FG.red])'
+    caret2     '%(!.%B$kz[FG.red].%B$kz[FG.yellow])'
+    caret3     '%(!.$kz[FG.red].%B$kz[FG.green])'
+    status_err '$kz[FG.red]'
+    status_ok  '$kz[FG.green]'
+    venv       '$kz[FG.white]'
+    vim        '%B$kz[FG.green]'
+    emacs      '%B$kz[FG.green]'
+    etctl      '%B$kz[FG.magenta]'
+    overwrite  '$kz[FG.red]'
+    jobs       '$kz[FG.gold]'
+    duration   '$kz[FG.goldenrod]'
+    ssh        '$kz[FG.mediumpurple]'
+    container  '$kz[FG.deepskyblue]'
+    transmuted '$kz[FG.darkgrey]'
+    transient_caret '%B$kz[FG.white]'
+    action     '$kz[FG.darkorange]'
+    fallback   '$kz[FG.gold]'
+    added      '$kz[FG.darkorange]'
+    ahead      '$kz[FG.chartreuse]'
+    behind     '$kz[FG.deeppink]'
+    dirty      '$kz[FG.brown]'
+    clean      '$kz[FG.forestgreen]'
+    branch     '%B$kz[FG.white]'
+    remote     '$kz[FG.white]'
+    commit     '$kz[FG.white]'
+    modified   '$kz[FG.red]'
+    stashed    '$kz[FG.lightsteelblue]'
+    unmerged   '$kz[FG.red]'
+    untracked  '$kz[FG.darkgrey]'
+    info       '$kz[FG.darkgrey]'
+    loading    '$kz[FG.darkgrey]'
+    sep        '$kz[FG.darkgrey]'
+    ip         '$kz[FG.darkgrey]'
+    time       '$kz[FG.darkgrey]'
+    host       '$kz[FG.silver]'
+    pwd        '%(!.$kz[FG.tomato].$kz[FG.white])'
+    user       '%(!.%B$kz[FG.tomato].%B$kz[FG.white])'
   )
   local name ov raw def
   for name in ${(k)d}; do
@@ -309,15 +312,8 @@ function prompt_kronuz_colors {
     def="${d[$name]}"; (( ${_kronuz_nocolor:-0} )) && def=''
     raw="${(P)ov}"
     [[ -z "$raw" ]] && raw="$def"
-    fcol[$name]="${(e)raw}"
+    _ksem[$name]="${(e)raw}"
   done
-  # Background palette, derived from the foreground one ($fcol holds %F{...}); a skin that
-  # wants coloured segments (powerline-style) uses ${bcol[name]}. Derived here so it
-  # tracks $PROMPT_KRONUZ_PALETTE_* overrides. Named $bcol, not $bg, because `autoload
-  # colors` owns $fg/$bg and would clobber them. Semantic names (branch, ...) derive too
-  # but are meaningless as backgrounds; nobody reads them.
-  typeset -gA bcol
-  for name in ${(k)fcol}; do bcol[$name]=${fcol[$name]//'%F'/'%K'}; done
 }
 
 # ============================================================================
@@ -328,7 +324,7 @@ function prompt_kronuz_colors {
 # fallback that renders in any font. $PROMPT_KRONUZ_NERD_FONT=0 (or no/off/false)
 # picks the plain set; dumb/unknown terminals force it too. Any single glyph is
 # overridable via $PROMPT_KRONUZ_GLYPH_<NAME> (a character, or '' to hide it).
-typeset -gA glyph glyph_pad
+typeset -gA kz glyph_pad
 typeset -g _kronuz_glyphs_sig=''
 function prompt_kronuz_glyphs {
   # Change-detection: glyphs depend only on terminal dumb-ness, the nerd-font toggle,
@@ -428,12 +424,12 @@ function prompt_kronuz_glyphs {
   local -i c
   # Rebuild from scratch: drop any set-specific glyph (e.g. the Nerd-only host_* icons)
   # left over from a previous mode so it can't leak into the plain set.
-  glyph=() glyph_pad=()
+  glyph_pad=()
   for name in ${(k)g}; do
     ov="PROMPT_KRONUZ_GLYPH_${name:u}"
     val="${(P)ov-$sentinel}"
     [[ "$val" == "$sentinel" ]] && val="$g[$name]"
-    glyph[$name]="$val"
+    kz[GLYPH.$name]="$val"
     # Trailing (right-hand) pad, appended after the glyph. An explicit
     # $PROMPT_KRONUZ_GLYPH_PAD_<NAME> wins: set it to '' to hug tight, or to ' ', a
     # non-breaking space ($'\u00a0'), etc. to tune spacing for your font. Otherwise a
@@ -453,7 +449,7 @@ function prompt_kronuz_glyphs {
     fi
   done
   # Legacy override: an explicit $_kronuz_os (set in ~/.zshrc.local) wins for the OS glyph.
-  (( ${+_kronuz_os} )) && glyph[os]="$_kronuz_os"
+  (( ${+_kronuz_os} )) && kz[GLYPH.os]="$_kronuz_os"
 }
 
 # ============================================================================
@@ -465,21 +461,23 @@ typeset -g _prompt_kronuz_git=''
 
 # Git state, split out for skins. prompt.zsh computes these once per prompt (from
 # gitstatusd, or the direct-git fallback), so a PROMPT_KRONUZ_GIT override can reshape the
-# git segment declaratively -- e.g. '${_prompt_kronuz_git_branch:+ (${_prompt_kronuz_git_branch}${_prompt_kronuz_git_dirty:+*})}'
+# git segment declaratively -- e.g. '${kz[git.branch]:+ (${kz[git.branch]}${kz[git.dirty]:+*})}'
 # -- with no hook of its own. Each is a string: empty when absent/zero, else the value or
 # count, so a plain ${var:+...} tests it. All are '' outside a repo. The fallback knows
 # presence, not counts, so there each count is '' or '1' (and ahead/behind/stashed/
 # conflicted stay '').
-typeset -g _prompt_kronuz_git_branch='' _prompt_kronuz_git_remote='' _prompt_kronuz_git_dirty='' \
-           _prompt_kronuz_git_staged='' _prompt_kronuz_git_unstaged='' _prompt_kronuz_git_untracked='' \
-           _prompt_kronuz_git_conflicted='' _prompt_kronuz_git_stashed='' \
-           _prompt_kronuz_git_ahead='' _prompt_kronuz_git_behind=''
+# The normalised git state lives in $kz[git.<name>] (branch, remote, dirty, staged,
+# unstaged, untracked, conflicted, stashed, ahead, behind), populated by both the daemon
+# and fallback paths below and reset off-repo. Each is a string: empty when absent/zero,
+# else the value or count, so a plain ${kz[git.<name>]:+...} tests it. The fallback knows
+# presence, not counts, so there each count is '' or '1' (and ahead/behind/stashed/
+# conflicted stay '').
 
 function _kronuz_git_reset_state {
-  _prompt_kronuz_git_branch='' _prompt_kronuz_git_remote='' _prompt_kronuz_git_dirty='' \
-    _prompt_kronuz_git_staged='' _prompt_kronuz_git_unstaged='' _prompt_kronuz_git_untracked='' \
-    _prompt_kronuz_git_conflicted='' _prompt_kronuz_git_stashed='' \
-    _prompt_kronuz_git_ahead='' _prompt_kronuz_git_behind=''
+  kz[git.branch]='' kz[git.remote]='' kz[git.dirty]='' \
+    kz[git.staged]='' kz[git.unstaged]='' kz[git.untracked]='' \
+    kz[git.conflicted]='' kz[git.stashed]='' \
+    kz[git.ahead]='' kz[git.behind]=''
 }
 
 # Direct-git fallback, used when gitstatusd isn't running (no tty, not installed).
@@ -493,31 +491,31 @@ function _kronuz_git_fallback {
   branch="$($gitcmd symbolic-ref --short HEAD 2>/dev/null)" \
     || branch="$($gitcmd rev-parse --short HEAD 2>/dev/null)"
   [[ -z "$branch" ]] && { _kronuz_git_reset_state; return }
-  local sep="${(e)fcol[sep]}" none="${(e)fcol[none]}" info="${(e)fcol[info]}"
-  local gly="$glyph[branch]"
-  $gitcmd symbolic-ref --quiet HEAD &>/dev/null || gly="$glyph[commit]"
+  local sep="${(e)_ksem[sep]}" none="${(e)kz[RESET]}" info="${(e)_ksem[info]}"
+  local gly="$kz[GLYPH.branch]"
+  $gitcmd symbolic-ref --quiet HEAD &>/dev/null || gly="$kz[GLYPH.commit]"
   local warning=''
-  [[ -n "$glyph[fallback]" ]] && warning="${(e)fcol[fallback]}${glyph[fallback]}${none} "
-  local s=" ${warning}${info}${gly}${none} ${(e)fcol[branch]}${branch}${none}"
+  [[ -n "$kz[GLYPH.fallback]" ]] && warning="${(e)_ksem[fallback]}${kz[GLYPH.fallback]}${none} "
+  local s=" ${warning}${info}${gly}${none} ${(e)_ksem[branch]}${branch}${none}"
   local remote
   remote="$($gitcmd rev-parse --abbrev-ref --symbolic-full-name @{upstream} 2>/dev/null)"
-  [[ -n "$remote" ]] && s+=" ${info}${glyph[remote]}${none} ${(e)fcol[remote]}${remote}${none}"
+  [[ -n "$remote" ]] && s+=" ${info}${kz[GLYPH.remote]}${none} ${(e)_ksem[remote]}${remote}${none}"
   local staged='' unstaged='' untracked='' icons=''
   local isep="${PROMPT_KRONUZ_GIT_SEP-$DEFAULT_PROMPT_KRONUZ_GIT_SEP}"
   $gitcmd diff --cached --quiet --ignore-submodules 2>/dev/null || staged=1
   $gitcmd diff --quiet --ignore-submodules 2>/dev/null || unstaged=1
   [[ -n "$($gitcmd ls-files --others --exclude-standard 2>/dev/null | head -1)" ]] && untracked=1
   if [[ -n "$staged$unstaged$untracked" ]]; then
-    icons+="${(e)fcol[dirty]}${glyph[dirty]}${none}"
-    [[ -n "$staged" ]]    && icons+="${icons:+$isep}${(e)fcol[added]}${glyph[staged]}${none}"
-    [[ -n "$unstaged" ]]  && icons+="${icons:+$isep}${(e)fcol[modified]}${glyph[modified]}${none}"
-    [[ -n "$untracked" ]] && icons+="${icons:+$isep}${(e)fcol[untracked]}${glyph[untracked]}${none}"
+    icons+="${(e)_ksem[dirty]}${kz[GLYPH.dirty]}${none}"
+    [[ -n "$staged" ]]    && icons+="${icons:+$isep}${(e)_ksem[added]}${kz[GLYPH.staged]}${none}"
+    [[ -n "$unstaged" ]]  && icons+="${icons:+$isep}${(e)_ksem[modified]}${kz[GLYPH.modified]}${none}"
+    [[ -n "$untracked" ]] && icons+="${icons:+$isep}${(e)_ksem[untracked]}${kz[GLYPH.untracked]}${none}"
   else
-    icons="${(e)fcol[clean]}${glyph[clean]}${none}"
+    icons="${(e)_ksem[clean]}${kz[GLYPH.clean]}${none}"
   fi
-  _prompt_kronuz_git_branch="$branch" _prompt_kronuz_git_remote="$remote"
-  _prompt_kronuz_git_staged="${staged:+1}" _prompt_kronuz_git_unstaged="${unstaged:+1}" \
-    _prompt_kronuz_git_untracked="${untracked:+1}" _prompt_kronuz_git_dirty="${staged}${unstaged}${untracked:+1}"
+  kz[git.branch]="$branch" kz[git.remote]="$remote"
+  kz[git.staged]="${staged:+1}" kz[git.unstaged]="${unstaged:+1}" \
+    kz[git.untracked]="${untracked:+1}" kz[git.dirty]="${staged}${unstaged}${untracked:+1}"
   _prompt_kronuz_git="${s}${sep} (${none}${icons}${sep})${none}"
 }
 
@@ -534,53 +532,53 @@ typeset -g _kronuz_git_last='' _kronuz_git_inflight=0
 # Render the git segment from the current VCS_STATUS_* into $_prompt_kronuz_git, caching
 # the result in $_kronuz_git_last so an in-flight prompt can show it while a query runs.
 function _kronuz_git_render {
-  local sep="${(e)fcol[sep]}" none="${(e)fcol[none]}" info="${(e)fcol[info]}" s=''
+  local sep="${(e)_ksem[sep]}" none="${(e)kz[RESET]}" info="${(e)_ksem[info]}" s=''
   if [[ -n "$VCS_STATUS_LOCAL_BRANCH" ]]; then
-    s+=" ${info}${glyph[branch]}${none} ${(e)fcol[branch]}${VCS_STATUS_LOCAL_BRANCH}${none}"
+    s+=" ${info}${kz[GLYPH.branch]}${none} ${(e)_ksem[branch]}${VCS_STATUS_LOCAL_BRANCH}${none}"
   elif [[ -n "$VCS_STATUS_TAG" ]]; then
-    s+=" ${info}${glyph[tag]}${none} ${(e)fcol[branch]}${VCS_STATUS_TAG}${none}"
+    s+=" ${info}${kz[GLYPH.tag]}${none} ${(e)_ksem[branch]}${VCS_STATUS_TAG}${none}"
   else
-    s+=" ${info}${glyph[commit]}${none} ${(e)fcol[commit]}${VCS_STATUS_COMMIT[1,7]}${none}"
+    s+=" ${info}${kz[GLYPH.commit]}${none} ${(e)_ksem[commit]}${VCS_STATUS_COMMIT[1,7]}${none}"
   fi
   # Remote tracking branch, tagged with a per-host icon (GitHub / GitLab / Bitbucket)
   # picked from $VCS_STATUS_REMOTE_URL. Unknown hosts and the plain-Unicode set (which has
-  # no logos) fall back to the generic ${glyph[remote]} mark.
+  # no logos) fall back to the generic ${kz[GLYPH.remote]} mark.
   if [[ -n "$VCS_STATUS_REMOTE_NAME" ]]; then
-    local rg="${glyph[remote]}"
+    local rg="${kz[GLYPH.remote]}"
     case "$VCS_STATUS_REMOTE_URL" in
-      (*github*)    rg="${glyph[host_github]:-$rg}" ;;
-      (*gitlab*)    rg="${glyph[host_gitlab]:-$rg}" ;;
-      (*bitbucket*) rg="${glyph[host_bitbucket]:-$rg}" ;;
+      (*github*)    rg="${kz[GLYPH.host_github]:-$rg}" ;;
+      (*gitlab*)    rg="${kz[GLYPH.host_gitlab]:-$rg}" ;;
+      (*bitbucket*) rg="${kz[GLYPH.host_bitbucket]:-$rg}" ;;
     esac
-    s+=" ${info}${rg}${none} ${(e)fcol[remote]}${VCS_STATUS_REMOTE_NAME}/${VCS_STATUS_REMOTE_BRANCH}${none}"
+    s+=" ${info}${rg}${none} ${(e)_ksem[remote]}${VCS_STATUS_REMOTE_NAME}/${VCS_STATUS_REMOTE_BRANCH}${none}"
   fi
   [[ -n "$VCS_STATUS_ACTION" ]] && \
-    s+=" ${info}${glyph[action]}${none} ${(e)fcol[action]}${VCS_STATUS_ACTION}${none}"
+    s+=" ${info}${kz[GLYPH.action]}${none} ${(e)_ksem[action]}${VCS_STATUS_ACTION}${none}"
 
   # Indicators inside the (...), joined by $PROMPT_KRONUZ_GIT_SEP (a space by
   # default, from $DEFAULT_PROMPT_KRONUZ_GIT_SEP; set it to '·', ':', '' or anything
   # to taste). ${icons:+$isep} inserts the separator before every indicator except the first.
   local isep="${PROMPT_KRONUZ_GIT_SEP-$DEFAULT_PROMPT_KRONUZ_GIT_SEP}"
   local icons=''
-  (( VCS_STATUS_STASHES )) && icons+="${icons:+$isep}${(e)fcol[stashed]}${glyph[stashed]}${glyph_pad[stashed]}${VCS_STATUS_STASHES}${none}"
+  (( VCS_STATUS_STASHES )) && icons+="${icons:+$isep}${(e)_ksem[stashed]}${kz[GLYPH.stashed]}${glyph_pad[stashed]}${VCS_STATUS_STASHES}${none}"
   # gitstatusd reports HAS_* = -1 for unstaged/conflicted/untracked when the index is
   # larger than its -m cap and it skipped the dirty scan (see PROMPT_KRONUZ_GITSTATUS_ARGS
   # in lib/plugins.zsh). Staged is always counted exactly; the rest are then unknown, so
   # we render the dirty mark plus a single "∞" instead of guessing "clean".
   local -i dirty_unknown=$(( ${VCS_STATUS_HAS_UNSTAGED:-0} == -1 ))
   if (( dirty_unknown || VCS_STATUS_NUM_STAGED + VCS_STATUS_NUM_UNSTAGED + VCS_STATUS_NUM_UNTRACKED + VCS_STATUS_NUM_CONFLICTED )); then
-    icons+="${icons:+$isep}${(e)fcol[dirty]}${glyph[dirty]}${none}"
+    icons+="${icons:+$isep}${(e)_ksem[dirty]}${kz[GLYPH.dirty]}${none}"
   else
-    icons+="${icons:+$isep}${(e)fcol[clean]}${glyph[clean]}${none}"
+    icons+="${icons:+$isep}${(e)_ksem[clean]}${kz[GLYPH.clean]}${none}"
   fi
-  (( VCS_STATUS_COMMITS_AHEAD ))  && icons+="${icons:+$isep}${(e)fcol[ahead]}${glyph[ahead]}${glyph_pad[ahead]}${VCS_STATUS_COMMITS_AHEAD}${none}"
-  (( VCS_STATUS_COMMITS_BEHIND )) && icons+="${icons:+$isep}${(e)fcol[behind]}${glyph[behind]}${glyph_pad[behind]}${VCS_STATUS_COMMITS_BEHIND}${none}"
+  (( VCS_STATUS_COMMITS_AHEAD ))  && icons+="${icons:+$isep}${(e)_ksem[ahead]}${kz[GLYPH.ahead]}${glyph_pad[ahead]}${VCS_STATUS_COMMITS_AHEAD}${none}"
+  (( VCS_STATUS_COMMITS_BEHIND )) && icons+="${icons:+$isep}${(e)_ksem[behind]}${kz[GLYPH.behind]}${glyph_pad[behind]}${VCS_STATUS_COMMITS_BEHIND}${none}"
   # Push-remote divergence (⇧/⇩), shown only when the push target is a *different* remote
   # than the upstream (triangular / fork workflow: push to your fork, pull from upstream).
   # gitstatusd fills these in the same payload, so it costs no extra git call.
   if [[ -n "$VCS_STATUS_PUSH_REMOTE_NAME" && "$VCS_STATUS_PUSH_REMOTE_URL" != "$VCS_STATUS_REMOTE_URL" ]]; then
-    (( VCS_STATUS_PUSH_COMMITS_AHEAD ))  && icons+="${icons:+$isep}${(e)fcol[ahead]}${glyph[push_ahead]}${glyph_pad[push_ahead]}${VCS_STATUS_PUSH_COMMITS_AHEAD}${none}"
-    (( VCS_STATUS_PUSH_COMMITS_BEHIND )) && icons+="${icons:+$isep}${(e)fcol[behind]}${glyph[push_behind]}${glyph_pad[push_behind]}${VCS_STATUS_PUSH_COMMITS_BEHIND}${none}"
+    (( VCS_STATUS_PUSH_COMMITS_AHEAD ))  && icons+="${icons:+$isep}${(e)_ksem[ahead]}${kz[GLYPH.push_ahead]}${glyph_pad[push_ahead]}${VCS_STATUS_PUSH_COMMITS_AHEAD}${none}"
+    (( VCS_STATUS_PUSH_COMMITS_BEHIND )) && icons+="${icons:+$isep}${(e)_ksem[behind]}${kz[GLYPH.push_behind]}${glyph_pad[push_behind]}${VCS_STATUS_PUSH_COMMITS_BEHIND}${none}"
   fi
   # Staged / unstaged detail. With PROMPT_KRONUZ_GIT_SPLIT set, the single staged and
   # unstaged counts break into per-type marks -- added (+), changed (~), deleted (-) --
@@ -593,36 +591,36 @@ function _kronuz_git_render {
   if (( split && ! dirty_unknown )); then
     local -i s_new=VCS_STATUS_NUM_STAGED_NEW s_del=VCS_STATUS_NUM_STAGED_DELETED
     local -i s_mod=VCS_STATUS_NUM_STAGED-s_new-s_del
-    (( s_new > 0 )) && icons+="${icons:+$isep}${(e)fcol[added]}${glyph[added]}${glyph_pad[added]}${s_new}${none}"
-    (( s_mod > 0 )) && icons+="${icons:+$isep}${(e)fcol[added]}${glyph[changed]}${glyph_pad[changed]}${s_mod}${none}"
-    (( s_del > 0 )) && icons+="${icons:+$isep}${(e)fcol[added]}${glyph[deleted]}${glyph_pad[deleted]}${s_del}${none}"
+    (( s_new > 0 )) && icons+="${icons:+$isep}${(e)_ksem[added]}${kz[GLYPH.added]}${glyph_pad[added]}${s_new}${none}"
+    (( s_mod > 0 )) && icons+="${icons:+$isep}${(e)_ksem[added]}${kz[GLYPH.changed]}${glyph_pad[changed]}${s_mod}${none}"
+    (( s_del > 0 )) && icons+="${icons:+$isep}${(e)_ksem[added]}${kz[GLYPH.deleted]}${glyph_pad[deleted]}${s_del}${none}"
   else
-    (( VCS_STATUS_NUM_STAGED )) && icons+="${icons:+$isep}${(e)fcol[added]}${glyph[staged]}${glyph_pad[staged]}${VCS_STATUS_NUM_STAGED}${none}"
+    (( VCS_STATUS_NUM_STAGED )) && icons+="${icons:+$isep}${(e)_ksem[added]}${kz[GLYPH.staged]}${glyph_pad[staged]}${VCS_STATUS_NUM_STAGED}${none}"
   fi
 
   if (( dirty_unknown )); then
-    icons+="${icons:+$isep}${(e)fcol[untracked]}${glyph[unknown]}${glyph_pad[unknown]}${none}"
+    icons+="${icons:+$isep}${(e)_ksem[untracked]}${kz[GLYPH.unknown]}${glyph_pad[unknown]}${none}"
   else
     if (( split )); then
       local -i u_del=VCS_STATUS_NUM_UNSTAGED_DELETED u_mod=VCS_STATUS_NUM_UNSTAGED-u_del
-      (( u_mod > 0 )) && icons+="${icons:+$isep}${(e)fcol[modified]}${glyph[changed]}${glyph_pad[changed]}${u_mod}${none}"
-      (( u_del > 0 )) && icons+="${icons:+$isep}${(e)fcol[modified]}${glyph[deleted]}${glyph_pad[deleted]}${u_del}${none}"
+      (( u_mod > 0 )) && icons+="${icons:+$isep}${(e)_ksem[modified]}${kz[GLYPH.changed]}${glyph_pad[changed]}${u_mod}${none}"
+      (( u_del > 0 )) && icons+="${icons:+$isep}${(e)_ksem[modified]}${kz[GLYPH.deleted]}${glyph_pad[deleted]}${u_del}${none}"
     else
-      (( VCS_STATUS_NUM_UNSTAGED )) && icons+="${icons:+$isep}${(e)fcol[modified]}${glyph[modified]}${glyph_pad[modified]}${VCS_STATUS_NUM_UNSTAGED}${none}"
+      (( VCS_STATUS_NUM_UNSTAGED )) && icons+="${icons:+$isep}${(e)_ksem[modified]}${kz[GLYPH.modified]}${glyph_pad[modified]}${VCS_STATUS_NUM_UNSTAGED}${none}"
     fi
-    (( VCS_STATUS_NUM_CONFLICTED )) && icons+="${icons:+$isep}${(e)fcol[unmerged]}${glyph[conflicted]}${glyph_pad[conflicted]}${VCS_STATUS_NUM_CONFLICTED}${none}"
-    (( VCS_STATUS_NUM_UNTRACKED ))  && icons+="${icons:+$isep}${(e)fcol[untracked]}${glyph[untracked]}${glyph_pad[untracked]}${VCS_STATUS_NUM_UNTRACKED}${none}"
+    (( VCS_STATUS_NUM_CONFLICTED )) && icons+="${icons:+$isep}${(e)_ksem[unmerged]}${kz[GLYPH.conflicted]}${glyph_pad[conflicted]}${VCS_STATUS_NUM_CONFLICTED}${none}"
+    (( VCS_STATUS_NUM_UNTRACKED ))  && icons+="${icons:+$isep}${(e)_ksem[untracked]}${kz[GLYPH.untracked]}${glyph_pad[untracked]}${VCS_STATUS_NUM_UNTRACKED}${none}"
   fi
 
-  _prompt_kronuz_git_branch="${VCS_STATUS_LOCAL_BRANCH:-${VCS_STATUS_TAG:-${VCS_STATUS_COMMIT[1,7]}}}"
-  _prompt_kronuz_git_remote="${VCS_STATUS_REMOTE_NAME:+${VCS_STATUS_REMOTE_NAME}/${VCS_STATUS_REMOTE_BRANCH}}"
-  _prompt_kronuz_git_staged="${VCS_STATUS_NUM_STAGED:#0}" _prompt_kronuz_git_unstaged="${VCS_STATUS_NUM_UNSTAGED:#0}"
-  _prompt_kronuz_git_untracked="${VCS_STATUS_NUM_UNTRACKED:#0}" _prompt_kronuz_git_conflicted="${VCS_STATUS_NUM_CONFLICTED:#0}"
-  _prompt_kronuz_git_stashed="${VCS_STATUS_STASHES:#0}" _prompt_kronuz_git_ahead="${VCS_STATUS_COMMITS_AHEAD:#0}" \
-    _prompt_kronuz_git_behind="${VCS_STATUS_COMMITS_BEHIND:#0}"
-  _prompt_kronuz_git_dirty=''
+  kz[git.branch]="${VCS_STATUS_LOCAL_BRANCH:-${VCS_STATUS_TAG:-${VCS_STATUS_COMMIT[1,7]}}}"
+  kz[git.remote]="${VCS_STATUS_REMOTE_NAME:+${VCS_STATUS_REMOTE_NAME}/${VCS_STATUS_REMOTE_BRANCH}}"
+  kz[git.staged]="${VCS_STATUS_NUM_STAGED:#0}" kz[git.unstaged]="${VCS_STATUS_NUM_UNSTAGED:#0}"
+  kz[git.untracked]="${VCS_STATUS_NUM_UNTRACKED:#0}" kz[git.conflicted]="${VCS_STATUS_NUM_CONFLICTED:#0}"
+  kz[git.stashed]="${VCS_STATUS_STASHES:#0}" kz[git.ahead]="${VCS_STATUS_COMMITS_AHEAD:#0}" \
+    kz[git.behind]="${VCS_STATUS_COMMITS_BEHIND:#0}"
+  kz[git.dirty]=''
   (( dirty_unknown || VCS_STATUS_NUM_STAGED + VCS_STATUS_NUM_UNSTAGED + VCS_STATUS_NUM_UNTRACKED + VCS_STATUS_NUM_CONFLICTED )) \
-    && _prompt_kronuz_git_dirty=1
+    && kz[git.dirty]=1
   _prompt_kronuz_git="${s}${sep} (${none}${icons}${sep})${none}"
   _kronuz_git_last="$_prompt_kronuz_git"
 }
@@ -672,7 +670,7 @@ function _kronuz_git_segment {
     *)  # tout: a query is in flight. Show the last-known status (if any) plus a subtle
         # loading mark, so a slow or first paint reads as "refreshing", not blank/frozen.
         _kronuz_git_inflight=1
-        _prompt_kronuz_git="${_kronuz_git_last} ${(e)fcol[loading]}${glyph[loading]}${glyph_pad[loading]}${(e)fcol[none]}"
+        _prompt_kronuz_git="${_kronuz_git_last} ${(e)_ksem[loading]}${kz[GLYPH.loading]}${glyph_pad[loading]}${(e)kz[RESET]}"
         ;;
   esac
 }
@@ -681,7 +679,7 @@ function _kronuz_git_segment {
 typeset -g _prompt_kronuz_venv=''
 function _kronuz_venv_segment {
   if [[ -n "$VIRTUAL_ENV" ]]; then
-    _prompt_kronuz_venv=" ${(e)fcol[info]}${glyph[venv]}${(e)fcol[none]} ${(e)fcol[venv]}${VIRTUAL_ENV:t}${(e)fcol[none]}"
+    _prompt_kronuz_venv=" ${(e)_ksem[info]}${kz[GLYPH.venv]}${(e)kz[RESET]} ${(e)_ksem[venv]}${VIRTUAL_ENV:t}${(e)kz[RESET]}"
   else
     _prompt_kronuz_venv=''
   fi
@@ -822,14 +820,14 @@ function _kronuz_status_segment {
   if (( ${_prompt_kronuz_last_exit:-0} != 0 )); then
     body="${(e)PROMPT_KRONUZ_ERROR-$DEFAULT_PROMPT_KRONUZ_ERROR}"
     if [[ -n "$body" ]]; then
-      item="${(e)fcol[status_err]}${body}${(e)fcol[none]}"
+      item="${(e)_ksem[status_err]}${body}${(e)kz[RESET]}"
       out+="$item"
     fi
   fi
   if [[ -n "$_prompt_kronuz_duration" ]]; then
     body="${(e)PROMPT_KRONUZ_DURATION-$DEFAULT_PROMPT_KRONUZ_DURATION}"
     if [[ -n "$body" ]]; then
-      sp="${out:+ }"; item="${(e)fcol[duration]}${body}${(e)fcol[none]}"
+      sp="${out:+ }"; item="${(e)_ksem[duration]}${body}${(e)kz[RESET]}"
       out+="${sp}${item}"
     fi
   fi
@@ -858,7 +856,7 @@ function _kronuz_keymap_update {
   fi
   if [[ "$ZLE_STATE" == *overwrite* ]]; then
     _prompt_kronuz_keymap="${(e)PROMPT_KRONUZ_KEYMAP_OVERWRITE-$DEFAULT_PROMPT_KRONUZ_KEYMAP_OVERWRITE}"
-    _prompt_kronuz_overwrite=" ${(e)fcol[overwrite]}${glyph[overwrite]}${(e)fcol[none]}"
+    _prompt_kronuz_overwrite=" ${(e)_ksem[overwrite]}${kz[GLYPH.overwrite]}${(e)kz[RESET]}"
   else
     _prompt_kronuz_overwrite=''
   fi
@@ -1019,7 +1017,7 @@ function _kronuz_dim_string {
   local s=$1 style="${PROMPT_KRONUZ_TRANSIENT_STYLE:-dim}"
   [[ "$style" == (keep|none|off) ]] && { REPLY="$s"; return }
   local mute=0; [[ "$style" == (mute|grey|gray) ]] && mute=1
-  local grey="${(e)fcol[transmuted]}"
+  local grey="${(e)_ksem[transmuted]}"
   local -a parts=("${(@ps:%F{:)s}")
   local out="${parts[1]}" p spec rest
   for p in "${(@)parts[2,-1]}"; do
@@ -1220,9 +1218,9 @@ function prompt_kronuz_setup {
 
   _kronuz_setup_lifecycle
 
-  DEFAULT_PROMPT_KRONUZ_KEYMAP_PRIMARY='${fcol[caret1]}${glyph[caret]}${fcol[none]}${fcol[caret2]}${glyph[caret]}${fcol[none]}${fcol[caret3]}${glyph[caret]}${fcol[none]}'
-  DEFAULT_PROMPT_KRONUZ_KEYMAP_ALTERNATE='${fcol[caret3]}${glyph[caret_alt]}${fcol[none]}${fcol[caret2]}${glyph[caret_alt]}${fcol[none]}${fcol[caret1]}${glyph[caret_alt]}${fcol[none]}'
-  DEFAULT_PROMPT_KRONUZ_KEYMAP_OVERWRITE='${fcol[overwrite]}${glyph[caret]}${glyph[caret]}${glyph[caret]}${fcol[none]}'
+  DEFAULT_PROMPT_KRONUZ_KEYMAP_PRIMARY='${_ksem[caret1]}${kz[GLYPH.caret]}${kz[RESET]}${_ksem[caret2]}${kz[GLYPH.caret]}${kz[RESET]}${_ksem[caret3]}${kz[GLYPH.caret]}${kz[RESET]}'
+  DEFAULT_PROMPT_KRONUZ_KEYMAP_ALTERNATE='${_ksem[caret3]}${kz[GLYPH.caret_alt]}${kz[RESET]}${_ksem[caret2]}${kz[GLYPH.caret_alt]}${kz[RESET]}${_ksem[caret1]}${kz[GLYPH.caret_alt]}${kz[RESET]}'
+  DEFAULT_PROMPT_KRONUZ_KEYMAP_OVERWRITE='${_ksem[overwrite]}${kz[GLYPH.caret]}${kz[GLYPH.caret]}${kz[GLYPH.caret]}${kz[RESET]}'
 
   # Seed the keymap caret so a prompt char shows even where zle-line-init never fires
   # (e.g. Emacs `M-x shell`). precmd resolves it again after ~/.zshrc.local loads.
@@ -1238,15 +1236,15 @@ function prompt_kronuz_setup {
 
   # Per-segment defaults. Each is a deferred string; dynamic ones read the
   # $_prompt_kronuz_* / state vars the precmd computes.
-  DEFAULT_PROMPT_KRONUZ_OS='${glyph[os]:+"${fcol[host]}${glyph[os]}${fcol[none]} "}'
-  DEFAULT_PROMPT_KRONUZ_CONTEXT='${_kronuz_is_container:+" ${fcol[container]}${glyph[container]}${fcol[none]}"}${_kronuz_is_ssh:+" ${fcol[ssh]}${glyph[ssh]}${fcol[none]}"}'
-  DEFAULT_PROMPT_KRONUZ_ERR='%(?.${fcol[status_ok]}${glyph[dot]}${fcol[none]}.${fcol[status_err]}${glyph[dot]}${fcol[none]})'
-  DEFAULT_PROMPT_KRONUZ_ERROR='${glyph[return]} ${_prompt_kronuz_last_exit}'
-  DEFAULT_PROMPT_KRONUZ_VIM='${VIM:+" ${fcol[vim]}${glyph[vim]}${fcol[none]}"}'
-  DEFAULT_PROMPT_KRONUZ_EMACS='${INSIDE_EMACS:+" ${fcol[emacs]}${glyph[emacs]}${fcol[none]}"}'
-  DEFAULT_PROMPT_KRONUZ_ETCTL='${ETCTL_SESSION:+" ${fcol[info]}etctl${fcol[none]}:${fcol[etctl]}${ETCTL_SESSION}${fcol[none]}"}'
-  DEFAULT_PROMPT_KRONUZ_JOBS='%(1j. ${fcol[jobs]}${glyph[jobs]}${glyph_pad[jobs]}%j${fcol[none]}.)'
-  DEFAULT_PROMPT_KRONUZ_DURATION='${glyph[duration]}${glyph_pad[duration]}${_prompt_kronuz_duration}'
+  DEFAULT_PROMPT_KRONUZ_OS='${kz[GLYPH.os]:+"${_ksem[host]}${kz[GLYPH.os]}${kz[RESET]} "}'
+  DEFAULT_PROMPT_KRONUZ_CONTEXT='${_kronuz_is_container:+" ${_ksem[container]}${kz[GLYPH.container]}${kz[RESET]}"}${_kronuz_is_ssh:+" ${_ksem[ssh]}${kz[GLYPH.ssh]}${kz[RESET]}"}'
+  DEFAULT_PROMPT_KRONUZ_ERR='%(?.${_ksem[status_ok]}${kz[GLYPH.dot]}${kz[RESET]}.${_ksem[status_err]}${kz[GLYPH.dot]}${kz[RESET]})'
+  DEFAULT_PROMPT_KRONUZ_ERROR='${kz[GLYPH.return]} ${_prompt_kronuz_last_exit}'
+  DEFAULT_PROMPT_KRONUZ_VIM='${VIM:+" ${_ksem[vim]}${kz[GLYPH.vim]}${kz[RESET]}"}'
+  DEFAULT_PROMPT_KRONUZ_EMACS='${INSIDE_EMACS:+" ${_ksem[emacs]}${kz[GLYPH.emacs]}${kz[RESET]}"}'
+  DEFAULT_PROMPT_KRONUZ_ETCTL='${ETCTL_SESSION:+" ${_ksem[info]}etctl${kz[RESET]}:${_ksem[etctl]}${ETCTL_SESSION}${kz[RESET]}"}'
+  DEFAULT_PROMPT_KRONUZ_JOBS='%(1j. ${_ksem[jobs]}${kz[GLYPH.jobs]}${glyph_pad[jobs]}%j${kz[RESET]}.)'
+  DEFAULT_PROMPT_KRONUZ_DURATION='${kz[GLYPH.duration]}${glyph_pad[duration]}${_prompt_kronuz_duration}'
   DEFAULT_PROMPT_KRONUZ_USER='%n'
   DEFAULT_PROMPT_KRONUZ_HOST='%M'
   DEFAULT_PROMPT_KRONUZ_IP='${_prompt_kronuz_ip}'
@@ -1260,42 +1258,41 @@ function prompt_kronuz_setup {
 
   # Compose the segments into $kronuz. The plain ones share one shape: a user override
   # ($PROMPT_KRONUZ_<SEG>) or the default, both (e)-evaluated at render.
-  unset kronuz
-  typeset -gA kronuz
-  kronuz[nl]=$'%E\n'
+  typeset -gA kz
+  kz[nl]=$'%E\n'
   local seg
   for seg in os err vim emacs etctl context jobs git venv caret; do
-    kronuz[$seg]="\${(e)PROMPT_KRONUZ_${seg:u}:-\$DEFAULT_PROMPT_KRONUZ_${seg:u}}"
+    kz[$seg]="\${(e)PROMPT_KRONUZ_${seg:u}:-\$DEFAULT_PROMPT_KRONUZ_${seg:u}}"
   done
   # Unlike the older segments, an explicit empty value hides the overwrite marker.
-  kronuz[overwrite]='${(e)PROMPT_KRONUZ_OVERWRITE-$DEFAULT_PROMPT_KRONUZ_OVERWRITE}'
+  kz[overwrite]='${(e)PROMPT_KRONUZ_OVERWRITE-$DEFAULT_PROMPT_KRONUZ_OVERWRITE}'
   # The rest wrap a segment in its own colour, or compose other segments.
-  kronuz[user]='${fcol[user]}${(e)PROMPT_KRONUZ_USER:-$DEFAULT_PROMPT_KRONUZ_USER}${fcol[none]}'
-  kronuz[time]='${fcol[time]}${(e)PROMPT_KRONUZ_TIME:-$DEFAULT_PROMPT_KRONUZ_TIME}${fcol[none]}'
-  kronuz[pwd]='${fcol[pwd]}${(e)PROMPT_KRONUZ_PWD:-$DEFAULT_PROMPT_KRONUZ_PWD}${fcol[none]}'
+  kz[user]='${_ksem[user]}${(e)PROMPT_KRONUZ_USER:-$DEFAULT_PROMPT_KRONUZ_USER}${kz[RESET]}'
+  kz[time]='${_ksem[time]}${(e)PROMPT_KRONUZ_TIME:-$DEFAULT_PROMPT_KRONUZ_TIME}${kz[RESET]}'
+  kz[pwd]='${_ksem[pwd]}${(e)PROMPT_KRONUZ_PWD:-$DEFAULT_PROMPT_KRONUZ_PWD}${kz[RESET]}'
   # The transient caret, as a handle, so the transient layout composes it the way PROMPT
-  # composes $kronuz[caret] -- no $DEFAULT_PROMPT_KRONUZ_* leaks into a copyable skin.
-  kronuz[transient_caret]='${(e)PROMPT_KRONUZ_TRANSIENT_CARET:-$DEFAULT_PROMPT_KRONUZ_TRANSIENT_CARET}'
-  kronuz[host]="$kronuz[os]\${fcol[host]}\${(e)PROMPT_KRONUZ_HOST:-\$DEFAULT_PROMPT_KRONUZ_HOST}\${fcol[none]} \${fcol[ip]}(\${(e)PROMPT_KRONUZ_IP:-\$DEFAULT_PROMPT_KRONUZ_IP})\${fcol[none]}"
-  kronuz[info]="$kronuz[user] at $kronuz[host]"
+  # composes $kz[caret] -- no $DEFAULT_PROMPT_KRONUZ_* leaks into a copyable skin.
+  kz[transient_caret]='${(e)PROMPT_KRONUZ_TRANSIENT_CARET:-$DEFAULT_PROMPT_KRONUZ_TRANSIENT_CARET}'
+  kz[host]="$kz[os]\${_ksem[host]}\${(e)PROMPT_KRONUZ_HOST:-\$DEFAULT_PROMPT_KRONUZ_HOST}\${kz[RESET]} \${_ksem[ip]}(\${(e)PROMPT_KRONUZ_IP:-\$DEFAULT_PROMPT_KRONUZ_IP})\${kz[RESET]}"
+  kz[info]="$kz[user] at $kz[host]"
 
-  SPROMPT='zsh: correct $fcol[red]%R%f to $fcol[green]%r%f [nyae]? '
+  SPROMPT='zsh: correct $kz[FG.red]%R%f to $kz[FG.green]%r%f [nyae]? '
   # The visible layout is deferred and overridable end to end. PROMPT_KRONUZ_PROMPT (the two
-  # prompt lines) and PROMPT_KRONUZ_RPROMPT (the right prompt) compose the $kronuz[<segment>]
+  # prompt lines) and PROMPT_KRONUZ_RPROMPT (the right prompt) compose the $kz[<segment>]
   # array -- os err info context etctl git venv jobs nl time pwd caret transient_caret
   # overwrite vim emacs -- plus any fcol[]/glyph[]/prompt escapes, so a skin can reorder,
   # drop, or replace the whole thing (see skins/). The collapsed scrollback prompt is the
-  # third knob a full skin sets, PROMPT_KRONUZ_TRANSIENT_PROMPT (default: pwd + caret). $kronuz[]
+  # third knob a full skin sets, PROMPT_KRONUZ_TRANSIENT_PROMPT (default: pwd + caret). $kz[]
   # is the palette (the composed segments); PROMPT/RPROMPT are the layout that arranges them,
   # kept separate on purpose.
   # Because the layout is deferred (see the vars below), an override set in ~/.zshrc.local,
   # after setup, takes effect at render with no rebuild. The OSC 133 A/B/D marks and the
   # status line stay wrapped around it, so iTerm integration survives any skin.
-  DEFAULT_PROMPT_KRONUZ_RPROMPT='$kronuz[overwrite]$kronuz[vim]$kronuz[emacs]'
-  DEFAULT_PROMPT_KRONUZ_PROMPT='$kronuz[err] $kronuz[info]$kronuz[context]$kronuz[etctl]$kronuz[git]$kronuz[venv]$kronuz[jobs]$kronuz[nl]$kronuz[time] $kronuz[pwd] $kronuz[caret] '
+  DEFAULT_PROMPT_KRONUZ_RPROMPT='$kz[overwrite]$kz[vim]$kz[emacs]'
+  DEFAULT_PROMPT_KRONUZ_PROMPT='$kz[err] $kz[info]$kz[context]$kz[etctl]$kz[git]$kz[venv]$kz[jobs]$kz[nl]$kz[time] $kz[pwd] $kz[caret] '
   # The chosen layout (a skin's PROMPT_KRONUZ_PROMPT/RPROMPT or the default), deferred with the
   # doubled ${(e)${(e)...}} so one PROMPT_SUBST pass resolves both levels: the layout, then
-  # the $kronuz[...] segments it names. Named so PROMPT/RPROMPT below stay readable.
+  # the $kz[...] segments it names. Named so PROMPT/RPROMPT below stay readable.
   local _prompt_kronuz_prompt='${(e)${(e)PROMPT_KRONUZ_PROMPT-$DEFAULT_PROMPT_KRONUZ_PROMPT}}'
   local _prompt_kronuz_rprompt='${(e)${(e)PROMPT_KRONUZ_RPROMPT-$DEFAULT_PROMPT_KRONUZ_RPROMPT}}'
   RPROMPT="$_prompt_kronuz_rprompt"
@@ -1308,8 +1305,8 @@ function prompt_kronuz_setup {
   # The default composes the pwd (live colour + PROMPT_KRONUZ_PWD_STYLE) and the caret;
   # each line is resolved and restyled (dim/mute/keep) per-accept. An explicit
   # PROMPT_KRONUZ_TRANSIENT_PROMPT='' disables transience.
-  DEFAULT_PROMPT_KRONUZ_TRANSIENT_CARET='${fcol[transient_caret]}${glyph[caret]}${fcol[none]}'
-  DEFAULT_PROMPT_KRONUZ_TRANSIENT_PROMPT='$kronuz[pwd] $kronuz[transient_caret] '
+  DEFAULT_PROMPT_KRONUZ_TRANSIENT_CARET='${_ksem[transient_caret]}${kz[GLYPH.caret]}${kz[RESET]}'
+  DEFAULT_PROMPT_KRONUZ_TRANSIENT_PROMPT='$kz[pwd] $kz[transient_caret] '
   DEFAULT_PROMPT_KRONUZ_TRANSIENT_RPROMPT=''
   _kronuz_setup_transient_widgets
 }
