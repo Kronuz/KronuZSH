@@ -1,0 +1,19 @@
+#!/bin/sh
+# Fake git for previewing/testing the prompt's direct-git fallback (the path
+# _kronuz_git_fallback takes when gitstatusd isn't available). Point the prompt at it
+# with PROMPT_KRONUZ_GIT_CMD=/path/to/dev/fake-git; see dev/preview-skin.py --fallback.
+#
+# It answers only the handful of queries the fallback makes, with a fixed dirty-repo
+# state (branch main, upstream origin/main, staged + unstaged + untracked changes), so
+# the fallback renders instantly and identically with no repo on disk.
+case "$*" in
+  "rev-parse --is-inside-work-tree")                            echo true ;;
+  "symbolic-ref --short HEAD")                                  echo main ;;
+  "rev-parse --short HEAD")                                     echo 0123456 ;;
+  "symbolic-ref --quiet HEAD")                                  exit 0 ;;   # on a branch
+  "rev-parse --abbrev-ref --symbolic-full-name @{upstream}")    echo origin/main ;;
+  "diff --cached --quiet --ignore-submodules")                  exit 1 ;;   # staged present
+  "diff --quiet --ignore-submodules")                           exit 1 ;;   # unstaged present
+  "ls-files --others --exclude-standard")                       echo scratch.txt ;;  # untracked
+  *)                                                            exit 0 ;;
+esac

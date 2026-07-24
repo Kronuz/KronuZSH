@@ -458,8 +458,18 @@ hand-rolling a new capture script:
   readable, ANSI-stripped preview (`--raw` also dumps the raw bytes). It then asserts the
   OSC 133 `A`/`B`/`C`/`D` shell-integration marks and iTerm's OSC 1337 survive the skin,
   **exiting non-zero if a skin breaks integration**. Loads only the prompt engine (fast,
-  no `compinit`), announces iTerm so the iTerm path is exercised, and builds its own demo
-  git repo so the git segment has state. Run it on any skin or prompt-rendering change.
+  no `compinit`), announces iTerm so the iTerm path is exercised, and drives the shell
+  event-driven (waiting on the ZLE-ready and OSC marks, not fixed sleeps) so it's quick.
+  It sources `dev/fake-gitstatus.zsh` so the git segment renders synchronously from a
+  fixed snapshot (deterministic, no daemon); `--fallback` instead exercises the
+  direct-git fallback with `dev/fake-git`. Run it on any skin or prompt-rendering change.
+- **`dev/fake-gitstatus.zsh`** — a fake gitstatus (stubs `gitstatus_check` / `_query` /
+  `_start` over a fixed `VCS_STATUS_*` snapshot) so a preview shell renders the git
+  segment through the real daemon-path render, instantly and identically, with no daemon
+  or repo. Edit the snapshot to preview other repo states.
+- **`dev/fake-git`** — a fake `git` answering only the queries the direct-git fallback
+  makes, with a fixed dirty-repo state; used via `PROMPT_KRONUZ_GIT_CMD` (see
+  `preview-skin.py --fallback`) to preview/test the fallback path with no repo on disk.
 - **`dev/check-prompt-streams.zsh <reference-tree>`** — golden regression. Drives fresh
   ZLE sessions through failure / success / blank-Enter / exit in six modes
   (transient/static/disabled × iTerm/generic) for both a reference tree and this
