@@ -213,7 +213,7 @@ in `prompt_kronuz_precmd` (pwd, venv, git) into vars the deferred strings read
 (`_prompt_kronuz_pwd`, `_prompt_kronuz_venv`, `_prompt_kronuz_git`).
 
 Current layout:
-`PROMPT = status err info context etctl git venv jobs \n time pwd prompt`
+`PROMPT = status err info context etctl git venv jobs \n time pwd caret`
 (plus normal OSC 133 `A`/`B` marks when transience is off). With transience on, the
 live prompt is unmarked; accepting a command or blank line keeps the dimmed previous
 status/duration by default, then emits `A`/`B` only around the pwd/caret prompt line.
@@ -270,8 +270,8 @@ widget on `^M`/`^J` that swaps `$PROMPT` to the resolved
 wrapping the collapsed redraw in fresh OSC 133 `A`/`B` boundaries so iTerm2 keeps the
 command mark and its eventual `D;<status>` attached to the relocated prompt,
 restored in precmd; configured symmetrically to the live prompt — `PROMPT_KRONUZ_TRANSIENT`
-is the whole string like `PROMPT`, `PROMPT_KRONUZ_TRANSIENT_CARET` is just the caret piece
-like `PROMPT_KRONUZ_PROMPT`, both deferred `${...}` strings re-evaluated per accept. By
+is the whole string like `PROMPT`, `PROMPT_KRONUZ_TRANSCARET` is just the caret piece
+like `PROMPT_KRONUZ_CARET`, both deferred `${...}` strings re-evaluated per accept. By
 default it leaves the **pwd + caret** in scrollback so history shows where each command
 ran — reusing `$_prompt_kronuz_pwd` so it honors `PROMPT_KRONUZ_PWD_STYLE`, in the live
 `pwd` colour (so it matches the prompt and honours `PROMPT_KRONUZ_COLOR_PWD`); the caret
@@ -380,7 +380,7 @@ prompt with no rebuild. Three knobs, each a `${...}` string re-evaluated every r
 `DEFAULT_PROMPT_KRONUZ_PS1`/`RPS1`/`TRANSIENT` hold the built-in layout; a skin sets the
 non-`DEFAULT_` ones from `~/.zshrc.local` (sourced after `prompt_kronuz_setup`, so it
 takes effect at the next render). It composes the segment palette `$kronuz[<name>]` — os
-err info context etctl git venv jobs nl time pwd prompt overwrite vim emacs — plus any
+err info context etctl git venv jobs nl time pwd caret transcaret overwrite vim emacs — plus any
 `$fcol[...]`/`$glyph[...]`/prompt escapes. Keep the split in mind: `$kronuz[]` is the
 palette (the composed segments); PS1/RPS1 are the layout that arranges them.
 

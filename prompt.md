@@ -65,7 +65,7 @@ PROMPT_KRONUZ_TRANSIENT_STYLE=mute
 PROMPT_KRONUZ_TRANSIENT=''
 
 # Swap just the collapsed caret for an emoji (the pwd stays; symmetric to the live caret):
-PROMPT_KRONUZ_TRANSIENT_CARET='🚀'
+PROMPT_KRONUZ_TRANSCARET='🚀'
 
 # Recolor a segment (any name from the color table below):
 PROMPT_KRONUZ_COLOR_HOST='$fcol[chartreuse]'
@@ -334,7 +334,7 @@ there too) and uses the live `pwd` colour (so it matches the prompt and honours
 
 The collapsed line is built the same way as the live prompt, and is configured
 symmetrically: `PROMPT_KRONUZ_TRANSIENT` is the whole string (like `PROMPT`) and
-`PROMPT_KRONUZ_TRANSIENT_CARET` is just the caret piece (like `PROMPT_KRONUZ_PROMPT` is
+`PROMPT_KRONUZ_TRANSCARET` is just the caret piece (like `PROMPT_KRONUZ_CARET` is
 the live caret), so you can swap the caret for an emoji without rebuilding the rest. Both
 take deferred `${...}` segments and are re-evaluated on every Enter, and the whole
 resolved line — pwd, caret, and your own `PROMPT_KRONUZ_TRANSIENT` if you set one — is
@@ -358,7 +358,7 @@ styles below, and listed in full in the option reference):
 | Variable                       | Default            | Effect                                            |
 |--------------------------------|--------------------|---------------------------------------------------|
 | `PROMPT_KRONUZ_TRANSIENT`      | `pwd ❯`            | The whole collapsed prompt string (by default the directory the command ran in, then a caret), built like `PROMPT` from deferred `${...}` segments. Set to `''` to disable transience entirely (past prompts stay full), or to any string for a custom collapsed prompt (which is itself restyled per `PROMPT_KRONUZ_TRANSIENT_STYLE`). |
-| `PROMPT_KRONUZ_TRANSIENT_CARET`| `❯`                | Just the caret piece of the default collapsed line — symmetric to `PROMPT_KRONUZ_PROMPT` for the live prompt. Set to an emoji or any string to change the caret without touching the rest. Ignored if you override the whole `PROMPT_KRONUZ_TRANSIENT`. |
+| `PROMPT_KRONUZ_TRANSCARET`| `❯`                | Just the caret piece of the default collapsed line — symmetric to `PROMPT_KRONUZ_CARET` for the live prompt. Set to an emoji or any string to change the caret without touching the rest. Ignored if you override the whole `PROMPT_KRONUZ_TRANSIENT`. |
 | `PROMPT_KRONUZ_STATUS`          | `1`                | Keep a failed exit status and/or slow-command duration in scrollback when the next command collapses, or show it in the static prompt when transience is disabled; `0`/`no`/`off`/`false` makes it live-only with transience and hides it without transience. |
 | `PROMPT_KRONUZ_TRANSIENT_STYLE`| `dim`              | How the collapsed line — the pwd, caret, and the just-run **command** — is restyled: `dim`, `mute`, or `keep`. |
 | `PROMPT_KRONUZ_TRANSIENT_DIM`  | `0.7`              | For `dim`: darkness factor, `0` = black, `1` = unchanged. Lower is darker. |
@@ -497,7 +497,7 @@ deferred so it is resolved whenever the prompt is drawn.
 | `PROMPT_KRONUZ_VIM` | right-prompt Vim indicator |
 | `PROMPT_KRONUZ_EMACS` | right-prompt Emacs indicator |
 | `PROMPT_KRONUZ_OVERWRITE` | right-prompt overwrite indicator; `''` hides it |
-| `PROMPT_KRONUZ_PROMPT` | complete live input caret; replacing it bypasses the primary/alternate keymap carets |
+| `PROMPT_KRONUZ_CARET` | complete live input caret; replacing it bypasses the primary/alternate keymap carets |
 
 The host display composes `PROMPT_KRONUZ_OS`, `PROMPT_KRONUZ_HOST`, and
 `PROMPT_KRONUZ_IP`; recolor the hostname with `PROMPT_KRONUZ_COLOR_HOST`. The outcome
@@ -526,7 +526,7 @@ PROMPT_KRONUZ_ERROR='exit ${_prompt_kronuz_last_exit}'
 PROMPT_KRONUZ_DURATION='${_prompt_kronuz_duration}'
 
 # Use one fixed caret and ignore editor-keymap changes:
-PROMPT_KRONUZ_PROMPT='${fcol[caret3]}›${fcol[none]}'
+PROMPT_KRONUZ_CARET='${fcol[caret3]}›${fcol[none]}'
 ```
 
 For deeper changes (adding a brand-new segment, reordering the line), edit
@@ -553,7 +553,7 @@ fully enumerated in the linked table or directly in the description.
 | `PROMPT_KRONUZ_CMD_DURATION_MIN` | `3` | Seconds a command must run before its duration is shown. `0` = always. |
 | `PROMPT_KRONUZ_IP_TTL` | `60` | Seconds the LAN-IP lookup is cached; lower it if prompt-time address changes must appear sooner. |
 | `PROMPT_KRONUZ_TRANSIENT` | `pwd ❯` | The whole collapsed past-prompt string (default: the run directory + caret), built like `PROMPT`; `''` disables transience. |
-| `PROMPT_KRONUZ_TRANSIENT_CARET` | `❯` | Just the caret piece of the default collapsed line (symmetric to `PROMPT_KRONUZ_PROMPT`); set to an emoji or any string. |
+| `PROMPT_KRONUZ_TRANSCARET` | `❯` | Just the caret piece of the default collapsed line (symmetric to `PROMPT_KRONUZ_CARET`); set to an emoji or any string. |
 | `PROMPT_KRONUZ_STATUS` | `1` | Keep the previous failed status and/or duration above the next collapsed command, or show it in the static prompt when transience is disabled; false values make it live-only with transience and hide it without transience. |
 | `PROMPT_KRONUZ_TRANSIENT_STYLE` | `dim` | Restyle of the collapsed line (pwd, caret, command): `dim`, `mute`, or `keep`. |
 | `PROMPT_KRONUZ_TRANSIENT_DIM` | `0.7` | `dim` darkness factor (`0` black .. `1` unchanged). |

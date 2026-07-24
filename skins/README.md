@@ -25,7 +25,7 @@ Three knobs, each a deferred `${...}` string re-evaluated every render:
 | `PROMPT_KRONUZ_TRANSIENT`  | the collapsed scrollback prompt (`''` disables it)    |
 
 Compose them from the segment palette `$kronuz[<name>]` — `os err info context etctl git
-venv jobs nl time pwd prompt overwrite vim emacs` — plus any `$fcol[...]` (foreground) /
+venv jobs nl time pwd caret transcaret overwrite vim emacs` — plus any `$fcol[...]` (foreground) /
 `$bcol[...]` (background) / `$glyph[...]` or normal zsh prompt escapes (`%~`, `%n`, `%m`,
 `%c`, `%F{...}`, `%K{...}`). `$kronuz[]` is the palette (the composed segments); PS1/RPS1
 are the layout that arranges them.

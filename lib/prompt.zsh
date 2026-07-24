@@ -1246,7 +1246,7 @@ function prompt_kronuz_setup {
   DEFAULT_PROMPT_KRONUZ_GIT_SEP=' '
   DEFAULT_PROMPT_KRONUZ_VENV='${(e)_prompt_kronuz_venv}'
   DEFAULT_PROMPT_KRONUZ_OVERWRITE='${(e)_prompt_kronuz_overwrite}'
-  DEFAULT_PROMPT_KRONUZ_PROMPT='${(e)_prompt_kronuz_keymap}'
+  DEFAULT_PROMPT_KRONUZ_CARET='${(e)_prompt_kronuz_keymap}'
   DEFAULT_PROMPT_KRONUZ_TIME='[%*]'
   DEFAULT_PROMPT_KRONUZ_PWD='${_prompt_kronuz_pwd:+${(e)_prompt_kronuz_pwd}}'
 
@@ -1256,7 +1256,7 @@ function prompt_kronuz_setup {
   typeset -gA kronuz
   kronuz[nl]=$'%E\n'
   local seg
-  for seg in os err vim emacs etctl context jobs git venv prompt; do
+  for seg in os err vim emacs etctl context jobs git venv caret; do
     kronuz[$seg]="\${(e)PROMPT_KRONUZ_${seg:u}:-\$DEFAULT_PROMPT_KRONUZ_${seg:u}}"
   done
   # Unlike the older segments, an explicit empty value hides the overwrite marker.
@@ -1265,22 +1265,26 @@ function prompt_kronuz_setup {
   kronuz[user]='${fcol[user]}${(e)PROMPT_KRONUZ_USER:-$DEFAULT_PROMPT_KRONUZ_USER}${fcol[none]}'
   kronuz[time]='${fcol[time]}${(e)PROMPT_KRONUZ_TIME:-$DEFAULT_PROMPT_KRONUZ_TIME}${fcol[none]}'
   kronuz[pwd]='${fcol[pwd]}${(e)PROMPT_KRONUZ_PWD:-$DEFAULT_PROMPT_KRONUZ_PWD}${fcol[none]}'
+  # The transient caret, as a handle, so the transient layout composes it the way PS1
+  # composes $kronuz[caret] -- no $DEFAULT_PROMPT_KRONUZ_* leaks into a copyable skin.
+  kronuz[transcaret]='${(e)PROMPT_KRONUZ_TRANSCARET:-$DEFAULT_PROMPT_KRONUZ_TRANSCARET}'
   kronuz[host]="$kronuz[os]\${fcol[host]}\${(e)PROMPT_KRONUZ_HOST:-\$DEFAULT_PROMPT_KRONUZ_HOST}\${fcol[none]} \${fcol[ip]}(\${(e)PROMPT_KRONUZ_IP:-\$DEFAULT_PROMPT_KRONUZ_IP})\${fcol[none]}"
   kronuz[info]="$kronuz[user] at $kronuz[host]"
 
   SPROMPT='zsh: correct $fcol[red]%R%f to $fcol[green]%r%f [nyae]? '
   # The visible layout is deferred and overridable end to end. PROMPT_KRONUZ_PS1 (the two
   # prompt lines) and PROMPT_KRONUZ_RPS1 (the right prompt) compose the $kronuz[<segment>]
-  # array -- os err info context etctl git venv jobs nl time pwd prompt overwrite vim
-  # emacs -- plus any fcol[]/glyph[]/prompt escapes, so a skin can reorder, drop, or replace
-  # the whole thing (see skins/). The collapsed scrollback prompt is the third knob a full
-  # skin sets, PROMPT_KRONUZ_TRANSIENT (default: pwd + caret). $kronuz[] is the palette (the
-  # composed segments); PS1/RPS1 are the layout that arranges them, kept separate on purpose.
+  # array -- os err info context etctl git venv jobs nl time pwd prompt transcaret
+  # overwrite vim emacs -- plus any fcol[]/glyph[]/prompt escapes, so a skin can reorder,
+  # drop, or replace the whole thing (see skins/). The collapsed scrollback prompt is the
+  # third knob a full skin sets, PROMPT_KRONUZ_TRANSIENT (default: pwd + caret). $kronuz[]
+  # is the palette (the composed segments); PS1/RPS1 are the layout that arranges them,
+  # kept separate on purpose.
   # Because the layout is deferred (see the vars below), an override set in ~/.zshrc.local,
   # after setup, takes effect at render with no rebuild. The OSC 133 A/B/D marks and the
   # status line stay wrapped around it, so iTerm integration survives any skin.
   DEFAULT_PROMPT_KRONUZ_RPS1='$kronuz[overwrite]$kronuz[vim]$kronuz[emacs]'
-  DEFAULT_PROMPT_KRONUZ_PS1='$kronuz[err] $kronuz[info]$kronuz[context]$kronuz[etctl]$kronuz[git]$kronuz[venv]$kronuz[jobs]$kronuz[nl]$kronuz[time] $kronuz[pwd] $kronuz[prompt] '
+  DEFAULT_PROMPT_KRONUZ_PS1='$kronuz[err] $kronuz[info]$kronuz[context]$kronuz[etctl]$kronuz[git]$kronuz[venv]$kronuz[jobs]$kronuz[nl]$kronuz[time] $kronuz[pwd] $kronuz[caret] '
   # The chosen layout (a skin's PROMPT_KRONUZ_PS1/RPS1 or the default), deferred with the
   # doubled ${(e)${(e)...}} so one PROMPT_SUBST pass resolves both levels: the layout, then
   # the $kronuz[...] segments it names. Named so PROMPT/RPROMPT below stay readable.
@@ -1290,12 +1294,12 @@ function prompt_kronuz_setup {
   PROMPT="\${_prompt_kronuz_status_live}\${_kronuz_osc_d}\${_kronuz_osc_a}$_prompt_kronuz_ps1\${_kronuz_osc_b}"
 
   # Transient prompt (collapsed past prompts), symmetric to the live prompt above:
-  #   PROMPT_KRONUZ_TRANSIENT       — the whole collapsed line  (like PROMPT)
-  #   PROMPT_KRONUZ_TRANSIENT_CARET — just the caret/emoji piece (like PROMPT_KRONUZ_PROMPT)
+  #   PROMPT_KRONUZ_TRANSIENT   — the whole collapsed line  (like PROMPT)
+  #   PROMPT_KRONUZ_TRANSCARET  — just the caret/emoji piece (like PROMPT_KRONUZ_CARET)
   # The default composes the pwd (live colour + PROMPT_KRONUZ_PWD_STYLE) and the caret;
   # the whole line is resolved and restyled (dim/mute/keep) per-accept. An explicit
   # PROMPT_KRONUZ_TRANSIENT='' disables transience.
-  DEFAULT_PROMPT_KRONUZ_TRANSIENT_CARET='${fcol[transcaret]}${glyph[caret]}${fcol[none]}'
-  DEFAULT_PROMPT_KRONUZ_TRANSIENT='${_prompt_kronuz_pwd:+${fcol[pwd]}${_prompt_kronuz_pwd}${fcol[none]} }${(e)PROMPT_KRONUZ_TRANSIENT_CARET:-$DEFAULT_PROMPT_KRONUZ_TRANSIENT_CARET} '
+  DEFAULT_PROMPT_KRONUZ_TRANSCARET='${fcol[transcaret]}${glyph[caret]}${fcol[none]}'
+  DEFAULT_PROMPT_KRONUZ_TRANSIENT='$kronuz[pwd] $kronuz[transcaret] '
   _kronuz_setup_transient_widgets
 }

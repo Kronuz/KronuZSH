@@ -4,8 +4,8 @@
 #
 # Live prompt. Line 1: error dot, user@host, ssh/container badge, etctl session, git,
 # venv, jobs. Then a newline, and line 2: time, path, caret.
-PROMPT_KRONUZ_PS1='$kronuz[err] $kronuz[info]$kronuz[context]$kronuz[etctl]$kronuz[git]$kronuz[venv]$kronuz[jobs]$kronuz[nl]$kronuz[time] $kronuz[pwd] $kronuz[prompt] '
+PROMPT_KRONUZ_PS1='$kronuz[err] $kronuz[info]$kronuz[context]$kronuz[etctl]$kronuz[git]$kronuz[venv]$kronuz[jobs]$kronuz[nl]$kronuz[time] $kronuz[pwd] $kronuz[caret] '
 # Right prompt: overwrite-mode marker, then the vi / emacs keymap indicator.
 PROMPT_KRONUZ_RPS1='$kronuz[overwrite]$kronuz[vim]$kronuz[emacs]'
 # Collapsed scrollback line (see the scrollback post): the path, then a dimmed caret.
-PROMPT_KRONUZ_TRANSIENT='${_prompt_kronuz_pwd:+${fcol[pwd]}${_prompt_kronuz_pwd}${fcol[none]} }${(e)PROMPT_KRONUZ_TRANSIENT_CARET:-$DEFAULT_PROMPT_KRONUZ_TRANSIENT_CARET} '
+PROMPT_KRONUZ_TRANSIENT='$kronuz[pwd] $kronuz[transcaret] '
