@@ -68,7 +68,7 @@ PROMPT_KRONUZ_TRANSIENT=''
 PROMPT_KRONUZ_TRANSIENT_CARET='🚀'
 
 # Recolor a segment (any name from the color table below):
-PROMPT_KRONUZ_COLOR_HOST='$col[chartreuse]'
+PROMPT_KRONUZ_COLOR_HOST='$fcol[chartreuse]'
 
 # Swap or hide a single glyph:
 PROMPT_KRONUZ_GLYPH_MODIFIED='*'
@@ -103,9 +103,9 @@ The complete indicators can be replaced or hidden independently. Values are prom
 strings, so palette and glyph references remain deferred:
 
 ```zsh
-PROMPT_KRONUZ_KEYMAP_PRIMARY='${col[caret1]}${glyph[caret]}${col[none]}'
-PROMPT_KRONUZ_KEYMAP_ALTERNATE='${col[caret1]}${glyph[caret_alt]}${col[none]}'
-PROMPT_KRONUZ_KEYMAP_OVERWRITE='${col[overwrite]}>>>${col[none]}' # overwrite caret
+PROMPT_KRONUZ_KEYMAP_PRIMARY='${fcol[caret1]}${glyph[caret]}${fcol[none]}'
+PROMPT_KRONUZ_KEYMAP_ALTERNATE='${fcol[caret1]}${glyph[caret_alt]}${fcol[none]}'
+PROMPT_KRONUZ_KEYMAP_OVERWRITE='${fcol[overwrite]}>>>${fcol[none]}' # overwrite caret
 PROMPT_KRONUZ_OVERWRITE=''   # hide only the RPROMPT marker
 ```
 
@@ -203,11 +203,11 @@ Override any semantic color with `PROMPT_KRONUZ_COLOR_<NAME>`. The value is
 evaluated, so you can reference a base-palette name or write a raw escape:
 
 ```zsh
-PROMPT_KRONUZ_COLOR_HOST='$col[chartreuse]'   # by palette name
+PROMPT_KRONUZ_COLOR_HOST='$fcol[chartreuse]'   # by palette name
 PROMPT_KRONUZ_COLOR_TIME='%F{45}'             # by raw zsh color
-PROMPT_KRONUZ_COLOR_BRANCH='%B$col[white]'    # %B = bold
-PROMPT_KRONUZ_COLOR_TRANSCARET='$col[cyan]'   # collapsed caret
-PROMPT_KRONUZ_COLOR_TRANSMUTED='$col[grey]'   # mute-style prompt text
+PROMPT_KRONUZ_COLOR_BRANCH='%B$fcol[white]'    # %B = bold
+PROMPT_KRONUZ_COLOR_TRANSCARET='$fcol[cyan]'   # collapsed caret
+PROMPT_KRONUZ_COLOR_TRANSMUTED='$fcol[grey]'   # mute-style prompt text
 ```
 
 You can also override a **base** ANSI color with `PROMPT_KRONUZ_PALETTE_<NAME>` (a
@@ -474,8 +474,8 @@ Values `0`, `no`, `off`, and `false` disable it; the default is `1`.
 
 Beyond colors and glyphs, you can override a segment's entire content with
 `PROMPT_KRONUZ_<SEGMENT>`. The value is a prompt string (zsh `%`-escapes and
-`$col[...]` / `$glyph[...]` references work). Use single quotes in
-`~/.zshrc.local` when the value contains `$col` or `$glyph`; that keeps the reference
+`$fcol[...]` / `$glyph[...]` references work). Use single quotes in
+`~/.zshrc.local` when the value contains `$fcol` or `$glyph`; that keeps the reference
 deferred so it is resolved whenever the prompt is drawn.
 
 | Segment option | Built-in content |
@@ -519,14 +519,14 @@ PROMPT_KRONUZ_PWD='%1~'
 PROMPT_KRONUZ_USER='dev:%n'
 
 # Replace the status dot with literal text, colored by the result:
-PROMPT_KRONUZ_ERR='%(?.${col[status_ok]}OK.${col[status_err]}ERR)${col[none]}'
+PROMPT_KRONUZ_ERR='%(?.${fcol[status_ok]}OK.${fcol[status_err]}ERR)${fcol[none]}'
 
 # Spell out failures, or omit the duration glyph while keeping the formatted time:
 PROMPT_KRONUZ_ERROR='exit ${_prompt_kronuz_last_exit}'
 PROMPT_KRONUZ_DURATION='${_prompt_kronuz_duration}'
 
 # Use one fixed caret and ignore editor-keymap changes:
-PROMPT_KRONUZ_PROMPT='${col[caret3]}›${col[none]}'
+PROMPT_KRONUZ_PROMPT='${fcol[caret3]}›${fcol[none]}'
 ```
 
 For deeper changes (adding a brand-new segment, reordering the line), edit

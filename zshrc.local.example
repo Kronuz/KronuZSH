@@ -17,20 +17,20 @@
 
 # --- Prompt: tint the host name, to tell machines apart at a glance ---
 # The host segment is a neutral silver by default. Colour it per machine so you know
-# where you are at a glance (a base-palette name like $col[green], or a raw zsh colour
+# where you are at a glance (a base-palette name like $fcol[green], or a raw zsh colour
 # %F{N} / %F{#RRGGBB}). A handy convention: green = remote / VM / dev box, blue = your
 # local laptop, leave it silver for anything unlabeled (and reserve red for prod). This
 # box is a dev box:
-PROMPT_KRONUZ_COLOR_HOST='$col[green]'
+PROMPT_KRONUZ_COLOR_HOST='$fcol[green]'
 # Use the short hostname instead of the fully qualified hostname (`%M`):
 # PROMPT_KRONUZ_HOST='%m'
 
 # --- Prompt: other colours (any semantic name from the colour table in prompt.md) ---
 # PROMPT_KRONUZ_COLOR_TIME='%F{45}'
-# PROMPT_KRONUZ_COLOR_BRANCH='%B$col[white]'
+# PROMPT_KRONUZ_COLOR_BRANCH='%B$fcol[white]'
 # The pwd is white, turning red as root. Override the whole colour, reproducing the
 # %(!.root.normal) switch if you want to keep a root-distinct colour:
-# PROMPT_KRONUZ_COLOR_PWD='%(!.$col[orange].$col[lightsteelblue])'
+# PROMPT_KRONUZ_COLOR_PWD='%(!.$fcol[orange].$fcol[lightsteelblue])'
 
 # --- Prompt: pin a base ANSI colour. Also fixes `dim`'s colours on a terminal whose
 # palette can't be queried (e.g. over SSH / Eternal Terminal). #RRGGBB or a 0-255 index.
@@ -59,9 +59,9 @@ PROMPT_KRONUZ_COLOR_HOST='$col[green]'
 # PROMPT_KRONUZ_GIT_SPLIT=1
 # Replace or hide the complete live keymap indicators (prompt strings may reference
 # the semantic palette and glyph arrays):
-# PROMPT_KRONUZ_KEYMAP_PRIMARY='${col[caret1]}${glyph[caret]}${col[none]}'
-# PROMPT_KRONUZ_KEYMAP_ALTERNATE='${col[caret1]}${glyph[caret_alt]}${col[none]}'
-# PROMPT_KRONUZ_KEYMAP_OVERWRITE='${col[overwrite]}>>>${col[none]}'
+# PROMPT_KRONUZ_KEYMAP_PRIMARY='${fcol[caret1]}${glyph[caret]}${fcol[none]}'
+# PROMPT_KRONUZ_KEYMAP_ALTERNATE='${fcol[caret1]}${glyph[caret_alt]}${fcol[none]}'
+# PROMPT_KRONUZ_KEYMAP_OVERWRITE='${fcol[overwrite]}>>>${fcol[none]}'
 # PROMPT_KRONUZ_OVERWRITE=''            # hide only the RPROMPT overwrite marker
 
 # --- Prompt: behaviour ---

@@ -15,7 +15,7 @@ dependencies were replaced with small native pieces:
 | `python-info` (venv) | `_kronuz_venv_segment` (`$VIRTUAL_ENV`) |
 | `editor-info` (keymap) | `_kronuz_keymap_update` (zle hooks) |
 | `prompt-pwd` | `_kronuz_pwd_segment` (`${(%):-%~}`, with `PROMPT_KRONUZ_PWD_STYLE` full/short/base/absolute) |
-| `spectrum` ($col) | the `col` palette is defined inline in `lib/prompt.zsh` |
+| `spectrum` ($fcol) | the `fcol` palette is defined inline in `lib/prompt.zsh` |
 
 Dropped from the prezto version: the `async` worker (gitstatusd is the async
 engine), `pmodload`/`vcs_info`, and a stray debug `echo >> /tmp/prompt_kronuz` that
@@ -125,30 +125,37 @@ things make it work; keep both intact:
    `PROMPT_PERCENT PROMPT_CR PROMPT_SP`. (These used to ride on prezto's
    `$prompt_opts`, which only `promptinit`'s `prompt` command reads — we call
    `prompt_kronuz_setup` directly, so they are set explicitly in `lib/options.zsh`.)
-2. **`${(e)...}` resolves the array refs**: each segment embeds `${col[...]}` and
+2. **`${(e)...}` resolves the array refs**: each segment embeds `${fcol[...]}` and
    `${glyph[...]}`, and one `${(e)}` pass at render expands them to the final escape /
    icon (a value that itself holds prompt `%`-escapes, left for `print -P`).
 
 ### Colors
 
-- **Base palette**: `col[red]='%F{1}'`, `col[darkorange]='%F{#d75f00}'`, ... (name to
+- **Base palette**: `fcol[red]='%F{1}'`, `fcol[darkorange]='%F{#d75f00}'`, ... (name to
   a zsh color escape). A load-time literal near the top of `lib/prompt.zsh`. The ANSI 0..15
   colors stay `%F{N}` so they track the terminal's theme; the 16..255 colors are
   **hex** `%F{#RRGGBB}` so they render at full 24-bit on a truecolor terminal. The 16
   ANSI names (`$_kronuz_basic`, name→index) are each overridable to a `#RRGGBB`/index via
-  `PROMPT_KRONUZ_PALETTE_<NAME>`, applied to `col[]` at the top of `prompt_kronuz_colors`
+  `PROMPT_KRONUZ_PALETTE_<NAME>`, applied to `fcol[]` at the top of `prompt_kronuz_colors`
   (and fed to `dim`'s RGB, see the transient section).
 - **Semantic layer**: `prompt_kronuz_colors` works exactly like `prompt_kronuz_glyphs`
   (the two are intentionally symmetric): a local defaults table maps each name to a
-  palette colour (`branch '%B$col[white]'`, `host '$col[silver]'`, ...), then one loop
+  palette colour (`branch '%B$fcol[white]'`, `host '$fcol[silver]'`, ...), then one loop
   applies any `PROMPT_KRONUZ_COLOR_<NAME>` override and writes the **resolved** escape
-  (`${(e)}` expands the `$col[...]` palette ref) into the same `col[]` array. Recomputed
+  (`${(e)}` expands the `$fcol[...]` palette ref) into the same `fcol[]` array. Recomputed
   every precmd.
 
-So `col[branch]` already holds the final escape; segments embed it deferredly as
-`\${col[branch]}` (or read it at runtime via `${(e)col[branch]}`), and any semantic
+So `fcol[branch]` already holds the final escape; segments embed it deferredly as
+`\${fcol[branch]}` (or read it at runtime via `${(e)fcol[branch]}`), and any semantic
 colour is overridable by exporting `PROMPT_KRONUZ_COLOR_<NAME>` (e.g. in `~/.zshrc.local`).
 An explicit override colours even in no-colour mode, matching the glyph overrides.
+
+**Background palette (`$bcol`).** `prompt_kronuz_colors` also derives `bcol` from `fcol` by
+turning each `%F{...}` into `%K{...}` (so it tracks the `PROMPT_KRONUZ_PALETTE_*`
+overrides). A powerline/agnoster-style skin sets segment backgrounds with `${bcol[blue]}`
+etc. It is named `bcol`, not `bg`, because `autoload colors` owns `$fg`/`$bg` and would
+clobber them. The default prompt uses no backgrounds; the semantic names derive too but
+are meaningless as backgrounds.
 
 **Truecolor / degradation.** `prompt_kronuz_setup` checks `$COLORTERM`
 (`24bit`/`truecolor`) and `$terminfo[colors]`; on a non-truecolor terminal it
@@ -160,7 +167,7 @@ escapes). One hex palette therefore covers every tier: truecolor → 256 → 16/
 react live to `export TERM=dumb` / `NO_COLOR=1` and back): `_kronuz_dumb`
 (`$TERM` empty/`dumb`/`unknown`) and `_kronuz_nocolor` (dumb **or** `$NO_COLOR`,
 the [no-color.org](https://no-color.org) standard). When `_kronuz_nocolor`,
-`prompt_kronuz_colors` blanks each name's built-in default (so `col[*]` resolves to
+`prompt_kronuz_colors` blanks each name's built-in default (so `fcol[*]` resolves to
 the empty string), so the **full layout still renders with zero escapes**; an explicit
 `PROMPT_KRONUZ_COLOR_*` override still colours. When `_kronuz_dumb`,
 `prompt_kronuz_glyphs` forces the plain glyph
@@ -279,7 +286,7 @@ terminal) else an OSC 4 query `_kronuz_query_palette` (budget
 `$PROMPT_KRONUZ_PALETTE_TIMEOUT`, default 0.6s, so a remote/slow link still answers; a
 complete 16-colour result is cached), then per-colour `$PROMPT_KRONUZ_PALETTE_<NAME>`
 overrides win on top (never cached; if all 16 are set the query is skipped) — falling
-back to xterm defaults. The same overrides also re-tint `$col` for those names in
+back to xterm defaults. The same overrides also re-tint `$fcol` for those names in
 `prompt_kronuz_colors`, so display and dim stay in sync),
 `mute` (grey), or `keep`. To win the
 final paint over fast-syntax-highlighting it wraps fsh's `_zsh_highlight` once (not a
@@ -323,10 +330,10 @@ parse error happens at *runtime* inside the valid `eval`.
 
 ### Add a segment
 
-1. (if it needs a new color) add a `<name> '$col[...]'` entry to the defaults table in
-   `prompt_kronuz_colors`. The loop builds `col[<name>]` and the override automatically;
+1. (if it needs a new color) add a `<name> '$fcol[...]'` entry to the defaults table in
+   `prompt_kronuz_colors`. The loop builds `fcol[<name>]` and the override automatically;
    the no-color path blanks the default, so nothing terminal-specific is needed.
-2. Define `DEFAULT_PROMPT_KRONUZ_<NAME>` (its content; reference `\${col[...]}` and any
+2. Define `DEFAULT_PROMPT_KRONUZ_<NAME>` (its content; reference `\${fcol[...]}` and any
    dynamic var). Use `\${...}` to keep `$` deferred, matching the surrounding code.
 3. Define `kronuz[<name>]="\${(e)PROMPT_KRONUZ_<NAME>:-\$DEFAULT_PROMPT_KRONUZ_<NAME>}"`.
 4. Splice `$kronuz[<name>]` into `PROMPT` or `RPROMPT`.
@@ -341,7 +348,7 @@ two cleanest examples to copy.
 `VCS_STATUS_*` to the branch/icons. If gitstatusd isn't up (no tty, not installed,
 download blocked) it calls `_kronuz_git_fallback`, a lean direct-`git` version, so
 the prompt always shows git info. That path prefixes `glyph[fallback]` in
-`col[fallback]`, making synchronous fallback visible without warning in the healthy
+`fcol[fallback]`, making synchronous fallback visible without warning in the healthy
 daemon path. gitstatus only distinguishes counts
 (staged/unstaged/untracked/conflicted), not added-vs-deleted-vs-renamed, so the
 icon set is a small simplification of the old prezto one.
@@ -356,7 +363,7 @@ empty when absent/zero. `_kronuz_git_reset_state` clears them, and they're reset
 the no-repo path. A `PROMPT_KRONUZ_GIT` override composes them declaratively
 (`${_prompt_kronuz_git_branch:+...}`), so a skin reshapes git with no hook of its own
 and it works under gitstatusd and the fallback alike. Inside a `${var:+...}`
-conditional, colour with `${col[name]}`, never a literal `%F{...}` (a bare `}` ends
+conditional, colour with `${fcol[name]}`, never a literal `%F{...}` (a bare `}` ends
 the conditional early).
 
 ### Skins
@@ -372,7 +379,7 @@ prompt with no rebuild. Three knobs, each a `${...}` string re-evaluated every r
 non-`DEFAULT_` ones from `~/.zshrc.local` (sourced after `prompt_kronuz_setup`, so it
 takes effect at the next render). It composes the segment palette `$kronuz[<name>]` — os
 err info context etctl git venv jobs nl time pwd prompt overwrite vim emacs — plus any
-`$col[...]`/`$glyph[...]`/prompt escapes. Keep the split in mind: `$kronuz[]` is the
+`$fcol[...]`/`$glyph[...]`/prompt escapes. Keep the split in mind: `$kronuz[]` is the
 palette (the composed segments); PS1/RPS1 are the layout that arranges them.
 
 Why it resolves: `PROMPT` wraps the chosen layout in a doubled `${(e)${(e)...}}` so one

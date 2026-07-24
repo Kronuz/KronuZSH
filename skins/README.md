@@ -25,9 +25,10 @@ Three knobs, each a deferred `${...}` string re-evaluated every render:
 | `PROMPT_KRONUZ_TRANSIENT`  | the collapsed scrollback prompt (`''` disables it)    |
 
 Compose them from the segment palette `$kronuz[<name>]` — `os err info context etctl git
-venv jobs nl time pwd prompt overwrite vim emacs` — plus any `$col[...]` / `$glyph[...]`
-or normal zsh prompt escapes (`%~`, `%n`, `%m`, `%c`, `%F{...}`, `%K{...}`). `$kronuz[]`
-is the palette (the composed segments); PS1/RPS1 are the layout that arranges them.
+venv jobs nl time pwd prompt overwrite vim emacs` — plus any `$fcol[...]` (foreground) /
+`$bcol[...]` (background) / `$glyph[...]` or normal zsh prompt escapes (`%~`, `%n`, `%m`,
+`%c`, `%F{...}`, `%K{...}`). `$kronuz[]` is the palette (the composed segments); PS1/RPS1
+are the layout that arranges them.
 
 Single `$kronuz[<name>]` segments resolve because the doubled `${(e)${(e)...}}` in
 `PROMPT` runs two expansion passes: first the layout, then the segments it names. You can
@@ -62,14 +63,15 @@ Each is empty when absent, so a plain `${var:+...}` tests it — no hook, no ari
 and it works under both gitstatusd and the fallback:
 
 ```zsh
-PROMPT_KRONUZ_GIT='${_prompt_kronuz_git_branch:+ ${col[blue]}git:(${col[red]}${_prompt_kronuz_git_branch}${col[blue]})${col[none]}${_prompt_kronuz_git_dirty:+ ${col[yellow]}✗${col[none]}}}'
+PROMPT_KRONUZ_GIT='${_prompt_kronuz_git_branch:+ ${fcol[blue]}git:(${fcol[red]}${_prompt_kronuz_git_branch}${fcol[blue]})${fcol[none]}${_prompt_kronuz_git_dirty:+ ${fcol[yellow]}✗${fcol[none]}}}'
 ```
 
-**Use `${col[name]}` for colour inside a `${var:+...}` conditional, not a literal
+**Use `${fcol[name]}` for colour inside a `${var:+...}` conditional, not a literal
 `%F{...}`.** A bare `}` (from `%F{blue}`) ends the conditional early and truncates the
-segment; `${col[blue]}` is a balanced `${...}` and survives. The palette has every named
-colour (`blue`, `cyan`, `red`, ...). `robbyrussell.zsh`, `pure.zsh`, `emoji.zsh`, and
-`powerline.zsh` all follow this.
+segment; `${fcol[blue]}` is a balanced `${...}` and survives. The palette has every named
+colour (`blue`, `cyan`, `red`, ...); `$fcol` is the foreground, `$bcol` the matching
+background (`${bcol[green]}`, for powerline-style segments). `robbyrussell.zsh`,
+`pure.zsh`, `emoji.zsh`, and `powerline.zsh` all follow this.
 
 ## Gallery
 
