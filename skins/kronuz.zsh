@@ -1,4 +1,4 @@
-# default — the built-in KronuZSH layout, written out as a skin. Copy it into your
+# kronuz — the built-in KronuZSH layout, written out as a skin. Copy it into your
 # ~/.zshrc.local and rearrange it: each $kronuz[<segment>] is a ready-made piece
 # (os err info context etctl git venv jobs nl time pwd caret overwrite vim emacs).
 #
