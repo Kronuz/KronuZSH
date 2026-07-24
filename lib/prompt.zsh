@@ -443,27 +443,50 @@ function prompt_kronuz_glyphs {
 # ---- git ----
 typeset -g _prompt_kronuz_git=''
 
+# Git state, split out for skins. prompt.zsh computes these once per prompt (from
+# gitstatusd, or the direct-git fallback), so a PROMPT_KRONUZ_GIT override can reshape the
+# git segment declaratively -- e.g. '${_prompt_kronuz_git_branch:+ (${_prompt_kronuz_git_branch}${_prompt_kronuz_git_dirty:+*})}'
+# -- with no hook of its own. Each is a string: empty when absent/zero, else the value or
+# count, so a plain ${var:+...} tests it. All are '' outside a repo. The fallback knows
+# presence, not counts, so there each count is '' or '1' (and ahead/behind/stashed/
+# conflicted stay '').
+typeset -g _prompt_kronuz_git_branch='' _prompt_kronuz_git_remote='' _prompt_kronuz_git_dirty='' \
+           _prompt_kronuz_git_staged='' _prompt_kronuz_git_unstaged='' _prompt_kronuz_git_untracked='' \
+           _prompt_kronuz_git_conflicted='' _prompt_kronuz_git_stashed='' \
+           _prompt_kronuz_git_ahead='' _prompt_kronuz_git_behind=''
+
+function _kronuz_git_reset_state {
+  _prompt_kronuz_git_branch='' _prompt_kronuz_git_remote='' _prompt_kronuz_git_dirty='' \
+    _prompt_kronuz_git_staged='' _prompt_kronuz_git_unstaged='' _prompt_kronuz_git_untracked='' \
+    _prompt_kronuz_git_conflicted='' _prompt_kronuz_git_stashed='' \
+    _prompt_kronuz_git_ahead='' _prompt_kronuz_git_behind=''
+}
+
 # Direct-git fallback, used when gitstatusd isn't running (no tty, not installed).
 function _kronuz_git_fallback {
-  command git rev-parse --is-inside-work-tree &>/dev/null || return
+  # The git binary is overridable, so the fallback can be pointed at a wrapper or, in
+  # previews/tests, a fake (see dev/fake-git). Word-split into an array; the default
+  # keeps the `command` builtin so a user git function/alias can't shadow it.
+  local -a gitcmd=( ${=PROMPT_KRONUZ_GIT_CMD:-command git} )
+  $gitcmd rev-parse --is-inside-work-tree &>/dev/null || { _kronuz_git_reset_state; return }
   local branch
-  branch="$(command git symbolic-ref --short HEAD 2>/dev/null)" \
-    || branch="$(command git rev-parse --short HEAD 2>/dev/null)"
-  [[ -z "$branch" ]] && return
+  branch="$($gitcmd symbolic-ref --short HEAD 2>/dev/null)" \
+    || branch="$($gitcmd rev-parse --short HEAD 2>/dev/null)"
+  [[ -z "$branch" ]] && { _kronuz_git_reset_state; return }
   local sep="${(e)col[sep]}" none="${(e)col[none]}" info="${(e)col[info]}"
   local gly="$glyph[branch]"
-  command git symbolic-ref --quiet HEAD &>/dev/null || gly="$glyph[commit]"
+  $gitcmd symbolic-ref --quiet HEAD &>/dev/null || gly="$glyph[commit]"
   local warning=''
   [[ -n "$glyph[fallback]" ]] && warning="${(e)col[fallback]}${glyph[fallback]}${none} "
   local s=" ${warning}${info}${gly}${none} ${(e)col[branch]}${branch}${none}"
   local remote
-  remote="$(command git rev-parse --abbrev-ref --symbolic-full-name @{upstream} 2>/dev/null)"
+  remote="$($gitcmd rev-parse --abbrev-ref --symbolic-full-name @{upstream} 2>/dev/null)"
   [[ -n "$remote" ]] && s+=" ${info}${glyph[remote]}${none} ${(e)col[remote]}${remote}${none}"
   local staged='' unstaged='' untracked='' icons=''
   local isep="${PROMPT_KRONUZ_GIT_SEP-$DEFAULT_PROMPT_KRONUZ_GIT_SEP}"
-  command git diff --cached --quiet --ignore-submodules 2>/dev/null || staged=1
-  command git diff --quiet --ignore-submodules 2>/dev/null || unstaged=1
-  [[ -n "$(command git ls-files --others --exclude-standard 2>/dev/null | head -1)" ]] && untracked=1
+  $gitcmd diff --cached --quiet --ignore-submodules 2>/dev/null || staged=1
+  $gitcmd diff --quiet --ignore-submodules 2>/dev/null || unstaged=1
+  [[ -n "$($gitcmd ls-files --others --exclude-standard 2>/dev/null | head -1)" ]] && untracked=1
   if [[ -n "$staged$unstaged$untracked" ]]; then
     icons+="${(e)col[dirty]}${glyph[dirty]}${none}"
     [[ -n "$staged" ]]    && icons+="${icons:+$isep}${(e)col[added]}${glyph[staged]}${none}"
@@ -472,6 +495,9 @@ function _kronuz_git_fallback {
   else
     icons="${(e)col[clean]}${glyph[clean]}${none}"
   fi
+  _prompt_kronuz_git_branch="$branch" _prompt_kronuz_git_remote="$remote"
+  _prompt_kronuz_git_staged="${staged:+1}" _prompt_kronuz_git_unstaged="${unstaged:+1}" \
+    _prompt_kronuz_git_untracked="${untracked:+1}" _prompt_kronuz_git_dirty="${staged}${unstaged}${untracked:+1}"
   _prompt_kronuz_git="${s}${sep} (${none}${icons}${sep})${none}"
 }
 
@@ -568,6 +594,15 @@ function _kronuz_git_render {
     (( VCS_STATUS_NUM_UNTRACKED ))  && icons+="${icons:+$isep}${(e)col[untracked]}${glyph[untracked]}${glyph_pad[untracked]}${VCS_STATUS_NUM_UNTRACKED}${none}"
   fi
 
+  _prompt_kronuz_git_branch="${VCS_STATUS_LOCAL_BRANCH:-${VCS_STATUS_TAG:-${VCS_STATUS_COMMIT[1,7]}}}"
+  _prompt_kronuz_git_remote="${VCS_STATUS_REMOTE_NAME:+${VCS_STATUS_REMOTE_NAME}/${VCS_STATUS_REMOTE_BRANCH}}"
+  _prompt_kronuz_git_staged="${VCS_STATUS_NUM_STAGED:#0}" _prompt_kronuz_git_unstaged="${VCS_STATUS_NUM_UNSTAGED:#0}"
+  _prompt_kronuz_git_untracked="${VCS_STATUS_NUM_UNTRACKED:#0}" _prompt_kronuz_git_conflicted="${VCS_STATUS_NUM_CONFLICTED:#0}"
+  _prompt_kronuz_git_stashed="${VCS_STATUS_STASHES:#0}" _prompt_kronuz_git_ahead="${VCS_STATUS_COMMITS_AHEAD:#0}" \
+    _prompt_kronuz_git_behind="${VCS_STATUS_COMMITS_BEHIND:#0}"
+  _prompt_kronuz_git_dirty=''
+  (( dirty_unknown || VCS_STATUS_NUM_STAGED + VCS_STATUS_NUM_UNSTAGED + VCS_STATUS_NUM_UNTRACKED + VCS_STATUS_NUM_CONFLICTED )) \
+    && _prompt_kronuz_git_dirty=1
   _prompt_kronuz_git="${s}${sep} (${none}${icons}${sep})${none}"
   _kronuz_git_last="$_prompt_kronuz_git"
 }
@@ -613,7 +648,7 @@ function _kronuz_git_segment {
   fi
   case "$VCS_STATUS_RESULT" in
     ok-sync)     _kronuz_git_inflight=0; _kronuz_git_render ;;                   # answered in budget
-    norepo-sync) _kronuz_git_inflight=0; _prompt_kronuz_git=''; _kronuz_git_last='' ;;  # not a repo
+    norepo-sync) _kronuz_git_inflight=0; _prompt_kronuz_git=''; _kronuz_git_last=''; _kronuz_git_reset_state ;;  # not a repo
     *)  # tout: a query is in flight. Show the last-known status (if any) plus a subtle
         # loading mark, so a slow or first paint reads as "refreshing", not blank/frozen.
         _kronuz_git_inflight=1

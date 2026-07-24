@@ -346,6 +346,19 @@ daemon path. gitstatus only distinguishes counts
 (staged/unstaged/untracked/conflicted), not added-vs-deleted-vs-renamed, so the
 icon set is a small simplification of the old prezto one.
 
+The fallback's git binary is overridable via `PROMPT_KRONUZ_GIT_CMD` (default
+`command git`); point it at a wrapper, or a fake for previews/tests (`dev/fake-git`).
+
+**Git state for skins.** Both render paths also populate a normalized set of
+`_prompt_kronuz_git_*` variables (`branch`, `dirty`, `staged`, `unstaged`,
+`untracked`, `conflicted`, `stashed`, `ahead`, `behind`, `remote`) — each a string,
+empty when absent/zero. `_kronuz_git_reset_state` clears them, and they're reset in
+the no-repo path. A `PROMPT_KRONUZ_GIT` override composes them declaratively
+(`${_prompt_kronuz_git_branch:+...}`), so a skin reshapes git with no hook of its own
+and it works under gitstatusd and the fallback alike. Inside a `${var:+...}`
+conditional, colour with `${col[name]}`, never a literal `%F{...}` (a bare `}` ends
+the conditional early).
+
 ### Skins
 
 The whole visible layout is deferred and overridable end to end, so a skin reshapes the
