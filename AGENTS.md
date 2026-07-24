@@ -405,6 +405,9 @@ renders, so terminal integration survives any skin.
 
 Bundled skins live in `skins/` (see `skins/README.md`). **Verify every skin** with
 `dev/preview-skin.py` (below) — a broken layout can silently drop the integration marks.
+For a change that reshapes the engine or palette but should leave rendering untouched (a
+rename, a refactor), run the **byte-identical oracle** `dev/skin-oracle.sh` before and
+after: the digest must match and all 9 layouts must stay `OSC ... PASS` (see dev/ below).
 
 ## Add a plugin
 
@@ -485,6 +488,24 @@ hand-rolling a new capture script:
   It sources `dev/fake-gitstatus.zsh` so the git segment renders synchronously from a
   fixed snapshot (deterministic, no daemon); `--fallback` instead exercises the
   direct-git fallback with `dev/fake-git`. Run it on any skin or prompt-rendering change.
+- **`dev/skin-oracle.sh`** — the **byte-identical oracle**. Renders the default layout
+  plus every skin in `--raw`, keeps the raw-escape and OSC lines, and normalises the wall
+  clock to `[TIME]`, producing a stable digest of exactly what each of the 9 layouts paints
+  (colours, attributes, glyphs, segment structure) and each one's OSC 133 A/B/C/D + iTerm
+  1337 verdict. **Run it around any change to `lib/prompt.zsh` or the skins that is meant
+  to _preserve_ rendering** — a palette/array rename or refactor (this is how the `$kz`
+  unification was proven), a colour/glyph reshuffle, a segment tweak:
+  ```bash
+  dev/skin-oracle.sh > /tmp/before.txt      # baseline first
+  # ... make the change ...
+  dev/skin-oracle.sh > /tmp/after.txt
+  diff /tmp/before.txt /tmp/after.txt && echo "byte-identical"
+  ```
+  A pure refactor MUST leave the digest byte-identical (same sha, printed to stderr with the
+  OSC tally); every layout must report `PASS`, and the script exits non-zero if any doesn't.
+  A behavioural change shows up as a precise, inspectable diff. It pairs with
+  `dev/check-prompt-streams.zsh` (below): the oracle covers *what every skin paints*,
+  check-prompt-streams covers *the lifecycle/OSC protocol across modes*.
 - **`dev/fake-gitstatus.zsh`** — a fake gitstatus (stubs `gitstatus_check` / `_query` /
   `_start` over a fixed `VCS_STATUS_*` snapshot) so a preview shell renders the git
   segment through the real daemon-path render, instantly and identically, with no daemon
