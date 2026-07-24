@@ -43,10 +43,42 @@ renders, but a malformed layout can still drop them. Always check:
 dev/preview-skin.py skins/minimal.zsh   # prints a preview and asserts the marks survive
 ```
 
+## Reformatting git
+
+Most skins just place `$kronuz[git]` (the engine's own git segment) in the layout. To
+render git *differently* (robbyrussell's `git:(branch)`, an emoji, a powerline segment),
+override `PROMPT_KRONUZ_GIT` and compose it from the git-state variables the engine
+computes every prompt (from gitstatusd, or the direct-git fallback):
+
+| Variable                        | Value                                     |
+| ------------------------------- | ----------------------------------------- |
+| `_prompt_kronuz_git_branch`     | branch / tag / short commit, `''` off-repo |
+| `_prompt_kronuz_git_dirty`      | non-empty when there are changes          |
+| `_prompt_kronuz_git_staged` / `_unstaged` / `_untracked` / `_conflicted` | count, `''` when zero |
+| `_prompt_kronuz_git_ahead` / `_behind` / `_stashed` | count, `''` when zero          |
+| `_prompt_kronuz_git_remote`     | `remote/branch`, `''` when none           |
+
+Each is empty when absent, so a plain `${var:+...}` tests it — no hook, no arithmetic,
+and it works under both gitstatusd and the fallback:
+
+```zsh
+PROMPT_KRONUZ_GIT='${_prompt_kronuz_git_branch:+ ${col[blue]}git:(${col[red]}${_prompt_kronuz_git_branch}${col[blue]})${col[none]}${_prompt_kronuz_git_dirty:+ ${col[yellow]}✗${col[none]}}}'
+```
+
+**Use `${col[name]}` for colour inside a `${var:+...}` conditional, not a literal
+`%F{...}`.** A bare `}` (from `%F{blue}`) ends the conditional early and truncates the
+segment; `${col[blue]}` is a balanced `${...}` and survives. The palette has every named
+colour (`blue`, `cyan`, `red`, ...). `robbyrussell.zsh`, `pure.zsh`, `emoji.zsh`, and
+`powerline.zsh` all follow this.
+
 ## Gallery
 
-| Skin            | Look                                                        |
-| --------------- | ---------------------------------------------------------- |
-| `minimal.zsh`   | a single spare line: path, git, a lone magenta caret       |
-| `classic.zsh`   | the plain bash look: `user@host:dir$`                      |
-| `retro.zsh`     | a green-CRT DOS memory: `C:\dir\>`                          |
+| Skin               | Look                                                            |
+| ------------------ | -------------------------------------------------------------- |
+| `minimal.zsh`      | a single spare line: path, git, a lone magenta caret           |
+| `classic.zsh`      | the plain bash look: `user@host:dir$`                          |
+| `retro.zsh`        | a green-CRT DOS memory: `C:\dir\>`                              |
+| `pure.zsh`         | two lines, Sindre Sorhus's Pure: blue path, grey branch, `❯`   |
+| `robbyrussell.zsh` | oh-my-zsh's default: `➜ dir git:(branch) ✗`                    |
+| `emoji.zsh`        | playful all-emoji: `📁 dir 🌿 branch ⚡`                       |
+| `powerline.zsh`    | agnoster-style coloured segments with Nerd Font separators     |
