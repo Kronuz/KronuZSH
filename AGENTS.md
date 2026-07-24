@@ -346,6 +346,31 @@ daemon path. gitstatus only distinguishes counts
 (staged/unstaged/untracked/conflicted), not added-vs-deleted-vs-renamed, so the
 icon set is a small simplification of the old prezto one.
 
+### Skins
+
+The whole visible layout is deferred and overridable end to end, so a skin reshapes the
+prompt with no rebuild. Three knobs, each a `${...}` string re-evaluated every render:
+
+- `PROMPT_KRONUZ_PS1` — the live left prompt (one line, or two via `$kronuz[nl]`).
+- `PROMPT_KRONUZ_RPS1` — the right prompt.
+- `PROMPT_KRONUZ_TRANSIENT` — the collapsed scrollback prompt (`''` disables transience).
+
+`DEFAULT_PROMPT_KRONUZ_PS1`/`RPS1`/`TRANSIENT` hold the built-in layout; a skin sets the
+non-`DEFAULT_` ones from `~/.zshrc.local` (sourced after `prompt_kronuz_setup`, so it
+takes effect at the next render). It composes the segment palette `$kronuz[<name>]` — os
+err info context etctl git venv jobs nl time pwd prompt overwrite vim emacs — plus any
+`$col[...]`/`$glyph[...]`/prompt escapes. Keep the split in mind: `$kronuz[]` is the
+palette (the composed segments); PS1/RPS1 are the layout that arranges them.
+
+Why it resolves: `PROMPT` wraps the chosen layout in a doubled `${(e)${(e)...}}` so one
+PROMPT_SUBST pass evaluates both levels — first the layout string, then the
+`$kronuz[...]` segments it names (a single `(e)` would leave the segments literal). The
+OSC 133 `A`/`B`/`D` marks and the status line stay wrapped around whatever the skin
+renders, so terminal integration survives any skin.
+
+Bundled skins live in `skins/` (see `skins/README.md`). **Verify every skin** with
+`dev/preview-skin.py` (below) — a broken layout can silently drop the integration marks.
+
 ## Add a plugin
 
 ```bash
