@@ -9,13 +9,13 @@ Own the whole thing, no framework. Everything kept is either mine (the prompt) o
 a standalone plugin. The prompt was ported off a prezto theme; its prezto
 dependencies were replaced with small native pieces:
 
-| prezto gave | replaced by |
-| --- | --- |
-| `git-info` + `async` worker | gitstatus (gitstatusd) + a direct-`git` fallback |
-| `python-info` (venv) | `_kronuz_venv_segment` (`$VIRTUAL_ENV`) |
-| `editor-info` (keymap) | `_kronuz_keymap_update` (zle hooks) |
-| `prompt-pwd` | `_kronuz_pwd_segment` (`${(%):-%~}`, with `PROMPT_KRONUZ_PWD_STYLE` full/short/base/absolute) |
-| `spectrum` ($fcol) | the `fcol` palette is defined inline in `lib/prompt.zsh` |
+| prezto gave                 | replaced by                                                                                   |
+| --------------------------- | --------------------------------------------------------------------------------------------- |
+| `git-info` + `async` worker | gitstatus (gitstatusd) + a direct-`git` fallback                                              |
+| `python-info` (venv)        | `_kronuz_venv_segment` (`$VIRTUAL_ENV`)                                                       |
+| `editor-info` (keymap)      | `_kronuz_keymap_update` (zle hooks)                                                           |
+| `prompt-pwd`                | `_kronuz_pwd_segment` (`${(%):-%~}`, with `PROMPT_KRONUZ_PWD_STYLE` full/short/base/absolute) |
+| `spectrum` ($fcol)          | the `fcol` palette is defined inline in `lib/prompt.zsh`                                      |
 
 Dropped from the prezto version: the `async` worker (gitstatusd is the async
 engine), `pmodload`/`vcs_info`, and a stray debug `echo >> /tmp/prompt_kronuz` that

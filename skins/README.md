@@ -18,11 +18,11 @@ Or copy the two or three lines you like straight into `~/.zshrc.local` and tweak
 
 Three knobs, each a deferred `${...}` string re-evaluated every render:
 
-| Variable                   | What it is                                            |
-| -------------------------- | ----------------------------------------------------- |
-| `PROMPT_KRONUZ_PS1`        | the live left prompt (one line, or two via `$kronuz[nl]`) |
-| `PROMPT_KRONUZ_RPS1`       | the right prompt                                      |
-| `PROMPT_KRONUZ_TRANSIENT`  | the collapsed scrollback prompt (`''` disables it)    |
+| Variable                  | What it is                                                |
+| ------------------------- | --------------------------------------------------------- |
+| `PROMPT_KRONUZ_PS1`       | the live left prompt (one line, or two via `$kronuz[nl]`) |
+| `PROMPT_KRONUZ_RPS1`      | the right prompt                                          |
+| `PROMPT_KRONUZ_TRANSIENT` | the collapsed scrollback prompt (`''` disables it)        |
 
 Compose them from the segment palette `$kronuz[<name>]` — `os err info context etctl git
 venv jobs nl time pwd caret transcaret overwrite vim emacs` — plus any `$fcol[...]` (foreground) /
@@ -51,13 +51,13 @@ render git *differently* (robbyrussell's `git:(branch)`, an emoji, a powerline s
 override `PROMPT_KRONUZ_GIT` and compose it from the git-state variables the engine
 computes every prompt (from gitstatusd, or the direct-git fallback):
 
-| Variable                        | Value                                     |
-| ------------------------------- | ----------------------------------------- |
-| `_prompt_kronuz_git_branch`     | branch / tag / short commit, `''` off-repo |
-| `_prompt_kronuz_git_dirty`      | non-empty when there are changes          |
-| `_prompt_kronuz_git_staged` / `_unstaged` / `_untracked` / `_conflicted` | count, `''` when zero |
-| `_prompt_kronuz_git_ahead` / `_behind` / `_stashed` | count, `''` when zero          |
-| `_prompt_kronuz_git_remote`     | `remote/branch`, `''` when none           |
+| Variable                                                                 | Value                                      |
+| ------------------------------------------------------------------------ | ------------------------------------------ |
+| `_prompt_kronuz_git_branch`                                              | branch / tag / short commit, `''` off-repo |
+| `_prompt_kronuz_git_dirty`                                               | non-empty when there are changes           |
+| `_prompt_kronuz_git_staged` / `_unstaged` / `_untracked` / `_conflicted` | count, `''` when zero                      |
+| `_prompt_kronuz_git_ahead` / `_behind` / `_stashed`                      | count, `''` when zero                      |
+| `_prompt_kronuz_git_remote`                                              | `remote/branch`, `''` when none            |
 
 Each is empty when absent, so a plain `${var:+...}` tests it — no hook, no arithmetic,
 and it works under both gitstatusd and the fallback:
@@ -75,13 +75,13 @@ background (`${bcol[green]}`, for powerline-style segments). `robbyrussell.zsh`,
 
 ## Gallery
 
-| Skin               | Look                                                            |
+| Skin               | Look                                                           |
 | ------------------ | -------------------------------------------------------------- |
 | `default.zsh`      | the built-in layout, written out and annotated to copy + tweak |
 | `minimal.zsh`      | a single spare line: path, git, a lone magenta caret           |
 | `classic.zsh`      | the plain bash look: `user@host:dir$`                          |
-| `retro.zsh`        | a green-CRT DOS memory: `C:\dir\>`                              |
+| `retro.zsh`        | a green-CRT DOS memory: `C:\dir\>`                             |
 | `pure.zsh`         | two lines, Sindre Sorhus's Pure: blue path, grey branch, `❯`   |
 | `robbyrussell.zsh` | oh-my-zsh's default: `➜ dir git:(branch) ✗`                    |
-| `emoji.zsh`        | playful all-emoji: `📁 dir 🌿 branch ⚡`                       |
+| `emoji.zsh`        | playful all-emoji: `📁 dir 🌿 branch ⚡`                          |
 | `powerline.zsh`    | agnoster-style coloured segments with Nerd Font separators     |
