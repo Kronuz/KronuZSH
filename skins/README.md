@@ -77,6 +77,7 @@ background (`${bcol[green]}`, for powerline-style segments). `robbyrussell.zsh`,
 
 | Skin               | Look                                                            |
 | ------------------ | -------------------------------------------------------------- |
+| `default.zsh`      | the built-in layout, written out and annotated to copy + tweak |
 | `minimal.zsh`      | a single spare line: path, git, a lone magenta caret           |
 | `classic.zsh`      | the plain bash look: `user@host:dir$`                          |
 | `retro.zsh`        | a green-CRT DOS memory: `C:\dir\>`                              |
