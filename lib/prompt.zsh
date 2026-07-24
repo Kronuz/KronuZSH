@@ -35,11 +35,14 @@
 # Colours
 # ============================================================================
 
-# Base palette: named %F{...} entries. ANSI 0..15 stay symbolic so they track the
-# terminal theme; 16..255 are exact hex (truecolor), downsampled by zsh/nearcolor
-# on non-truecolor terminals (loaded in setup). Overridable: $fcol is public, users
-# reference $fcol[name] in their $PROMPT_KRONUZ_COLOR_* overrides.
-unset fcol
+# Base palette: named %F{...} entries, populated at load so $fcol is usable immediately.
+# A snapshot ($_fcol_base, just below) is the immutable source that every colour rebuild
+# copies back into $fcol (in prompt_kronuz_colors), blanking every entry in no-colour mode
+# so a skin's ${fcol[green]} (and the derived ${bcol[green]}) emit nothing. ANSI 0..15 stay
+# symbolic so they track the terminal theme; 16..255 are exact hex (truecolor), downsampled
+# by zsh/nearcolor on non-truecolor terminals. $fcol is public; users reference $fcol[name]
+# in their $PROMPT_KRONUZ_COLOR_* overrides.
+unset fcol _fcol_base
 typeset -gA fcol=(
   black                '%F{0}'        red                  '%F{1}'
   lightgreen           '%F{10}'       olive                '%F{#878700}'
@@ -103,6 +106,8 @@ typeset -gA fcol=(
   lightred             '%F{9}'        blueviolet           '%F{#8700ff}'
   brown                '%F{#875f00}'
 )
+# Immutable snapshot of the base palette; prompt_kronuz_colors rebuilds $fcol from it.
+typeset -gA _fcol_base=("${(@kv)fcol}")
 
 # The 16 ANSI colours, by palette name -> index. They default to symbolic %F{N} (above)
 # so they track the terminal theme, but each is overridable to a concrete colour via
@@ -232,21 +237,29 @@ function _kronuz_load_palette {
 typeset -g _kronuz_colors_sig=''
 function prompt_kronuz_colors {
   # Change-detection: colours are fully determined by $_kronuz_nocolor and the
-  # $PROMPT_KRONUZ_{COLOR,PALETTE}_* overrides (the static $fcol basics never change after
-  # load), so skip the ~40-entry rebuild when none of those changed since the last prompt.
+  # $PROMPT_KRONUZ_{COLOR,PALETTE}_* overrides, so skip the rebuild (base palette from
+  # source, then semantics) when none of those changed since the last prompt.
   local _sig="${_kronuz_nocolor:-0}" _k
   for _k in ${(k)parameters[(I)PROMPT_KRONUZ_(COLOR|PALETTE)_*]}; do _sig+=$'\x1f'"$_k=${(P)_k}"; done
   [[ "$_sig" == "$_kronuz_colors_sig" ]] && return
   _kronuz_colors_sig="$_sig"
 
-  # Apply any per-colour overrides to the 16 ANSI basics (defaults live in the $fcol
-  # palette table above); semantic colours below reference them, and `dim` picks up the
-  # same overrides via _kronuz_load_palette.
-  local bn bov
-  for bn in ${(k)_kronuz_basic}; do
-    bov="PROMPT_KRONUZ_PALETTE_${bn:u}"
-    [[ -n "${(P)bov}" ]] && fcol[$bn]="%F{${(P)bov}}"
-  done
+  # Rebuild the public $fcol from the $_fcol_base source. In no-colour mode every base
+  # colour blanks, so a skin's ${fcol[green]} (and the derived ${bcol[green]}) emit nothing
+  # and the layout still renders with zero escapes; otherwise each is its source value, and
+  # the 16 ANSI basics then take any PROMPT_KRONUZ_PALETTE_* override (which `dim` also
+  # reads via _kronuz_load_palette).
+  local _cn
+  if (( ${_kronuz_nocolor:-0} )); then
+    for _cn in ${(k)_fcol_base}; do fcol[$_cn]=''; done
+  else
+    for _cn in ${(k)_fcol_base}; do fcol[$_cn]=$_fcol_base[$_cn]; done
+    local bn bov
+    for bn in ${(k)_kronuz_basic}; do
+      bov="PROMPT_KRONUZ_PALETTE_${bn:u}"
+      [[ -n "${(P)bov}" ]] && fcol[$bn]="%F{${(P)bov}}"
+    done
+  fi
 
   local -A d=(
     caret1     '%(!.%B$fcol[red].%B$fcol[red])'

@@ -167,8 +167,10 @@ escapes). One hex palette therefore covers every tier: truecolor → 256 → 16/
 react live to `export TERM=dumb` / `NO_COLOR=1` and back): `_kronuz_dumb`
 (`$TERM` empty/`dumb`/`unknown`) and `_kronuz_nocolor` (dumb **or** `$NO_COLOR`,
 the [no-color.org](https://no-color.org) standard). When `_kronuz_nocolor`,
-`prompt_kronuz_colors` blanks each name's built-in default (so `fcol[*]` resolves to
-the empty string), so the **full layout still renders with zero escapes**; an explicit
+`prompt_kronuz_colors` blanks the whole palette: every base name (`fcol[green]`,
+`bcol[green]`, ...) is set empty when it's copied from `$_fcol_base`, and every semantic
+default (`fcol[branch]`, ...) blanks too, so the **full layout renders with zero escapes**
+and a skin built on `${fcol[...]}` / `${bcol[...]}` is no-colour-safe for free. An explicit
 `PROMPT_KRONUZ_COLOR_*` override still colours. When `_kronuz_dumb`,
 `prompt_kronuz_glyphs` forces the plain glyph
 set (PUA would be tofu). The keymap arrow is seeded in setup so a prompt char shows
