@@ -17,25 +17,27 @@
 
 # --- Prompt: tint the host name, to tell machines apart at a glance ---
 # The host segment is a neutral silver by default. Colour it per machine so you know
-# where you are at a glance (a base-palette name like $fcol[green], or a raw zsh colour
+# where you are at a glance (a base-palette name like $kz[FG.green], or a raw zsh colour
 # %F{N} / %F{#RRGGBB}). A handy convention: green = remote / VM / dev box, blue = your
 # local laptop, leave it silver for anything unlabeled (and reserve red for prod). This
 # box is a dev box:
-PROMPT_KRONUZ_COLOR_HOST='$fcol[green]'
+PROMPT_KRONUZ_COLOR_HOST='$kz[FG.green]'
 # Use the short hostname instead of the fully qualified hostname (`%M`):
 # PROMPT_KRONUZ_HOST='%m'
 
 # --- Prompt: other colours (any semantic name from the colour table in prompt.md) ---
 # PROMPT_KRONUZ_COLOR_TIME='%F{45}'
-# PROMPT_KRONUZ_COLOR_BRANCH='%B$fcol[white]'
+# PROMPT_KRONUZ_COLOR_BRANCH='%B$kz[FG.white]'
 # The pwd is white, turning red as root. Override the whole colour, reproducing the
 # %(!.root.normal) switch if you want to keep a root-distinct colour:
-# PROMPT_KRONUZ_COLOR_PWD='%(!.$fcol[orange].$fcol[lightsteelblue])'
+# PROMPT_KRONUZ_COLOR_PWD='%(!.$kz[FG.orange].$kz[FG.lightsteelblue])'
 
-# --- Prompt: pin a base ANSI colour. Also fixes `dim`'s colours on a terminal whose
-# palette can't be queried (e.g. over SSH / Eternal Terminal). #RRGGBB or a 0-255 index.
+# --- Prompt: define or pin a palette hue. Also fixes `dim`'s colours on a terminal whose
+# palette can't be queried (e.g. over SSH / Eternal Terminal). #RRGGBB or a 0-255 index;
+# any NAME works, then use it as $kz[FG.name] / $kz[BG.name].
 # PROMPT_KRONUZ_PALETTE_RED='#ff5c57'
 # PROMPT_KRONUZ_PALETTE_BLUE='#57c7ff'
+# PROMPT_KRONUZ_PALETTE_OCEAN='#3a7bd5'
 
 # --- Prompt: glyphs ---
 # No Nerd Font? Switch to plain-Unicode glyphs (renders in any font):
@@ -58,10 +60,10 @@ PROMPT_KRONUZ_COLOR_HOST='$fcol[green]'
 # coloured by group. Off by default (one aggregate count per group):
 # PROMPT_KRONUZ_GIT_SPLIT=1
 # Replace or hide the complete live keymap indicators (prompt strings may reference
-# the semantic palette and glyph arrays):
-# PROMPT_KRONUZ_KEYMAP_PRIMARY='${fcol[caret1]}${glyph[caret]}${fcol[none]}'
-# PROMPT_KRONUZ_KEYMAP_ALTERNATE='${fcol[caret1]}${glyph[caret_alt]}${fcol[none]}'
-# PROMPT_KRONUZ_KEYMAP_OVERWRITE='${fcol[overwrite]}>>>${fcol[none]}'
+# $kz presentation keys and glyphs):
+# PROMPT_KRONUZ_KEYMAP_PRIMARY='${kz[BOLD]}${kz[FG.red]}${kz[GLYPH.caret]}${kz[RESET]}'
+# PROMPT_KRONUZ_KEYMAP_ALTERNATE='${kz[BOLD]}${kz[FG.red]}${kz[GLYPH.caret_alt]}${kz[RESET]}'
+# PROMPT_KRONUZ_KEYMAP_OVERWRITE='${kz[FG.red]}>>>${kz[RESET]}'
 # PROMPT_KRONUZ_OVERWRITE=''            # hide only the RPROMPT overwrite marker
 
 # --- Prompt: behaviour ---

@@ -18,19 +18,34 @@ Or copy the two or three lines you like straight into `~/.zshrc.local` and tweak
 
 Three knobs, each a deferred `${...}` string re-evaluated every render:
 
-| Variable                         | What it is                                                |
-| -------------------------------- | --------------------------------------------------------- |
-| `PROMPT_KRONUZ_PROMPT`           | the live left prompt (one line, or two via `$kronuz[nl]`) |
-| `PROMPT_KRONUZ_RPROMPT`          | the right prompt                                          |
-| `PROMPT_KRONUZ_TRANSIENT_PROMPT` | the collapsed scrollback prompt (`''` disables it)        |
+| Variable                         | What it is                                            |
+| -------------------------------- | ----------------------------------------------------- |
+| `PROMPT_KRONUZ_PROMPT`           | the live left prompt (one line, or two via `$kz[nl]`) |
+| `PROMPT_KRONUZ_RPROMPT`          | the right prompt                                      |
+| `PROMPT_KRONUZ_TRANSIENT_PROMPT` | the collapsed scrollback prompt (`''` disables it)    |
 
-Compose them from the segment palette `$kronuz[<name>]` — `os err info context etctl git
-venv jobs nl time pwd caret transient_caret overwrite vim emacs` — plus any `$fcol[...]` (foreground) /
-`$bcol[...]` (background) / `$glyph[...]` or normal zsh prompt escapes (`%~`, `%n`, `%m`,
-`%c`, `%F{...}`, `%K{...}`). `$kronuz[]` is the palette (the composed segments); PROMPT/RPROMPT
-are the layout that arranges them.
+Compose them from the unified `$kz` array:
 
-Single `$kronuz[<name>]` segments resolve because the doubled `${(e)${(e)...}}` in
+- **UPPERCASE keys are presentation**: `$kz[FG.red]`, `$kz[BG.blue]`, `$kz[BOLD]`,
+  `$kz[UNDERLINE]`, `$kz[STANDOUT]`, `$kz[RESET]`, and glyphs like `$kz[GLYPH.caret]`.
+- **lowercase keys are content**: segment handles like `$kz[git]`, `$kz[pwd]`,
+  `$kz[caret]`, `$kz[nl]`, plus live git state like `$kz[git.branch]` and
+  `$kz[git.dirty]`.
+
+Normal zsh prompt escapes (`%~`, `%n`, `%m`, `%c`) still work. PROMPT/RPROMPT are the
+layout that arranges these pieces.
+
+Custom RGB colors go through the palette so they stay `NO_COLOR`-safe:
+
+```zsh
+PROMPT_KRONUZ_PALETTE_OCEAN='#3a7bd5'
+PROMPT_KRONUZ_PROMPT='${kz[FG.ocean]}${kz[pwd]}${kz[RESET]} ${kz[caret]}'
+```
+
+That creates `$kz[FG.ocean]` and `$kz[BG.ocean]`. Prefer those over raw `%F{#...}` /
+`%K{#...}` escapes; raw braces can also break inside `${var:+...}` conditionals.
+
+Single `$kz[<name>]` segments resolve because the doubled `${(e)${(e)...}}` in
 `PROMPT` runs two expansion passes: first the layout, then the segments it names. You can
 also override an individual segment (`PROMPT_KRONUZ_GIT`, `PROMPT_KRONUZ_PWD`, ...) to
 reshape just that piece.
@@ -46,32 +61,31 @@ dev/preview-skin.py skins/minimal.zsh   # prints a preview and asserts the marks
 
 ## Reformatting git
 
-Most skins just place `$kronuz[git]` (the engine's own git segment) in the layout. To
+Most skins just place `$kz[git]` (the engine's own git segment) in the layout. To
 render git *differently* (robbyrussell's `git:(branch)`, an emoji, a powerline segment),
-override `PROMPT_KRONUZ_GIT` and compose it from the git-state variables the engine
+override `PROMPT_KRONUZ_GIT` and compose it from the git-state keys the engine
 computes every prompt (from gitstatusd, or the direct-git fallback):
 
-| Variable                                                                 | Value                                      |
-| ------------------------------------------------------------------------ | ------------------------------------------ |
-| `_prompt_kronuz_git_branch`                                              | branch / tag / short commit, `''` off-repo |
-| `_prompt_kronuz_git_dirty`                                               | non-empty when there are changes           |
-| `_prompt_kronuz_git_staged` / `_unstaged` / `_untracked` / `_conflicted` | count, `''` when zero                      |
-| `_prompt_kronuz_git_ahead` / `_behind` / `_stashed`                      | count, `''` when zero                      |
-| `_prompt_kronuz_git_remote`                                              | `remote/branch`, `''` when none            |
+| Variable                                                                               | Value                                      |
+| -------------------------------------------------------------------------------------- | ------------------------------------------ |
+| `$kz[git.branch]`                                                                      | branch / tag / short commit, `''` off-repo |
+| `$kz[git.dirty]`                                                                       | non-empty when there are changes           |
+| `$kz[git.staged]` / `$kz[git.unstaged]` / `$kz[git.untracked]` / `$kz[git.conflicted]` | count, `''` when zero                      |
+| `$kz[git.ahead]` / `$kz[git.behind]` / `$kz[git.stashed]`                              | count, `''` when zero                      |
+| `$kz[git.remote]`                                                                      | `remote/branch`, `''` when none            |
 
 Each is empty when absent, so a plain `${var:+...}` tests it — no hook, no arithmetic,
 and it works under both gitstatusd and the fallback:
 
 ```zsh
-PROMPT_KRONUZ_GIT='${_prompt_kronuz_git_branch:+ ${fcol[blue]}git:(${fcol[red]}${_prompt_kronuz_git_branch}${fcol[blue]})${fcol[none]}${_prompt_kronuz_git_dirty:+ ${fcol[yellow]}✗${fcol[none]}}}'
+PROMPT_KRONUZ_GIT='${kz[git.branch]:+ ${kz[FG.blue]}git:(${kz[FG.red]}${kz[git.branch]}${kz[FG.blue]})${kz[RESET]}${kz[git.dirty]:+ ${kz[FG.yellow]}✗${kz[RESET]}}}'
 ```
 
-**Use `${fcol[name]}` for colour inside a `${var:+...}` conditional, not a literal
+**Use `${kz[FG.name]}` for colour inside a `${var:+...}` conditional, not a literal
 `%F{...}`.** A bare `}` (from `%F{blue}`) ends the conditional early and truncates the
-segment; `${fcol[blue]}` is a balanced `${...}` and survives. The palette has every named
-colour (`blue`, `cyan`, `red`, ...); `$fcol` is the foreground, `$bcol` the matching
-background (`${bcol[green]}`, for powerline-style segments). `robbyrussell.zsh`,
-`pure.zsh`, `emoji.zsh`, and `powerline.zsh` all follow this.
+segment; `${kz[FG.blue]}` is a balanced `${...}` and survives. Use `${kz[BG.name]}` for
+powerline-style backgrounds. `robbyrussell.zsh`, `pure.zsh`, `emoji.zsh`, and
+`powerline.zsh` all follow this.
 
 ## Gallery
 
