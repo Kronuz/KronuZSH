@@ -8,6 +8,12 @@ shared by the tool integrations that highlight code with a TextMate/syntect engi
 - **yazi** — its file preview (`syntect_theme`) points here, wired by
   [`../yazi/setup.sh`](../yazi/setup.sh).
 
+The TextMate root foreground uses syntect's terminal-default sentinel (`#00000001`).
+The fallback scope `source, text - text.plain` restores the canonical true-color
+foreground for every highlighted grammar. Consequently plain/unknown text emits no
+foreground ANSI, while highlighted files retain a coherent Kronuz palette without any
+filename or language detection in the shell integration.
+
 **These files are generated, do not edit them by hand.** They come from the canonical
 Kronuz theme (the single source of truth) in
 [`kronuz-theme-vscode`](https://github.com/Kronuz/kronuz-theme-vscode) via its

@@ -13,7 +13,7 @@
 				<key>background</key>
 				<string>#292929</string>
 				<key>foreground</key>
-				<string>#fbfafa</string>
+				<string>#00000001</string>
 				<key>caret</key>
 				<string>#c46608</string>
 				<key>lineHighlight</key>
@@ -22,6 +22,15 @@
 				<string>#0837c466</string>
 				<key>invisibles</key>
 				<string>#f6f6f608</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>scope</key>
+			<string>source, text - text.plain</string>
+			<key>settings</key>
+			<dict>
+				<key>foreground</key>
+				<string>#fbfafa</string>
 			</dict>
 		</dict>
 		<dict>
