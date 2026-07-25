@@ -73,7 +73,9 @@ interactively. The real `cd` and `AUTO_CD` are left untouched.
 Loads a project's `.envrc` when you enter its directory and restores the previous
 environment when you leave. KronuZSH activates direnv's Zsh hook automatically when
 the command is present; new and changed `.envrc` files still require an explicit
-`direnv allow`, so repository code never runs merely because you cloned it.
+`direnv allow`, so repository code never runs merely because you cloned it. A
+[small runnable example](dev/direnv-example/) demonstrates the load, prompt, and
+unload behavior.
 
 ### [bat](https://github.com/sharkdp/bat) — a `cat` with syntax highlighting
 
