@@ -14,7 +14,9 @@
 #
 set -euo pipefail
 
-here="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+# Preserve a symlinked installation path (for example ~/.local/share/KronuZSH)
+# in the runcom links. Individual integrations resolve their assets physically.
+here="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -L)"
 runcoms=(zshenv zprofile zshrc zlogin zlogout)
 
 # shellcheck source=install.lib.sh

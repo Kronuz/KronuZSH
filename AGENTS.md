@@ -27,6 +27,9 @@ Entry points are in `runcoms/` (names match their `~/.*` symlink targets);
 implementation modules live in `lib/`. `install.sh` symlinks
 `~/.{zshenv,zprofile,zshrc,zlogin,zlogout}` -> `runcoms/*`, and `$KRONUZSH`
 self-resolves from `runcoms/zshrc` via `${(%):-%x}:A:h:h`.
+The installer preserves its logical invocation directory in those symlink
+targets, so invoking `~/.local/share/KronuZSH/install.sh` through a symlinked
+checkout keeps `~/.local/share/KronuZSH/runcoms/*` as the public target path.
 
 The installer has default install plus `--dry-run`, `--force`, `--uninstall`,
 and `--help`. Dry-run must not change user files, global Git configuration,
