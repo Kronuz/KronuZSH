@@ -58,6 +58,9 @@ jobs:
       - name: Check prompt namespace
         run: zsh dev/check-prompt-namespace.zsh
 
+      - name: Check normalized prompt state
+        run: zsh dev/check-prompt-state.zsh
+
       - name: Check declarative skins
         run: zsh dev/check-skins.zsh
 

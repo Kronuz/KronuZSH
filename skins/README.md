@@ -70,11 +70,16 @@ computes every prompt (from gitstatusd, or the direct-git fallback):
 
 | Variable                                                                               | Value                                      |
 | -------------------------------------------------------------------------------------- | ------------------------------------------ |
+| `$kz[git.repo]` / `$kz[git.clean]` / `$kz[git.dirty]`                                  | state flags, `1` when true                  |
 | `$kz[git.branch]`                                                                      | branch / tag / short commit, `''` off-repo |
-| `$kz[git.dirty]`                                                                       | non-empty when there are changes           |
+| `$kz[git.tag]` / `$kz[git.commit]` / `$kz[git.detached]`                               | exact ref details and detached-state flag   |
+| `$kz[git.action]`                                                                      | rebase/merge/etc., `''` when inactive       |
 | `$kz[git.staged]` / `$kz[git.unstaged]` / `$kz[git.untracked]` / `$kz[git.conflicted]` | count, `''` when zero                      |
 | `$kz[git.ahead]` / `$kz[git.behind]` / `$kz[git.stashed]`                              | count, `''` when zero                      |
 | `$kz[git.remote]`                                                                      | `remote/branch`, `''` when none            |
+
+Other normalized state useful to skins includes `$kz[venv.name]` and
+`$kz[duration]`. They are empty when inactive.
 
 Each is empty when absent, so a plain `${var:+...}` tests it — no hook, no arithmetic,
 and it works under both gitstatusd and the fallback:
@@ -120,3 +125,19 @@ configuration cannot yet cover all language, cloud, package, battery, and tool s
 | `lambda-mod.zsh`   | Lambda Mod's two-line lambda/Git prompt                           |
 | `pi.zsh`           | compact `π: project branch ❯`                                     |
 | `sobole.zsh`       | Sobole's spacious two-line path/Git prompt                        |
+| `af-magic.zsh`     | full-width dashed header, path/Git and context RPROMPT             |
+| `bira.zsh`         | rounded two-line user/path/Git prompt                              |
+| `cloud.zsh`        | compact cyan cloud prompt                                           |
+| `dst.zsh`          | failure banner, user/path and clock RPROMPT                         |
+| `fino.zsh`         | elegant two-line prose prompt                                       |
+| `itchy.zsh`        | user/path over a happy-or-sad face                                  |
+| `kiwi.zsh`         | framed `kiwish` two-line prompt                                     |
+| `lukerandall.zsh`  | bold user/path and punctuation Git state                            |
+| `pygmalion.zsh`    | high-voltage user@host:path prompt                                  |
+| `steeef.zsh`       | prose-like user at host in path                                     |
+| `sunaku.zsh`       | Git-first status stream                                             |
+| `ys.zsh`           | explanatory two-line context/Git/time prompt                        |
+| `zsh-redhat.zsh`   | Zsh's bundled Red Hat prompt                                        |
+| `zsh-suse.zsh`     | Zsh's bundled SUSE prompt                                           |
+| `zsh-walters.zsh`  | Zsh's bundled Walters prompt                                        |
+| `zsh-zefram.zsh`   | Zsh version/user/host/path prompt                                   |

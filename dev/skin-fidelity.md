@@ -19,6 +19,8 @@ The broader candidate list and selection signals are recorded in
 | `lambda-mod.zsh` | `halfo/lambda-mod-zsh-theme` | `f8b6ca5e348b` |
 | `pi.zsh` | `tobyjamesthomas/pi` | `96778f903b79` |
 | `sobole.zsh` | `sobolevn/sobole-zsh-theme` | `7eb032e07afd` |
+| `af-magic.zsh` through `ys.zsh` | `ohmyzsh/ohmyzsh` | `b37dd49ca5bf` |
+| `zsh-*.zsh` | Zsh `promptinit` | `5.9.2` |
 
 The comparison uses raw prompt cells and SGR styles rather than screenshots, avoiding
 font rasterization and antialiasing noise. The terminal font still determines the
@@ -47,6 +49,8 @@ states count against coverage; they are not silently removed from the denominato
 | Lambda Mod | 86% | commit-SHA RPROMPT and detached-head text omitted |
 | Pi | 96% | repo-relative path is approximated by basename |
 | Sobole | 91% | clean marker and alternate-user condition omitted |
+| New Oh My Zsh set | 88–100% | runtime/Hg/SVN fields documented per capture |
+| Zsh Redhat/Suse/Walters/Zefram | 98–100% | Zefram omits nested-shell depth |
 
 Sub-90% skins are retained with their gaps stated. Powerlevel10k, Spaceship, and
 Starship were evaluated but do not yet have useful declarative candidates: their

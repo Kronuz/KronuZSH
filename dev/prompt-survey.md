@@ -5,6 +5,9 @@ shortlist combines GitHub adoption (checked 2026-07-24), inclusion in the mainta
 Awesome Zsh and Oh My Zsh galleries, recent maintenance, community recommendations,
 and visual distinctness. Stars select candidates; they do not decide fidelity.
 
+The follow-up inventory of the 143-theme Oh My Zsh bundle, Prezto, Zim, Zsh's native
+themes, and grml is in [`framework-survey.md`](framework-survey.md).
+
 | Candidate | GitHub stars | Archetype | Declarative skin |
 | --- | ---: | --- | --- |
 | Starship | 59,057 | cross-shell module engine | surveyed |

@@ -365,7 +365,9 @@ The fallback's git binary is overridable via `KZ_PROMPT_GIT_CMD` (default
 `command git`); point it at a wrapper, or a fake for previews/tests (`dev/fake-git`).
 
 **Git state for skins.** Both render paths also populate a normalized set of
-`$kz[git.*]` keys (`$kz[git.branch]`, `$kz[git.dirty]`, `$kz[git.staged]`,
+`$kz[git.*]` keys (`$kz[git.repo]`, `$kz[git.branch]`, `$kz[git.tag]`,
+`$kz[git.commit]`, `$kz[git.detached]`, `$kz[git.action]`, `$kz[git.clean]`,
+`$kz[git.dirty]`, `$kz[git.staged]`,
 `$kz[git.unstaged]`, `$kz[git.untracked]`, `$kz[git.conflicted]`, `$kz[git.stashed]`,
 `$kz[git.ahead]`, `$kz[git.behind]`, `$kz[git.remote]`) — each a string, empty when
 absent/zero. `_kz_git_reset_state` clears them, and they're reset in the no-repo
@@ -373,6 +375,7 @@ path. A `KZ_PROMPT_GIT` override composes them declaratively
 (`${kz[git.branch]:+...}`), so a skin reshapes git with no hook of its own and it works
 under gitstatusd and the fallback alike. Inside a `${var:+...}` conditional, colour with
 `${kz[FG.name]}`, never a literal `%F{...}` (a bare `}` ends the conditional early).
+Other normalized content state includes `$kz[venv.name]` and `$kz[duration]`.
 
 ### Skins
 

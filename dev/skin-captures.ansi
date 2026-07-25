@@ -2,13 +2,55 @@ KronuZSH skin fidelity -- literal ANSI/SGR captures
 fixture: ~/project, main, staged + modified + untracked + ahead + stash
 view with: less -R dev/skin-captures.ansi
 
+=== af-magic ===
+ORIGINAL    [38;5;237m------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------[39m
+[38;5;32m~/project [38;5;75m([38;5;78mmain[38;5;214m*[38;5;75m)[39m [38;5;105m»[39m     RPROMPT [38;5;237mkronuz@kronuz[39m
+KRONUZSH    [38;5;237m------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------[0m[38;5;237m[24m[38;5;237m[27m[38;5;237m[39m[49m[K
+[38;5;32m~/project[0m[38;5;32m[24m[38;5;32m[27m[38;5;32m[39m[49m [38;5;75m([38;5;78mmain[38;5;214m*[38;5;75m)[0m[38;5;75m[24m[38;5;75m[27m[38;5;75m[39m[49m [35m»[0m[35m[24m[35m[27m[35m[39m[49m     RPROMPT  [38;5;237mkronuz@kronuz[0m[38;5;237m[24m[38;5;237m[27m[38;5;237m[39m[49m
+
 === agnoster ===
 ORIGINAL    [44m[30m ~/project [43m[34m[30m  main ± [49m[33m[39m 
 KRONUZSH    [44m[30m ~/project [43m[34m[30m  main ± [49m[33m[39m 
 
+=== bira ===
+ORIGINAL    ╭─[1m[32mkronuz@kronuz[39m[0m [1m[34m~/project [39m[0m[33m‹main[31m●[33m› [39m
+╰─[1m$[0m 
+KRONUZSH    ╭─[1m[32mkronuz@kronuz[0m[32m[24m[32m[27m[32m[39m[49m [1m[34m~/project [0m[34m[24m[34m[27m[34m[39m[49m[33m‹main[31m●[33m› [0m[33m[24m[33m[27m[33m[39m[49m[K
+╰─[1m$[0m 
+
+=== cloud ===
+ORIGINAL    [1m[36m☁  [1m[36m[32mproject [1m[32m[36m[32m[[36mmain[32m] [33m⚡ [39m [1m[34m [39m[0m
+KRONUZSH    [1m[36m☁  [32mproject [36m[32m[[36mmain[32m] [33m⚡ [0m[33m[24m[33m[27m[33m[39m[49m[1m[34m [0m[34m[24m[34m[27m[34m[39m[49m
+
+=== dst ===
+ORIGINAL    
+[35mkronuz[39m@[33mkronuz[39m: [1m[34m~/project[39m[0m [32mmain[31m![39m
+$     RPROMPT [32m[18:00:00][39m
+KRONUZSH    [K
+[35mkronuz[0m[35m[24m[35m[27m[35m[39m[49m@[33mkronuz[0m[33m[24m[33m[27m[33m[39m[49m: [1m[34m~/project[0m[34m[24m[34m[27m[34m[39m[49m [32mmain[31m![0m[31m[24m[31m[27m[31m[39m[49m[K
+$     RPROMPT [32m[18:00:00][0m[32m[24m[32m[27m[32m[39m[49m
+
+=== fino ===
+ORIGINAL    ╭─[38;5;40mkronuz [38;5;239mat [38;5;33mkronuz [38;5;239min [1m[38;5;239m[38;5;226m~/project[0m[38;5;226m [38;5;239mon[39m [38;5;255mmain[38;5;202m✘✘✘[39m
+╰─±[39m 
+KRONUZSH    ╭─[38;5;40mkronuz [38;5;239mat [38;5;33mkronuz [38;5;239min [1m[38;5;239m[38;5;226m~/project[0m[38;5;226m[24m[38;5;226m[27m[38;5;226m[39m[49m [38;5;239mon [38;5;255mmain[38;5;202m✘✘✘[0m[38;5;202m[24m[38;5;202m[27m[38;5;202m[39m[49m[K
+╰─±[0m[24m[27m[39m[49m 
+
 === geometry ===
 ORIGINAL     [39m▲[39m [34m~/project[39m     RPROMPT ⇡ [38;5;242mmain[39m [32m1s[39m [38;5;144m●[39m [31m⬡[39m
 KRONUZSH     ▲[0m[24m[27m[39m[49m [34m~/project[0m[34m[24m[34m[27m[34m[39m[49m     RPROMPT ⇡ [38;5;242mmain[0m[38;5;242m[24m[38;5;242m[27m[38;5;242m[39m[49m [38;5;144m●[0m[38;5;144m[24m[38;5;144m[27m[38;5;144m[39m[49m [31m⬡[0m[31m[24m[31m[27m[31m[39m[49m
+
+=== itchy ===
+ORIGINAL    [36mkronuz@kronuz[39m [33m~/project[39m
+[32m☺[39m      RPROMPT main [31m✗[39m
+KRONUZSH    [36mkronuz@kronuz[0m[36m[24m[36m[27m[36m[39m[49m [33m~/project[0m[33m[24m[33m[27m[33m[39m[49m[K
+[32m☺[0m[32m[24m[32m[27m[32m[39m[49m      RPROMPT main [31m✗[0m[31m[24m[31m[27m[31m[39m[49m
+
+=== kiwi ===
+ORIGINAL    [1m[32m┌[[36mkiwish-4.2[32m]-([37m~/project[32m)-[[39m[37mgit:[1m[37m[37mmain[1m[37m[32m]-
+└> [39m[0m
+KRONUZSH    [1m[32m┌[[36mkiwish-4.2[32m]-([38;2;255;255;255m~/project[32m)-[[38;2;255;255;255mgit:[1m[38;2;255;255;255mmain[1m[38;2;255;255;255m[32m]-[K
+└> [0m[38;2;0;0;2m[24m[38;2;0;0;2m[27m[38;2;0;0;2m[39m[49m
 
 === lambda-mod ===
 ORIGINAL    
@@ -16,11 +58,19 @@ ORIGINAL
 [1m[36m→[39m[0m     RPROMPT  [1m[37m[[34m0123456[37m][39m[0m
 KRONUZSH    [K
 [1m[32mλ[0m[32m[24m[32m[27m[32m[39m[49m [1m[33mkronuz[0m[33m[24m[33m[27m[33m[39m[49m [35m[~/project][0m[35m[24m[35m[27m[35m[39m[49m at [34m main[0m[34m[24m[34m[27m[34m[39m[49m [1m[32m+[1m[32m[34m![1m[34m[36m?[0m[36m[24m[36m[27m[36m[39m[49m[K
-[1m[36m→[0m[36m[24m[36m[27m[36m[39m[49m 
+[1m[36m→[0m[36m[24m[36m[27m[36m[39m[49m     RPROMPT  [1m[38;2;255;255;255m[[34m0123456[38;2;255;255;255m][0m[38;2;255;255;255m[24m[38;2;255;255;255m[27m[38;2;255;255;255m[39m[49m
+
+=== lukerandall ===
+ORIGINAL    [1m[32mkronuz@kronuz[39m[0m [1m[34m~/project[39m[0m [33m(main % + *)[39m [1m»[0m 
+KRONUZSH    [1m[32mkronuz@kronuz[0m[32m[24m[32m[27m[32m[39m[49m [1m[34m~/project[0m[34m[24m[34m[27m[34m[39m[49m [33m(main % + *) [0m[33m[24m[33m[27m[33m[39m[49m[1m»[0m[24m[27m[39m[49m 
 
 === pi ===
 ORIGINAL     [1m[32mπ[39m[0m: [34mproject[39m [1m[32mmain[39m[0m [33m✗[39m [35m❯[39m 
 KRONUZSH     [1m[32mπ[0m[32m[24m[32m[27m[32m[39m[49m: [34mproject[0m[34m[24m[34m[27m[34m[39m[49m [1m[32mmain[0m[32m[24m[32m[27m[32m[39m[49m [33m✗[0m[33m[24m[33m[27m[33m[39m[49m [35m❯[0m[35m[24m[35m[27m[35m[39m[49m 
+
+=== pygmalion ===
+ORIGINAL    [35mkronuz[36m@[33mkronuz[31m:[36m~/project[31m|[39m[32mmain[33m⚡[39m [36m⇒[39m  
+KRONUZSH    [35mkronuz[36m@[33mkronuz[31m:[36m~/project[31m|[0m[31m[24m[31m[27m[31m[39m[49m[32mmain[33m⚡[0m[33m[24m[33m[27m[33m[39m[49m [36m⇒[0m[36m[24m[36m[27m[36m[39m[49m  
 
 === pure ===
 ORIGINAL    [34m~/project[39m [38;5;242mmain[38;5;218m*[39m [36m⇡[39m [36m≡[39m
@@ -38,6 +88,42 @@ ORIGINAL    [1m[34m~/project[39m[0m [32mmain[39m [31m✗[39m
 KRONUZSH    [1m[34m~/project[0m[34m[24m[34m[27m[34m[39m[49m [32mmain[0m[32m[24m[32m[27m[32m[39m[49m [31m✗[0m[31m[24m[31m[27m[31m[39m[49m[K
 [30m»[0m[30m[24m[30m[27m[30m[39m[49m 
 
+=== steeef ===
+ORIGINAL    
+[38;5;135mkronuz[39m at [38;5;166mkronuz[39m in [38;5;118m~/project[39m ([38;5;81mmain[38;5;166m●[38;5;118m●[38;5;161m●[39m) 
+$ 
+KRONUZSH    [K
+[38;5;135mkronuz[0m[38;5;135m[24m[38;5;135m[27m[38;5;135m[39m[49m at [38;5;166mkronuz[0m[38;5;166m[24m[38;5;166m[27m[38;5;166m[39m[49m in [38;5;118m~/project[0m[38;5;118m[24m[38;5;118m[27m[38;5;118m[39m[49m ([38;5;81mmain[38;5;166m●[38;5;118m●[38;5;161m●[0m[38;5;161m[24m[38;5;161m[27m[38;5;161m[39m[49m) [K
+$ 
+
+=== sunaku ===
+ORIGINAL    [32m+[35m![33m?[39mmain [32m~/project[39m> 
+KRONUZSH    [32m+[35m![33m?[0m[33m[24m[33m[27m[33m[39m[49mmain [32m~/project[0m[32m[24m[32m[27m[32m[39m[49m> 
+
 === typewritten ===
 ORIGINAL    [34m❯[39m     RPROMPT [35mproject[39m -> [35mmain[39m [32m+[39m [34m?[39m [33m![39m [34m|•[39m [33m$[39m
 KRONUZSH    [34m❯[0m[34m[24m[34m[27m[34m[39m[49m     RPROMPT [35mproject[0m[35m[24m[35m[27m[35m[39m[49m -> [35mmain[0m[35m[24m[35m[27m[35m[39m[49m [32m+ [34m? [33m! [34m|• [33m$[0m[33m[24m[33m[27m[33m[39m[49m
+
+=== ys ===
+ORIGINAL    
+[1m[34m#[39m[0m [36mkronuz[39m @ [32mkronuz [39min [1m[33m~/project[39m[0m on[34m git:[36mmain [31mx[39m [18:00:00] 
+[1m[31m$ [39m[0m
+KRONUZSH    [K
+[1m[34m#[0m[34m[24m[34m[27m[34m[39m[49m [36mkronuz[0m[36m[24m[36m[27m[36m[39m[49m @ [32mkronuz [0m[32m[24m[32m[27m[32m[39m[49min [1m[33m~/project[0m[33m[24m[33m[27m[33m[39m[49m on[34m git:[36mmain [31mx[0m[31m[24m[31m[27m[31m[39m[49m [18:00:00] [K
+[1m[31m$ [0m[31m[24m[31m[27m[31m[39m[49m
+
+=== zsh-redhat ===
+ORIGINAL    [kronuz@kronuz project]$ 
+KRONUZSH    [kronuz@kronuz project]$ 
+
+=== zsh-suse ===
+ORIGINAL    kronuz@kronuz:~/project/ > 
+KRONUZSH    kronuz@kronuz:~/project/ > 
+
+=== zsh-walters ===
+ORIGINAL    kronuz@kronuz:~/project> 
+KRONUZSH    kronuz@kronuz:~/project> 
+
+=== zsh-zefram ===
+ORIGINAL    [5.9.2]kronuz@kronuz:[1m~/project[0m> 
+KRONUZSH    [5.9.2]kronuz@kronuz:[1m~/project[0m[24m[27m[39m[49m> 

@@ -465,15 +465,18 @@ typeset -g _kz_prompt_git=''
 # count, so a plain ${var:+...} tests it. All are '' outside a repo. The fallback knows
 # presence, not counts, so there each count is '' or '1' (and ahead/behind/stashed/
 # conflicted stay '').
-# The normalised git state lives in $kz[git.<name>] (branch, remote, dirty, staged,
-# unstaged, untracked, conflicted, stashed, ahead, behind), populated by both the daemon
-# and fallback paths below and reset off-repo. Each is a string: empty when absent/zero,
+# The normalised git state lives in $kz[git.<name>] (repo, branch, tag, commit,
+# detached, action, remote, clean, dirty, staged, unstaged, untracked, conflicted,
+# stashed, ahead, behind), populated by both the daemon and fallback paths below and
+# reset off-repo. Each is a string: empty when absent/zero,
 # else the value or count, so a plain ${kz[git.<name>]:+...} tests it. The fallback knows
 # presence, not counts, so there each count is '' or '1' (and ahead/behind/stashed/
 # conflicted stay '').
 
 function _kz_git_reset_state {
-  kz[git.branch]='' kz[git.remote]='' kz[git.dirty]='' \
+  kz[git.repo]='' kz[git.branch]='' kz[git.tag]='' kz[git.commit]='' \
+    kz[git.detached]='' kz[git.action]='' kz[git.remote]='' \
+    kz[git.clean]='' kz[git.dirty]='' \
     kz[git.staged]='' kz[git.unstaged]='' kz[git.untracked]='' \
     kz[git.conflicted]='' kz[git.stashed]='' \
     kz[git.ahead]='' kz[git.behind]=''
@@ -486,9 +489,9 @@ function _kz_git_fallback {
   # keeps the `command` builtin so a user git function/alias can't shadow it.
   local -a gitcmd=( ${=KZ_PROMPT_GIT_CMD:-command git} )
   $gitcmd rev-parse --is-inside-work-tree &>/dev/null || { _kz_git_reset_state; return }
-  local branch
+  local branch detached=''
   branch="$($gitcmd symbolic-ref --short HEAD 2>/dev/null)" \
-    || branch="$($gitcmd rev-parse --short HEAD 2>/dev/null)"
+    || { detached=1; branch="$($gitcmd rev-parse --short HEAD 2>/dev/null)"; }
   [[ -z "$branch" ]] && { _kz_git_reset_state; return }
   local sep="${(e)_kz_sem[sep]}" none="${(e)kz[RESET]}" info="${(e)_kz_sem[info]}"
   local gly="$kz[GLYPH.branch]"
@@ -512,9 +515,12 @@ function _kz_git_fallback {
   else
     icons="${(e)_kz_sem[clean]}${kz[GLYPH.clean]}${none}"
   fi
-  kz[git.branch]="$branch" kz[git.remote]="$remote"
+  kz[git.repo]=1 kz[git.branch]="$branch" kz[git.tag]='' kz[git.commit]="$($gitcmd rev-parse --short HEAD 2>/dev/null)"
+  kz[git.detached]="$detached" kz[git.action]='' kz[git.remote]="$remote"
   kz[git.staged]="${staged:+1}" kz[git.unstaged]="${unstaged:+1}" \
     kz[git.untracked]="${untracked:+1}" kz[git.dirty]="${staged}${unstaged}${untracked:+1}"
+  kz[git.clean]=''
+  [[ -z "${kz[git.dirty]}" ]] && kz[git.clean]=1
   _kz_prompt_git="${s}${sep} (${none}${icons}${sep})${none}"
 }
 
@@ -611,7 +617,12 @@ function _kz_git_render {
     (( VCS_STATUS_NUM_UNTRACKED ))  && icons+="${icons:+$isep}${(e)_kz_sem[untracked]}${kz[GLYPH.untracked]}${_kz_glyph_pad[untracked]}${VCS_STATUS_NUM_UNTRACKED}${none}"
   fi
 
+  kz[git.repo]=1
   kz[git.branch]="${VCS_STATUS_LOCAL_BRANCH:-${VCS_STATUS_TAG:-${VCS_STATUS_COMMIT[1,7]}}}"
+  kz[git.tag]="$VCS_STATUS_TAG" kz[git.commit]="${VCS_STATUS_COMMIT[1,7]}"
+  kz[git.detached]=''
+  [[ -z "$VCS_STATUS_LOCAL_BRANCH" ]] && kz[git.detached]=1
+  kz[git.action]="$VCS_STATUS_ACTION"
   kz[git.remote]="${VCS_STATUS_REMOTE_NAME:+${VCS_STATUS_REMOTE_NAME}/${VCS_STATUS_REMOTE_BRANCH}}"
   kz[git.staged]="${VCS_STATUS_NUM_STAGED:#0}" kz[git.unstaged]="${VCS_STATUS_NUM_UNSTAGED:#0}"
   kz[git.untracked]="${VCS_STATUS_NUM_UNTRACKED:#0}" kz[git.conflicted]="${VCS_STATUS_NUM_CONFLICTED:#0}"
@@ -620,6 +631,8 @@ function _kz_git_render {
   kz[git.dirty]=''
   (( dirty_unknown || VCS_STATUS_NUM_STAGED + VCS_STATUS_NUM_UNSTAGED + VCS_STATUS_NUM_UNTRACKED + VCS_STATUS_NUM_CONFLICTED )) \
     && kz[git.dirty]=1
+  kz[git.clean]=''
+  [[ -z "${kz[git.dirty]}" ]] && kz[git.clean]=1
   _kz_prompt_git="${s}${sep} (${none}${icons}${sep})${none}"
   _kz_git_last="$_kz_prompt_git"
 }
@@ -677,7 +690,9 @@ function _kz_git_segment {
 # ---- venv ----
 typeset -g _kz_prompt_venv=''
 function _kz_venv_segment {
+  kz[venv.name]=''
   if [[ -n "$VIRTUAL_ENV" ]]; then
+    kz[venv.name]="$VIRTUAL_ENV:t"
     _kz_prompt_venv=" ${(e)_kz_sem[info]}${kz[GLYPH.venv]}${(e)kz[RESET]} ${(e)_kz_sem[venv]}${VIRTUAL_ENV:t}${(e)kz[RESET]}"
   else
     _kz_prompt_venv=''
@@ -794,12 +809,13 @@ function _kz_duration_fmt {
   fi
 }
 function _kz_duration_segment {
-  _kz_prompt_duration=''
+  _kz_prompt_duration='' kz[duration]=''
   (( _kz_cmd_start )) || return
   local -F elapsed=$(( ${EPOCHREALTIME:-0} - _kz_cmd_start ))
   _kz_cmd_start=0
   (( elapsed >= ${KZ_PROMPT_CMD_DURATION_MIN:-3} )) || return
   _kz_prompt_duration="$(_kz_duration_fmt $elapsed)"
+  kz[duration]="$_kz_prompt_duration"
 }
 
 # ---- status line (exit code + duration, on a line above the info row) ----

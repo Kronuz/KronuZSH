@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import importlib.util
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -26,14 +27,47 @@ spec.loader.exec_module(preview)
 # Prompt-level ANSI transcribed from the pinned upstream defaults in
 # dev/skin-fidelity.md. `print -P` below converts these to literal SGR bytes.
 ORIGINALS = {
+    "af-magic": (
+        "%F{237}" + ("-" * 240) + "%f\n%F{32}~/project %F{75}(%F{78}main%F{214}*%F{75})%f %F{105}»%f ",
+        "%F{237}kronuz@kronuz%f",
+    ),
     "agnoster": (
         "%K{blue}%F{black} ~/project %K{yellow}%F{blue}%F{black}"
         "  main ± %k%F{yellow}%f ",
         "",
     ),
+    "bira": (
+        "╭─%B%F{green}kronuz@kronuz%f%b %B%F{blue}~/project %f%b"
+        "%F{yellow}‹main%F{red}●%F{yellow}› %f\n╰─%B$%b ",
+        "",
+    ),
+    "cloud": (
+        "%B%F{cyan}☁  %B%F{green}project %B%F{cyan}%F{green}[%F{cyan}main"
+        "%F{green}] %F{yellow}⚡ %f %B%F{blue} % %f%b",
+        "",
+    ),
+    "dst": (
+        "\n%F{magenta}kronuz%f@%F{yellow}kronuz%f: %B%F{blue}~/project%f%b"
+        " %F{green}main%F{red}!%f\n$ ",
+        "%F{green}[18:00:00]%f",
+    ),
+    "fino": (
+        "╭─%F{40}kronuz %F{239}at %F{33}kronuz %F{239}in %B%F{226}~/project%b"
+        " %F{239}on%f %F{255}main%F{202}✘✘✘%f\n╰─±%f ",
+        "",
+    ),
     "geometry": (
         " %F{default}▲%f %F{blue}~/project%f ",
         "⇡ %F{242}main%f %F{green}1s%f %F{144}●%f %F{red}⬡%f",
+    ),
+    "itchy": (
+        "%F{cyan}kronuz@kronuz%f %F{yellow}~/project%f\n%F{green}☺%f  ",
+        "main %F{red}✗%f",
+    ),
+    "kiwi": (
+        "%B%F{green}┌[%F{cyan}kiwish-4.2%F{green}]-(%F{white}~/project"
+        "%F{green})-[%f%F{white}git:%B%F{white}main%B%F{green}]-\n└> % %f%b",
+        "",
     ),
     "lambda-mod": (
         "\n%B%F{green}λ%f%b %B%F{yellow}kronuz%f%b %F{magenta}[~/project]%f"
@@ -41,9 +75,19 @@ ORIGINALS = {
         "%B%F{cyan}→%f%b ",
         " %B%F{white}[%F{blue}0123456%F{white}]%f%b",
     ),
+    "lukerandall": (
+        "%B%F{green}kronuz@kronuz%f%b %B%F{blue}~/project%f%b "
+        "%F{yellow}(main %% + *)%f %B»%b ",
+        "",
+    ),
     "pi": (
         " %B%F{green}π%f%b: %F{blue}project%f %B%F{green}main%f%b"
         " %F{yellow}✗%f %F{magenta}❯%f ",
+        "",
+    ),
+    "pygmalion": (
+        "%F{magenta}kronuz%F{cyan}@%F{yellow}kronuz%F{red}:%F{cyan}~/project"
+        "%F{red}|%f%F{green}main%F{yellow}⚡%f %F{cyan}⇒%f  ",
         "",
     ),
     "pure": (
@@ -61,11 +105,30 @@ ORIGINALS = {
         "%F{black}»%f ",
         "",
     ),
+    "steeef": (
+        "\n%F{135}kronuz%f at %F{166}kronuz%f in %F{118}~/project%f "
+        "(%F{81}main%F{166}●%F{118}●%F{161}●%f) \n$ ",
+        "",
+    ),
+    "sunaku": (
+        "%F{green}+%F{magenta}!%F{yellow}?%fmain %F{green}~/project%f> ",
+        "",
+    ),
     "typewritten": (
         "%F{blue}❯%f ",
         "%F{magenta}project%f -> %F{magenta}main%f %F{green}+%f"
         " %F{blue}?%f %F{yellow}!%f %F{blue}|•%f %F{yellow}$%f",
     ),
+    "ys": (
+        "\n%B%F{blue}#%f%b %F{cyan}kronuz%f @ %F{green}kronuz %f"
+        "in %B%F{yellow}~/project%f%b on%F{blue} git:%F{cyan}main"
+        " %F{red}x%f [18:00:00] \n%B%F{red}$ %f%b",
+        "",
+    ),
+    "zsh-redhat": ("[kronuz@kronuz project]$ ", ""),
+    "zsh-suse": ("kronuz@kronuz:~/project/ > ", ""),
+    "zsh-walters": ("kronuz@kronuz:~/project> ", ""),
+    "zsh-zefram": ("[5.9.2]kronuz@kronuz:%B~/project%b> ", ""),
 }
 
 
@@ -79,6 +142,12 @@ def sgr(prompt: str) -> bytes:
 
 def line(label: str, left: bytes, right: bytes) -> bytes:
     return label.encode().ljust(12) + left + (b"    RPROMPT " + right if right else b"")
+
+
+def normalize_dynamic(value: bytes) -> bytes:
+    value = re.sub(rb"\b\d\d:\d\d:\d\d\b", b"18:00:00", value)
+    value = re.sub(rb"\[(?:\d+\.)+\d+\]", b"[5.9.2]", value)
+    return value
 
 
 def main() -> None:
@@ -98,7 +167,14 @@ def main() -> None:
             )
             out.write(f"\n=== {name} ===\n".encode())
             out.write(line("ORIGINAL", sgr(up_left), sgr(up_right)) + b"\n")
-            out.write(line("KRONUZSH", layers["PROMPT"], layers["RPROMPT"]) + b"\n")
+            out.write(
+                line(
+                    "KRONUZSH",
+                    normalize_dynamic(layers["PROMPT"]),
+                    normalize_dynamic(layers["RPROMPT"]),
+                )
+                + b"\n"
+            )
     finally:
         if no_color is not None:
             os.environ["NO_COLOR"] = no_color
