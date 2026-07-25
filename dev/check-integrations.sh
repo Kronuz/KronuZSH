@@ -36,4 +36,22 @@ if grep -En '(\|\|[[:space:]]+return[[:space:]]*$|^[[:space:]]*return[[:space:]]
   failed=1
 fi
 
+root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
+sandbox="$(mktemp -d)"
+trap 'rm -rf -- "$sandbox"' EXIT
+mkdir -p "$sandbox/bin"
+cat > "$sandbox/bin/direnv" <<'EOF'
+#!/bin/sh
+[ "$#" -eq 2 ] && [ "$1" = hook ] && [ "$2" = zsh ] || exit 64
+printf '%s\n' 'typeset -g _kz_direnv_test=loaded'
+EOF
+chmod +x "$sandbox/bin/direnv"
+
+if ! PATH="$sandbox/bin:$PATH" zsh -fc \
+  'source "$1"; [[ $_kz_direnv_test == loaded ]]' \
+  zsh "$root/integrations/direnv/init.zsh"; then
+  printf 'direnv integration must evaluate the Zsh hook when direnv is present\n' >&2
+  failed=1
+fi
+
 exit "$failed"

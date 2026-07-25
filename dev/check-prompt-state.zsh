@@ -56,6 +56,27 @@ _kz_venv_segment
   return 1
 }
 
+DIRENV_FILE=/tmp/example-project/.envrc
+_kz_direnv_segment
+[[ "${kz[direnv.file]}" == "$DIRENV_FILE" \
+  && "${kz[direnv.root]}" == example-project \
+  && "${(e)kz[direnv]}" == *env*example-project* ]] || {
+  print -u2 -r -- "direnv state or rendered segment was not exposed"
+  return 1
+}
+KZ_PROMPT_DIRENV=''
+[[ -z "${(e)kz[direnv]}" ]] || {
+  print -u2 -r -- "an empty KZ_PROMPT_DIRENV did not hide the segment"
+  return 1
+}
+unset KZ_PROMPT_DIRENV
+unset DIRENV_FILE
+_kz_direnv_segment
+[[ -z "${kz[direnv.file]}" && -z "${kz[direnv.root]}" ]] || {
+  print -u2 -r -- "direnv state leaked outside a direnv context"
+  return 1
+}
+
 _kz_cmd_start=$(( EPOCHREALTIME - 4 ))
 _kz_duration_segment
 [[ -n "${kz[duration]}" ]] || {

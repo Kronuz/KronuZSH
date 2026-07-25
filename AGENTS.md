@@ -224,10 +224,10 @@ char in a comment.
 Each segment is a deferred string `kz[x]="${(e)KZ_PROMPT_X:-$DEFAULT_KZ_PROMPT_X}"`,
 and `PROMPT`/`RPROMPT` splice the `$kz[...]` together. Dynamic data is computed
 in `kz_prompt_precmd` into private vars for pwd/venv (`_kz_prompt_pwd`,
-`_kz_prompt_venv`) and into `$kz[git.*]` for git state.
+`_kz_prompt_venv`) and normalized `$kz[git.*]` / `$kz[direnv.*]` state.
 
 Current layout:
-`PROMPT = status err info context etctl git venv jobs \n time pwd caret`
+`PROMPT = status err info context etctl git direnv venv jobs \n time pwd caret`
 (plus normal OSC 133 `A`/`B` marks when transience is off). With transience on, the
 live prompt is unmarked; accepting a command or blank line keeps the dimmed previous
 status/duration by default, then emits `A`/`B` only around the pwd/caret prompt line.
@@ -385,7 +385,13 @@ path. A `KZ_PROMPT_GIT` override composes them declaratively
 (`${kz[git.branch]:+...}`), so a skin reshapes git with no hook of its own and it works
 under gitstatusd and the fallback alike. Inside a `${var:+...}` conditional, colour with
 `${kz[FG.name]}`, never a literal `%F{...}` (a bare `}` ends the conditional early).
-Other normalized content state includes `$kz[venv.name]` and `$kz[duration]`.
+Other normalized content state includes `$kz[direnv.file]`, `$kz[direnv.root]`,
+`$kz[venv.name]`, and `$kz[duration]`.
+
+The direnv segment stays fork-free: direnv's own hook refreshes `$DIRENV_FILE`
+before `kz_prompt_precmd`, and `_kz_direnv_segment` derives the rc file and project
+root from it. Direnv also sets that variable for blocked or failed rc files, so the
+badge intentionally means “direnv context detected,” not “allowed and loaded.”
 
 ### Skins
 

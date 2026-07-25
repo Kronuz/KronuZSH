@@ -28,6 +28,7 @@ find        →  fd                simpler syntax, respects .gitignore, fast
 grep        →  rg (ripgrep)      recursive + gitignore-aware by default, fast
 git diff    →  delta             side-by-side, syntax-highlighted diffs
 cd          →  zoxide (z)        jumps to your most-used dirs
+(env)       →  direnv            loads/unloads project env on directory changes
 du          →  dust              readable disk-usage tree
 df          →  duf               readable mounts/free space
 top         →  btop              prettier, mouse-driven process monitor
@@ -66,6 +67,13 @@ binary as `fdfind` (a name clash); init.zsh accepts either name.
 
 Tracks your most-visited directories so `z proj` jumps straight there; `zi` picks
 interactively. The real `cd` and `AUTO_CD` are left untouched.
+
+### [direnv](https://direnv.net/) — per-project environments
+
+Loads a project's `.envrc` when you enter its directory and restores the previous
+environment when you leave. KronuZSH activates direnv's Zsh hook automatically when
+the command is present; new and changed `.envrc` files still require an explicit
+`direnv allow`, so repository code never runs merely because you cloned it.
 
 ### [bat](https://github.com/sharkdp/bat) — a `cat` with syntax highlighting
 
@@ -161,15 +169,15 @@ Package names differ across platforms, which bites on minimal distros.
 
 ```bash
 # macOS
-brew install fd bat fzf zoxide ripgrep git-delta eza yazi \
+brew install fd bat fzf zoxide direnv ripgrep git-delta eza yazi \
              lazygit hyperfine jq yq dust duf btop procs sd tealdeer tokei glow xh
 
 # Debian / Ubuntu  (fd installs as `fdfind`, bat as `batcat` — init.zsh
 # detects both)
-sudo apt install fd-find bat fzf zoxide ripgrep git-delta
+sudo apt install fd-find bat fzf zoxide direnv ripgrep git-delta
 
 # Fedora
-sudo dnf install fd-find bat fzf zoxide ripgrep git-delta
+sudo dnf install fd-find bat fzf zoxide direnv ripgrep git-delta
 ```
 
 On a **minimal or locked-down distro** whose repos don't carry them (e.g. the

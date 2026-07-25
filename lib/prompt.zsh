@@ -13,7 +13,7 @@
 #   kz_prompt_setup   runs once: builds the $PROMPT / $RPROMPT templates and
 #                         registers the precmd / preexec / zle hooks.
 #   kz_prompt_precmd  runs before every prompt: recomputes the dynamic pieces
-#                         (git, venv, cwd, command duration, ...).
+#                         (git, direnv, venv, cwd, command duration, ...).
 # zsh then re-renders $PROMPT at each prompt with PROMPT_SUBST enabled.
 #
 # $PROMPT is assembled from deferred strings. Each segment is
@@ -26,8 +26,8 @@
 # $_kz_* holds internal state and flags.
 #
 # Git status comes from gitstatus (gitstatusd), with a direct-git fallback. The
-# venv / keymap / cwd segments are small native pieces (prezto used its python-info
-# / editor-info / prompt-pwd modules for these).
+# direnv / venv / keymap / cwd segments are small native pieces (prezto used its
+# python-info / editor-info / prompt-pwd modules for the latter three).
 #
 
 # ============================================================================
@@ -270,6 +270,7 @@ function kz_prompt_colors {
     caret3     '%(!.$kz[FG.red].%B$kz[FG.green])'
     status_err '$kz[FG.red]'
     status_ok  '$kz[FG.green]'
+    direnv     '$kz[FG.aqua]'
     venv       '$kz[FG.white]'
     vim        '%B$kz[FG.green]'
     emacs      '%B$kz[FG.green]'
@@ -697,6 +698,25 @@ function _kz_venv_segment {
   else
     _kz_prompt_venv=''
   fi
+}
+
+# ---- direnv ----
+# DIRENV_FILE is maintained by direnv's own prompt hook. The hook runs before
+# kz_prompt_precmd, so this stays current without invoking direnv again on the prompt
+# path. direnv also sets DIRENV_FILE for a blocked/failed rc file; this deliberately
+# represents a detected direnv context, not its approval state.
+typeset -g _kz_prompt_direnv_root=''
+function _kz_direnv_segment {
+  kz[direnv.file]=''
+  kz[direnv.root]=''
+  _kz_prompt_direnv_root=''
+  [[ -n "${DIRENV_FILE-}" ]] || return 0
+
+  local root="${DIRENV_FILE:h:t}"
+  [[ -n "$root" ]] || root='/'
+  kz[direnv.file]="$DIRENV_FILE"
+  kz[direnv.root]="$root"
+  _kz_prompt_direnv_root="${root//\%/%%}"
 }
 
 # ---- working directory ----
@@ -1164,6 +1184,7 @@ function kz_prompt_precmd {
     [[ "${KZ_PROMPT_TRANSIENT_STYLE:-dim}" != (keep|none|off|mute|grey|gray) ]] && _kz_load_palette
   fi
   _kz_pwd_segment
+  _kz_direnv_segment
   _kz_venv_segment
   _kz_ip_segment
   _kz_duration_segment
@@ -1223,7 +1244,8 @@ function kz_prompt_reset_skin {
   local -a skin_vars=(
     KZ_PROMPT_PROMPT KZ_PROMPT_RPROMPT KZ_PROMPT_TRANSIENT_PROMPT
     KZ_PROMPT_TRANSIENT_RPROMPT KZ_PROMPT_TRANSIENT_CARET
-    KZ_PROMPT_GIT KZ_PROMPT_PWD KZ_PROMPT_VENV KZ_PROMPT_CARET KZ_PROMPT_STATUS
+    KZ_PROMPT_GIT KZ_PROMPT_DIRENV KZ_PROMPT_PWD KZ_PROMPT_VENV KZ_PROMPT_CARET
+    KZ_PROMPT_STATUS
   )
   unset ${^skin_vars}
 }
@@ -1302,6 +1324,7 @@ function kz_prompt_setup {
   DEFAULT_KZ_PROMPT_IP='${_kz_prompt_ip}'
   DEFAULT_KZ_PROMPT_GIT='${_kz_prompt_git:+${(e)_kz_prompt_git}}'
   DEFAULT_KZ_PROMPT_GIT_SEP=' '
+  DEFAULT_KZ_PROMPT_DIRENV='${_kz_prompt_direnv_root:+" ${_kz_sem[info]}env${kz[RESET]}:${_kz_sem[direnv]}${_kz_prompt_direnv_root}${kz[RESET]}"}'
   DEFAULT_KZ_PROMPT_VENV='${(e)_kz_prompt_venv}'
   DEFAULT_KZ_PROMPT_OVERWRITE='${(e)_kz_prompt_overwrite}'
   DEFAULT_KZ_PROMPT_CARET='${(e)_kz_prompt_keymap}'
@@ -1316,7 +1339,8 @@ function kz_prompt_setup {
   for seg in os err vim emacs etctl context jobs git venv caret; do
     kz[$seg]="\${(e)KZ_PROMPT_${seg:u}:-\$DEFAULT_KZ_PROMPT_${seg:u}}"
   done
-  # Unlike the older segments, an explicit empty value hides the overwrite marker.
+  # Unlike the older segments, an explicit empty value hides these markers.
+  kz[direnv]='${(e)KZ_PROMPT_DIRENV-$DEFAULT_KZ_PROMPT_DIRENV}'
   kz[overwrite]='${(e)KZ_PROMPT_OVERWRITE-$DEFAULT_KZ_PROMPT_OVERWRITE}'
   # The rest wrap a segment in its own colour, or compose other segments.
   kz[user]='${_kz_sem[user]}${(e)KZ_PROMPT_USER:-$DEFAULT_KZ_PROMPT_USER}${kz[RESET]}'
@@ -1331,7 +1355,8 @@ function kz_prompt_setup {
   SPROMPT='zsh: correct $kz[FG.red]%R%f to $kz[FG.green]%r%f [nyae]? '
   # The visible layout is deferred and overridable end to end. KZ_PROMPT_PROMPT (the two
   # prompt lines) and KZ_PROMPT_RPROMPT (the right prompt) compose the $kz[<segment>]
-  # array -- os err info context etctl git venv jobs nl time pwd caret transient_caret
+  # array -- os err info context etctl git direnv venv jobs nl time pwd caret
+  # transient_caret
   # overwrite vim emacs -- plus any fcol[]/glyph[]/prompt escapes, so a skin can reorder,
   # drop, or replace the whole thing (see skins/). The collapsed scrollback prompt is the
   # third knob a full skin sets, KZ_PROMPT_TRANSIENT_PROMPT (default: pwd + caret). $kz[]
@@ -1341,7 +1366,7 @@ function kz_prompt_setup {
   # after setup, takes effect at render with no rebuild. The OSC 133 A/B/D marks and the
   # status line stay wrapped around it, so iTerm integration survives any skin.
   DEFAULT_KZ_PROMPT_RPROMPT='$kz[overwrite]$kz[vim]$kz[emacs]'
-  DEFAULT_KZ_PROMPT_PROMPT='$kz[err] $kz[info]$kz[context]$kz[etctl]$kz[git]$kz[venv]$kz[jobs]$kz[nl]$kz[time] $kz[pwd] $kz[caret] '
+  DEFAULT_KZ_PROMPT_PROMPT='$kz[err] $kz[info]$kz[context]$kz[etctl]$kz[git]$kz[direnv]$kz[venv]$kz[jobs]$kz[nl]$kz[time] $kz[pwd] $kz[caret] '
   # The chosen layout (a skin's KZ_PROMPT_PROMPT/RPROMPT or the default), deferred with the
   # doubled ${(e)${(e)...}} so one PROMPT_SUBST pass resolves both levels: the layout, then
   # the $kz[...] segments it names. Named so PROMPT/RPROMPT below stay readable.

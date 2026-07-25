@@ -131,7 +131,8 @@ Two tiers, by language:
   `.zshrc` runs and `integrations/init.zsh` can detect the tool.
 - **`~/.zshrc.local`** — zsh-only interactive machine tweaks (the
   `KZ_PROMPT_COLOR_HOST` and other `KZ_PROMPT_*` overrides, zstyles, tool
-  hooks like `direnv`). Sourced last, if present. Copy the template and edit:
+  hooks not already covered by an integration, such as `nvm`). Sourced last,
+  if present. Copy the template and edit:
 
   ```bash
   cp ~/.config/KronuZSH/zshrc.local.example ~/.zshrc.local
@@ -182,7 +183,7 @@ into `~/.cache/gitstatus/` (from GitHub releases). Nothing is committed here.
 
 KronuZSH wires in a set of modern CLI tools **when they're installed**, and
 silently skips them when they aren't, so the same config works on your laptop, a
-fresh box, or a server with none of them. The wired set (fzf, fd, zoxide, bat,
+fresh box, or a server with none of them. The wired set (fzf, fd, zoxide, direnv, bat,
 ripgrep, git-delta, eza, yazi) gets key bindings, aliases, env, or git
 config; a longer list of "just run them" tools (lazygit, jq, dust, btop, ...) is
 worth having too.
@@ -193,13 +194,13 @@ shared Kronuz theming. The quick install:
 
 ```bash
 # macOS
-brew install fd bat fzf zoxide ripgrep git-delta eza yazi
+brew install fd bat fzf zoxide direnv ripgrep git-delta eza yazi
 
 # Debian / Ubuntu  (fd installs as `fdfind`, bat as `batcat`; init.zsh detects both)
-sudo apt install fd-find bat fzf zoxide ripgrep git-delta
+sudo apt install fd-find bat fzf zoxide direnv ripgrep git-delta
 
 # Fedora
-sudo dnf install fd-find bat fzf zoxide ripgrep git-delta
+sudo dnf install fd-find bat fzf zoxide direnv ripgrep git-delta
 ```
 
 On a minimal or locked-down distro that lacks them, install via Rust

@@ -85,8 +85,8 @@ KZ_PROMPT_PWD_STYLE=short
 # How the whole collapsed line (pwd, caret, command) is restyled: dim (default), mute, keep.
 # KZ_PROMPT_TRANSIENT_STYLE=mute
 
-# --- Tool hooks (safe here: PATH is already set up by ~/.profile) ---
-# command -v direnv >/dev/null && eval "$(direnv hook zsh)"
+# --- Additional tool hooks (safe here: PATH is already set up by ~/.profile) ---
+# direnv is wired automatically by integrations/direnv/init.zsh when installed.
 # export NVM_DIR="$HOME/.nvm"; [[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh"
 
 # --- Tool config (env only; nothing PATH-related) ---
