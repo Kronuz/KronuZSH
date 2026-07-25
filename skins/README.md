@@ -33,7 +33,7 @@ prompt spaceship
 The `.zsh` suffix is optional. A readable path is also accepted when importing or
 developing a skin outside the gallery.
 
-`kz_prompt_use_skin` clears only layout and segment overrides. Palette, glyph, terminal,
+`prompt` clears only layout and segment overrides. Palette, glyph, terminal,
 Git-engine, and machine-specific settings remain intact. Direct `source` is still useful
 when deliberately layering a small override on top of an existing skin.
 
