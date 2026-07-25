@@ -115,3 +115,8 @@ configuration cannot yet cover all language, cloud, package, battery, and tool s
 | `robbyrussell.zsh` | Oh My Zsh's default: `➜ dir git:(branch) ✗`                     |
 | `emoji.zsh`        | playful all-emoji: `📁 dir 🌿 branch ⚡`                          |
 | `agnoster.zsh`     | Agnoster's path/Git ribbon; optional segments documented         |
+| `geometry.zsh`     | Geometry's sparse left prompt and Git RPROMPT                     |
+| `typewritten.zsh`  | Typewritten's prompt-left, context-right layout                   |
+| `lambda-mod.zsh`   | Lambda Mod's two-line lambda/Git prompt                           |
+| `pi.zsh`           | compact `π: project branch ❯`                                     |
+| `sobole.zsh`       | Sobole's spacious two-line path/Git prompt                        |

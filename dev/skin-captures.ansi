@@ -1,0 +1,43 @@
+KronuZSH skin fidelity -- literal ANSI/SGR captures
+fixture: ~/project, main, staged + modified + untracked + ahead + stash
+view with: less -R dev/skin-captures.ansi
+
+=== agnoster ===
+ORIGINAL    [44m[30m ~/project [43m[34m[30m  main ± [49m[33m[39m 
+KRONUZSH    [44m[30m ~/project [43m[34m[30m  main ± [49m[33m[39m 
+
+=== geometry ===
+ORIGINAL     [39m▲[39m [34m~/project[39m     RPROMPT ⇡ [38;5;242mmain[39m [32m1s[39m [38;5;144m●[39m [31m⬡[39m
+KRONUZSH     ▲[0m[24m[27m[39m[49m [34m~/project[0m[34m[24m[34m[27m[34m[39m[49m     RPROMPT ⇡ [38;5;242mmain[0m[38;5;242m[24m[38;5;242m[27m[38;5;242m[39m[49m [38;5;144m●[0m[38;5;144m[24m[38;5;144m[27m[38;5;144m[39m[49m [31m⬡[0m[31m[24m[31m[27m[31m[39m[49m
+
+=== lambda-mod ===
+ORIGINAL    
+[1m[32mλ[39m[0m [1m[33mkronuz[39m[0m [35m[~/project][39m at [34m main[39m [1m[32m+[34m![36m?[39m[0m
+[1m[36m→[39m[0m     RPROMPT  [1m[37m[[34m0123456[37m][39m[0m
+KRONUZSH    [K
+[1m[32mλ[0m[32m[24m[32m[27m[32m[39m[49m [1m[33mkronuz[0m[33m[24m[33m[27m[33m[39m[49m [35m[~/project][0m[35m[24m[35m[27m[35m[39m[49m at [34m main[0m[34m[24m[34m[27m[34m[39m[49m [1m[32m+[1m[32m[34m![1m[34m[36m?[0m[36m[24m[36m[27m[36m[39m[49m[K
+[1m[36m→[0m[36m[24m[36m[27m[36m[39m[49m 
+
+=== pi ===
+ORIGINAL     [1m[32mπ[39m[0m: [34mproject[39m [1m[32mmain[39m[0m [33m✗[39m [35m❯[39m 
+KRONUZSH     [1m[32mπ[0m[32m[24m[32m[27m[32m[39m[49m: [34mproject[0m[34m[24m[34m[27m[34m[39m[49m [1m[32mmain[0m[32m[24m[32m[27m[32m[39m[49m [33m✗[0m[33m[24m[33m[27m[33m[39m[49m [35m❯[0m[35m[24m[35m[27m[35m[39m[49m 
+
+=== pure ===
+ORIGINAL    [34m~/project[39m [38;5;242mmain[38;5;218m*[39m [36m⇡[39m [36m≡[39m
+[35m❯[39m 
+KRONUZSH    [34m~/project[0m[34m[24m[34m[27m[34m[39m[49m [38;5;242mmain[38;5;218m*[0m[38;5;218m[24m[38;5;218m[27m[38;5;218m[39m[49m [36m⇡[0m[36m[24m[36m[27m[36m[39m[49m [36m≡[0m[36m[24m[36m[27m[36m[39m[49m[K
+[35m❯[0m[35m[24m[35m[27m[35m[39m[49m 
+
+=== robbyrussell ===
+ORIGINAL    [1m[32m➜[39m[0m  [36mproject[39m [1m[34mgit:([31mmain[34m)[39m[0m [33m✗[39m 
+KRONUZSH    [1m[32m➜[0m[32m[24m[32m[27m[32m[39m[49m  [36mproject[0m[36m[24m[36m[27m[36m[39m[49m [1m[34mgit:([31mmain[34m)[0m[34m[24m[34m[27m[34m[39m[49m [33m✗[0m[33m[24m[33m[27m[33m[39m[49m 
+
+=== sobole ===
+ORIGINAL    [1m[34m~/project[39m[0m [32mmain[39m [31m✗[39m
+[30m»[39m 
+KRONUZSH    [1m[34m~/project[0m[34m[24m[34m[27m[34m[39m[49m [32mmain[0m[32m[24m[32m[27m[32m[39m[49m [31m✗[0m[31m[24m[31m[27m[31m[39m[49m[K
+[30m»[0m[30m[24m[30m[27m[30m[39m[49m 
+
+=== typewritten ===
+ORIGINAL    [34m❯[39m     RPROMPT [35mproject[39m -> [35mmain[39m [32m+[39m [34m?[39m [33m![39m [34m|•[39m [33m$[39m
+KRONUZSH    [34m❯[0m[34m[24m[34m[27m[34m[39m[49m     RPROMPT [35mproject[0m[35m[24m[35m[27m[35m[39m[49m -> [35mmain[0m[35m[24m[35m[27m[35m[39m[49m [32m+ [34m? [33m! [34m|• [33m$[0m[33m[24m[33m[27m[33m[39m[49m
