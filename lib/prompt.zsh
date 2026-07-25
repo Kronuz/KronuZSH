@@ -1217,6 +1217,29 @@ function _kz_setup_transient_widgets {
   _kz_pal_loaded=0
 }
 
+# Clear only the layout/segment overrides used by bundled skins. Palette, glyph,
+# terminal, Git-engine, and machine-specific settings intentionally survive.
+function kz_prompt_reset_skin {
+  local -a skin_vars=(
+    KZ_PROMPT_PROMPT KZ_PROMPT_RPROMPT KZ_PROMPT_TRANSIENT_PROMPT
+    KZ_PROMPT_TRANSIENT_RPROMPT KZ_PROMPT_TRANSIENT_CARET
+    KZ_PROMPT_GIT KZ_PROMPT_PWD KZ_PROMPT_VENV KZ_PROMPT_CARET KZ_PROMPT_STATUS
+  )
+  unset ${^skin_vars}
+}
+
+# Reset the previous skin and source a new one in one operation. This is the
+# recommended switcher for interactive use; direct `source` remains supported.
+function kz_prompt_use_skin {
+  if (( $# != 1 )); then
+    print -u2 'usage: kz_prompt_use_skin PATH_TO_SKIN'
+    return 2
+  fi
+  [[ -r $1 ]] || { print -u2 "skin not readable: $1"; return 1; }
+  kz_prompt_reset_skin
+  builtin source -- "$1"
+}
+
 function kz_prompt_setup {
   setopt LOCAL_OPTIONS
   unsetopt XTRACE KSH_ARRAYS

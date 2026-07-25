@@ -16,6 +16,17 @@ source "$KRONUZSH/skins/minimal.zsh"
 
 Or copy the two or three lines you like straight into `~/.zshrc.local` and tweak them.
 
+When switching between bundled skins, reset the previous layout first so an option that
+the new skin does not set cannot leak through:
+
+```zsh
+kz_prompt_use_skin "$KRONUZSH/skins/spaceship.zsh"
+```
+
+`kz_prompt_use_skin` clears only layout and segment overrides. Palette, glyph, terminal,
+Git-engine, and machine-specific settings remain intact. Direct `source` is still useful
+when deliberately layering a small override on top of an existing skin.
+
 ## Writing one
 
 Three knobs, each a deferred `${...}` string re-evaluated every render:
