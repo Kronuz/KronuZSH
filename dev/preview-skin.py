@@ -86,7 +86,6 @@ def render(
         f"{skin_line}"
         "function _kz_preview_ready {\n"
         "  print -n $'\\x1eREADY\\x1e'\n"
-        "  add-zle-hook-widget -d line-init _kz_preview_ready\n"
         "}\n"
         "autoload -Uz add-zle-hook-widget\n"
         "add-zle-hook-widget line-init _kz_preview_ready\n"
@@ -150,7 +149,8 @@ def render(
     # 1. Wait until ZLE is actually reading a line before typing: input sent earlier is
     #    dropped. A one-shot line-init hook provides a shell-native readiness signal
     #    without depending on terminal-specific bracketed-paste output.
-    wait_for(b"\x1eREADY\x1e", timeout=15)
+    ready = b"\x1eREADY\x1e"
+    wait_for(ready, timeout=15)
 
     # 2. Enter the demo repo. cd is resent every iteration (idempotent) in case the very
     #    first keystroke still races ZLE, and we confirm arrival by the reported basename.
@@ -163,6 +163,7 @@ def render(
         if j != -1:
             k = buf.find(b"\x1e", j)
             if bytes(buf[j:k]) == target:
+                wait_for(ready, timeout=2.0, frm=k)
                 break
         time.sleep(0.03)
 
@@ -171,7 +172,7 @@ def render(
     #    the fake, so there is nothing async to wait on.)
     frm = len(buf)
     send("builtin true\r")
-    wait_for(b"\x1b]133;D", timeout=2.0, frm=frm)
+    wait_for(ready, timeout=2.0, frm=frm)
     raw_cycle = bytes(buf)
 
     # 4. Render the three layers. Inline $'\x01LABEL\x02' markers bound each printed
@@ -181,7 +182,8 @@ def render(
         send(
             f"print -n $'\\x01{label}\\x02'; print -rP -- \"{expr}\"; print -n $'\\x01END\\x02'\r"
         )
-        wait_for(b"\x01END\x02", timeout=3.0, frm=frm)
+        end = wait_for(b"\x01END\x02", timeout=3.0, frm=frm)
+        wait_for(ready, timeout=2.0, frm=end)
 
     grab("PROMPT", "${(e)${(e)KZ_PROMPT_PROMPT-$DEFAULT_KZ_PROMPT_PROMPT}}")
     grab("RPROMPT", "${(e)${(e)KZ_PROMPT_RPROMPT-$DEFAULT_KZ_PROMPT_RPROMPT}}")
