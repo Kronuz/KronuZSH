@@ -23,6 +23,16 @@ the new skin does not set cannot leak through:
 kz_prompt_use_skin "$KRONUZSH/skins/spaceship.zsh"
 ```
 
+Skin names are resolved from the bundled gallery, so the shorter forms work too:
+
+```zsh
+kz_prompt_use_skin spaceship
+prompt spaceship
+```
+
+The `.zsh` suffix is optional. A readable path is also accepted when importing or
+developing a skin outside the gallery.
+
 `kz_prompt_use_skin` clears only layout and segment overrides. Palette, glyph, terminal,
 Git-engine, and machine-specific settings remain intact. Direct `source` is still useful
 when deliberately layering a small override on top of an existing skin.

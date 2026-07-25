@@ -1232,13 +1232,22 @@ function kz_prompt_reset_skin {
 # recommended switcher for interactive use; direct `source` remains supported.
 function kz_prompt_use_skin {
   if (( $# != 1 )); then
-    print -u2 'usage: kz_prompt_use_skin PATH_TO_SKIN'
+    print -u2 'usage: kz_prompt_use_skin SKIN|PATH_TO_SKIN'
     return 2
   fi
-  [[ -r $1 ]] || { print -u2 "skin not readable: $1"; return 1; }
+  local skin=$1 candidate
+  if [[ ! -r $skin && $skin != */* ]]; then
+    candidate="${KRONUZSH:-${${(%):-%x}:A:h:h}}/skins/$skin"
+    [[ $candidate == *.zsh ]] || candidate+='.zsh'
+    skin=$candidate
+  fi
+  [[ -r $skin ]] || { print -u2 "skin not readable: $1"; return 1; }
   kz_prompt_reset_skin
-  builtin source -- "$1"
+  builtin source -- "$skin"
 }
+
+# Prezto-compatible shorthand: `prompt spaceship`.
+function prompt { kz_prompt_use_skin "$@" }
 
 function kz_prompt_setup {
   setopt LOCAL_OPTIONS
