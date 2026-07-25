@@ -201,8 +201,8 @@ case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) PATH="$HOME/.local/bin:$PATH"; e
 
 The colored tools share one **Kronuz** look. The syntax-highlighting theme is the
 canonical Kronuz theme, generated identically for VS Code, Sublime Text
-([Kronuz-Theme](https://github.com/Kronuz/Kronuz-Theme)) and TextMate from one source
-of truth ([kronuz-theme-vscode](https://github.com/Kronuz/kronuz-theme-vscode)); the
+([kronuz-theme-sublime](https://github.com/Kronuz/kronuz-theme-sublime)) and TextMate
+from one source of truth ([KronuzTheme](https://github.com/Kronuz/KronuzTheme)); the
 TextMate build lives in `integrations/themes/` (don't hand-edit it). The rest of the
 palette wiring:
 

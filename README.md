@@ -209,8 +209,8 @@ Go binary; the exact commands are in [integrations.md](integrations.md#installin
 The colored tools (eza, bat, delta, fzf) share one **Kronuz** look, bundled under
 `integrations/` (`eza/theme.yml`, `themes/Kronuz.tmTheme`, and fzf's
 `--color`). The syntax theme is generated from one source of truth
-([kronuz-theme-vscode](https://github.com/Kronuz/kronuz-theme-vscode)), identical to
-the VS Code and Sublime ([Kronuz-Theme](https://github.com/Kronuz/Kronuz-Theme))
+([KronuzTheme](https://github.com/Kronuz/KronuzTheme)), identical to
+the VS Code and Sublime ([kronuz-theme-sublime](https://github.com/Kronuz/kronuz-theme-sublime))
 editions. The wiring is in `integrations/init.zsh` (per-shell) and
 `integrations/setup.sh` (one-time: bat's theme cache + delta's gitconfig).
 

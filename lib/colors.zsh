@@ -4,7 +4,7 @@
 # for shared, system-level knobs. Sourced before lib/completion (which feeds $LS_COLORS
 # into the completion menu) and tool-independent, so colours don't vanish when a given
 # tool isn't installed. Every value is guarded (${VAR:-...}) so your own export wins.
-# All hues are the Kronuz palette (see kronuz-theme-vscode build.mjs).
+# All hues are the Kronuz palette (see KronuzTheme/build.mjs).
 #
 # Cross-platform: works on Linux, macOS, and BSD. Each tool reads the var it understands
 # and ignores the rest, so setting all of them unconditionally is safe everywhere — GNU

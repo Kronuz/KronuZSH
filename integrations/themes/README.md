@@ -16,8 +16,8 @@ filename or language detection in the shell integration.
 
 **These files are generated, do not edit them by hand.** They come from the canonical
 Kronuz theme (the single source of truth) in
-[`kronuz-theme-vscode`](https://github.com/Kronuz/kronuz-theme-vscode) via its
+[`KronuzTheme`](https://github.com/Kronuz/KronuzTheme) via its
 `build.mjs`, which emits the identical theme for VS Code, Sublime Text
-([`Kronuz-Theme`](https://github.com/Kronuz/Kronuz-Theme)) and TextMate (here). The
+([`kronuz-theme-sublime`](https://github.com/Kronuz/kronuz-theme-sublime)) and TextMate (here). The
 light variant is derived mathematically from the dark one. To change a colour, edit the
 canonical source and regenerate.

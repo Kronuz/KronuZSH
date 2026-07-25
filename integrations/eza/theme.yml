@@ -1,5 +1,5 @@
 # Kronuz palette for eza, derived from the Kronuz color scheme
-# (github.com/Kronuz/Kronuz-Theme). This file themes eza's UI columns
+# (github.com/Kronuz/KronuzTheme). This file themes eza's UI columns
 # (filekinds, perms, size, owner, dates, git) in calm, varied tones. Nothing
 # bold. NOTE: eza reads $LS_COLORS and it OVERRIDES the `filekinds` colours below
 # for the *filename* (precedence: $EZA_COLORS > $LS_COLORS > this file). So the

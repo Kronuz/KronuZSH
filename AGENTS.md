@@ -89,7 +89,7 @@ ls · fd · eza · completion menu
 ```
 
 Same "generate from a canonical source, commit the output" idea as the editor themes
-(`kronuz-theme-vscode`). vivid is only needed to **re-generate**; `integrations/vivid/setup.sh`
+(`KronuzTheme`). vivid is only needed to **re-generate**; `integrations/vivid/setup.sh`
 symlinks the theme into vivid's config dir (when vivid is installed) so you can.
 
 ### Editing a colour
