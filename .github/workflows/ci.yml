@@ -52,7 +52,7 @@ jobs:
           done
 
       - name: Check integration structure
-        run: bash scripts/check-integrations.sh
+        run: bash dev/check-integrations.sh
 
   shellcheck:
     name: ShellCheck
