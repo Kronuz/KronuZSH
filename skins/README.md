@@ -62,7 +62,7 @@ dev/preview-skin.py skins/minimal.zsh   # prints a preview and asserts the marks
 ## Reformatting git
 
 Most skins just place `$kz[git]` (the engine's own git segment) in the layout. To
-render git *differently* (robbyrussell's `git:(branch)`, an emoji, a powerline segment),
+render git *differently* (robbyrussell's `git:(branch)`, an emoji, an Agnoster segment),
 override `KZ_PROMPT_GIT` and compose it from the git-state keys the engine
 computes every prompt (from gitstatusd, or the direct-git fallback):
 
@@ -85,7 +85,21 @@ KZ_PROMPT_GIT='${kz[git.branch]:+ ${kz[FG.blue]}git:(${kz[FG.red]}${kz[git.branc
 `%F{...}`.** A bare `}` (from `%F{blue}`) ends the conditional early and truncates the
 segment; `${kz[FG.blue]}` is a balanced `${...}` and survives. Use `${kz[BG.name]}` for
 powerline-style backgrounds. `robbyrussell.zsh`, `pure.zsh`, `emoji.zsh`, and
-`powerline.zsh` all follow this.
+`agnoster.zsh` all follow this.
+
+## Compatibility skins
+
+Names borrowed from another prompt are compatibility targets, not loose inspiration.
+Their defaults are compared against pinned upstream versions over clean and dirty
+repositories, success and failure, nested paths, virtualenvs, jobs, and duration where
+the upstream supports them. A named skin stays in the gallery only when at least 90%
+of the applicable visual cells and styles match. See
+[`dev/skin-fidelity.md`](../dev/skin-fidelity.md) for the scope and score.
+
+This deliberately excludes broad environment dashboards such as Powerlevel10k,
+Spaceship, and Starship. KronuZSH can imitate one screenshot from each, but it does
+not currently expose enough language, cloud, package, battery, and tool state to call
+that a 90%-faithful skin.
 
 ## Gallery
 
@@ -95,7 +109,7 @@ powerline-style backgrounds. `robbyrussell.zsh`, `pure.zsh`, `emoji.zsh`, and
 | `minimal.zsh`      | a single spare line: path, git, a lone magenta caret           |
 | `classic.zsh`      | the plain bash look: `user@host:dir$`                          |
 | `retro.zsh`        | a green-CRT DOS memory: `C:\dir\>`                             |
-| `pure.zsh`         | two lines, Sindre Sorhus's Pure: blue path, grey branch, `❯`   |
-| `robbyrussell.zsh` | oh-my-zsh's default: `➜ dir git:(branch) ✗`                    |
+| `pure.zsh`         | Pure-compatible two-line path/Git/context/status prompt         |
+| `robbyrussell.zsh` | Oh My Zsh's default: `➜ dir git:(branch) ✗`                     |
 | `emoji.zsh`        | playful all-emoji: `📁 dir 🌿 branch ⚡`                          |
-| `powerline.zsh`    | agnoster-style coloured segments with Nerd Font separators     |
+| `agnoster.zsh`     | Agnoster's conditional Powerline ribbon                         |

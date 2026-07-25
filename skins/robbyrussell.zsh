@@ -1,7 +1,8 @@
-# robbyrussell — oh-my-zsh's flagship theme: a green arrow (red after a failure), the
-# directory basename in cyan, then git:(branch) in blue/red with a yellow ✗ when dirty.
-# ${kz[FG.*]} everywhere (a literal %F{...} would end the git conditional early).
-KZ_PROMPT_GIT='${kz[git.branch]:+ ${kz[FG.blue]}git:(${kz[FG.red]}${kz[git.branch]}${kz[FG.blue]})${kz[RESET]}${kz[git.dirty]:+ ${kz[FG.yellow]}✗${kz[RESET]}}}'
-KZ_PROMPT_PROMPT='%(?.${kz[FG.green]}.${kz[FG.red]})➜%f  ${kz[FG.cyan]}%c%f$kz[git] '
+# robbyrussell — a visual compatibility skin for Oh My Zsh's default theme: a bold
+# green arrow (red after failure), directory basename in cyan, then git:(branch) in
+# bold blue/red with a yellow ✗ when dirty.
+KZ_PROMPT_GIT='${kz[git.branch]:+ ${kz[BOLD]}${kz[FG.blue]}git:(${kz[FG.red]}${kz[git.branch]}${kz[FG.blue]})${kz[RESET]}${kz[git.dirty]:+ ${kz[FG.yellow]}✗${kz[RESET]}}}'
+KZ_PROMPT_STATUS=0
+KZ_PROMPT_PROMPT='%(?.${kz[BOLD]}${kz[FG.green]}.${kz[BOLD]}${kz[FG.red]})➜${kz[RESET]}  ${kz[FG.cyan]}%c${kz[RESET]}$kz[git] '
 KZ_PROMPT_RPROMPT=''
-KZ_PROMPT_TRANSIENT_PROMPT='${kz[FG.green]}➜%f  ${kz[FG.cyan]}%c%f '
+KZ_PROMPT_TRANSIENT_PROMPT=''
