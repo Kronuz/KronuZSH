@@ -54,6 +54,9 @@ jobs:
       - name: Check integration structure
         run: bash dev/check-integrations.sh
 
+      - name: Check prompt namespace
+        run: zsh dev/check-prompt-namespace.zsh
+
   shellcheck:
     name: ShellCheck
     runs-on: ubuntu-latest

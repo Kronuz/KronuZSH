@@ -15,7 +15,7 @@ dependencies were replaced with small native pieces:
 | `python-info` (venv)        | `_kz_venv_segment` (`$VIRTUAL_ENV`)                                                       |
 | `editor-info` (keymap)      | `_kz_keymap_update` (zle hooks)                                                           |
 | `prompt-pwd`                | `_kz_pwd_segment` (`${(%):-%~}`, with `KZ_PROMPT_PWD_STYLE` full/short/base/absolute) |
-| `spectrum` (prompt colors)  | `$kz[FG.*]` / `$kz[BG.*]` wrap the inline `$col` palette in `lib/prompt.zsh`                  |
+| `spectrum` (prompt colors)  | `$kz[FG.*]` / `$kz[BG.*]` wrap the private palette in `lib/prompt.zsh`                        |
 
 Dropped from the prezto version: the `async` worker (gitstatusd is the async
 engine), `pmodload`/`vcs_info`, and a stray debug `echo >> /tmp/prompt_kronuz` that
@@ -136,30 +136,30 @@ things make it work; keep both intact:
 `kz_prompt_colors` builds two internal palettes, then exposes the public
 presentation keys in `$kz`:
 
-- **Base hue palette (`$col`)**: `$col[red]='1'`, `$col[darkorange]='#d75f00'`, ...
-  (bare zsh colour codes, no `%F` / `%K`). The ANSI 0..15 colors stay indexes so they
+- **Base hue palette (`$_kz_col_base`)**: private bare zsh colour codes such as
+  `red='1'` and `darkorange='#d75f00'` (no `%F` / `%K`). The ANSI 0..15 colors stay indexes so they
   track the terminal's theme; the 16..255 colors are **hex** `#RRGGBB` so they render at
   full 24-bit on a truecolor terminal. `KZ_PROMPT_PALETTE_<NAME>` defines or
   overrides any hue, not just the 16 ANSI basics, and feeds both display and `dim`'s RGB
   (see the transient section). The engine publishes each hue as `$kz[FG.<name>]` and
-  `$kz[BG.<name>]`.
-- **Semantic palette (`$_ksem`)**: a local defaults table maps each role to a full style
+  `$kz[BG.<name>]`; the mutable raw-code palette is function-local and never exposed.
+- **Semantic palette (`$_kz_sem`)**: a local defaults table maps each role to a full style
   expression (`branch '%B$kz[FG.white]'`, `host '$kz[FG.silver]'`, ...), then one loop
   applies any `KZ_PROMPT_COLOR_<ROLE>` override and writes the **resolved** style
-  (`${(e)}` expands the `$kz[FG.*]` refs) into `$_ksem[<role>]`. Recomputed every precmd.
+  (`${(e)}` expands the `$kz[FG.*]` refs) into `$_kz_sem[<role>]`. Recomputed every precmd.
 
-So `$_ksem[branch]` holds the final style for branch text, segments embed it deferredly
-as `\${_ksem[branch]}` (or read it at runtime via `${(e)_ksem[branch]}`), and any
+So `$_kz_sem[branch]` holds the final style for branch text, segments embed it deferredly
+as `\${_kz_sem[branch]}` (or read it at runtime via `${(e)_kz_sem[branch]}`), and any
 semantic role is overridable by setting `KZ_PROMPT_COLOR_<ROLE>` (e.g. in
-`~/.zshrc.local`). Semantic roles are not hues; `branch` lives in `$_ksem`, not in a
+`~/.zshrc.local`). Semantic roles are not hues; `branch` lives in `$_kz_sem`, not in a
 public foreground key. An explicit semantic override colours even in no-colour mode,
 matching glyph overrides.
 
-**Background keys (`$kz[BG.*]`).** Backgrounds wrap the same neutral `$col` hue codes as
-foregrounds: `$kz[FG.blue]` is `%F{$col[blue]}`, `$kz[BG.blue]` is `%K{$col[blue]}`. No
-string replacement is involved. A powerline/agnoster-style skin sets segment backgrounds
+**Background keys (`$kz[BG.*]`).** Backgrounds wrap the same private neutral hue codes as
+foregrounds: the public `$kz[FG.blue]` and `$kz[BG.blue]` hold complete `%F{...}` /
+`%K{...}` expressions. No string replacement is involved. A powerline/agnoster-style skin sets segment backgrounds
 with `${kz[BG.blue]}` etc. The default prompt uses no backgrounds; semantic roles stay
-in `$_ksem` and are not exposed as background hues.
+in `$_kz_sem` and are not exposed as background hues.
 
 **Truecolor / degradation.** `kz_prompt_setup` checks `$COLORTERM`
 (`24bit`/`truecolor`) and `$terminfo[colors]`; on a non-truecolor terminal it
@@ -171,8 +171,8 @@ escapes). One hex palette therefore covers every tier: truecolor → 256 → 16/
 react live to `export TERM=dumb` / `NO_COLOR=1` and back): `_kz_dumb`
 (`$TERM` empty/`dumb`/`unknown`) and `_kz_nocolor` (dumb **or** `$NO_COLOR`,
 the [no-color.org](https://no-color.org) standard). When `_kz_nocolor`,
-`kz_prompt_colors` blanks the presentation keys built from `$col` (`kz[FG.green]`,
-`kz[BG.green]`, ...) and the semantic defaults in `$_ksem`, so the **full layout renders
+`kz_prompt_colors` blanks the public presentation keys (`kz[FG.green]`,
+`kz[BG.green]`, ...) and the semantic defaults in `$_kz_sem`, so the **full layout renders
 with zero escapes** and a skin built on `${kz[FG.*]}` / `${kz[BG.*]}` is no-colour-safe
 for free. An explicit
 `KZ_PROMPT_COLOR_*` override still colours. When `_kz_dumb`,
@@ -200,7 +200,7 @@ it to any character, or to `''` to hide it (an empty override is honored, via th
 Names: `os branch tag commit remote action fallback clean dirty stashed ahead behind staged
 modified conflicted untracked venv vim emacs jobs duration ssh container dot return
 overwrite caret caret_alt`. The git/venv/keymap/error segments and the OS segment
-all read `$kz[GLYPH.*]` rather than hard-coding icons. A separate `glyph_pad[<name>]`
+all read `$kz[GLYPH.*]` rather than hard-coding icons. A separate `_kz_glyph_pad[<name>]`
 holds a trailing space for glyphs wide enough to collide with following text (a
 single Private-Use-Area Nerd Font char); plain BMP / character glyphs get none, so
 counts/jobs/duration only space out the wide glyphs. The OS glyph is OS-dependent
@@ -292,8 +292,8 @@ terminal) else an OSC 4 query `_kz_query_palette` (budget
 `$KZ_PROMPT_PALETTE_TIMEOUT`, default 0.6s, so a remote/slow link still answers; a
 complete 16-colour result is cached), then per-colour `$KZ_PROMPT_PALETTE_<NAME>`
 overrides win on top (never cached; if all 16 are set the query is skipped) — falling
-back to xterm defaults. The same overrides feed `$col` and the `$kz[FG.*]` /
-`$kz[BG.*]` wrappers in `kz_prompt_colors`, so display and dim stay in sync),
+back to xterm defaults. The same overrides feed the private live palette and the
+`$kz[FG.*]` / `$kz[BG.*]` wrappers in `kz_prompt_colors`, so display and dim stay in sync),
 `mute` (grey), or `keep`. To win the
 final paint over fast-syntax-highlighting it wraps fsh's `_zsh_highlight` once (not a
 `zle-line-finish` hook — `add-zle-hook-widget zle-line-finish` recurses once fsh
@@ -337,10 +337,10 @@ parse error happens at *runtime* inside the valid `eval`.
 ### Add a segment
 
 1. (if it needs a new semantic style) add a `<role> '$kz[FG.<hue>]'` entry to the
-   defaults table in `kz_prompt_colors`. The loop writes `$_ksem[<role>]` and
+   defaults table in `kz_prompt_colors`. The loop writes `$_kz_sem[<role>]` and
    wires the `KZ_PROMPT_COLOR_<ROLE>` override automatically; the no-color path
    blanks the default, so nothing terminal-specific is needed.
-2. Define `DEFAULT_KZ_PROMPT_<NAME>` (its content; reference `\${_ksem[<role>]}`,
+2. Define `DEFAULT_KZ_PROMPT_<NAME>` (its content; reference `\${_kz_sem[<role>]}`,
    `\${kz[GLYPH.<name>]}`, and any dynamic var). Use `\${...}` to keep `$` deferred,
    matching the surrounding code.
 3. Define `kz[<name>]="\${(e)KZ_PROMPT_<NAME>:-\$DEFAULT_KZ_PROMPT_<NAME>}"`.
@@ -356,7 +356,7 @@ two cleanest examples to copy.
 `VCS_STATUS_*` to the branch/icons. If gitstatusd isn't up (no tty, not installed,
 download blocked) it calls `_kz_git_fallback`, a lean direct-`git` version, so
 the prompt always shows git info. That path renders `$kz[GLYPH.fallback]` with
-`$_ksem[fallback]`, making synchronous fallback visible without warning in the healthy
+`$_kz_sem[fallback]`, making synchronous fallback visible without warning in the healthy
 daemon path. gitstatus only distinguishes counts
 (staged/unstaged/untracked/conflicted), not added-vs-deleted-vs-renamed, so the
 icon set is a small simplification of the old prezto one.
@@ -526,6 +526,9 @@ hand-rolling a new capture script:
   control byte, so a protocol or cursor-motion change still fails the golden compare.
 - **`dev/check-integrations.sh`** — sanity-checks the external-tool integration wiring
   (also referenced from `CONTRIBUTING.md`).
+- **`dev/check-prompt-namespace.zsh`** — guards the prompt's public/private variable
+  boundary, including cleanup of the old `$col` palette on re-source. CI runs it on
+  macOS and Linux.
 
 ## gitstatusd deployment
 

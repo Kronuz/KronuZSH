@@ -19,9 +19,8 @@
 # $PROMPT is assembled from deferred strings. Each segment is
 #   ${(e)KZ_PROMPT_<NAME>:-$DEFAULT_KZ_PROMPT_<NAME>}
 # i.e. a user override or the built-in default, re-expanded ((e) flag) every render.
-# Two arrays feed the segments, each element overridable:
-#   $fcol    named colour palette         ($kz[FG.red], $kz[FG.chartreuse], ...)
-#   $glyph  icon set, Nerd Font or plain  ($kz[GLYPH.branch], $kz[GLYPH.venv], ...)
+# One public array feeds the segments:
+#   $kz  presentation and content handles ($kz[FG.red], $kz[GLYPH.branch], ...)
 #
 # Naming: $_kz_prompt_* holds a rendered segment string spliced into $PROMPT;
 # $_kz_* holds internal state and flags.
@@ -35,15 +34,16 @@
 # Colours
 # ============================================================================
 
-# Base palette: named neutral colour codes, populated at load. A snapshot ($_col_base,
-# just below) is the immutable source that every rebuild wraps into $kz[FG.<name>] /
+# Base palette: named neutral colour codes, populated at load. $_kz_col_base is the
+# immutable source that every rebuild wraps into $kz[FG.<name>] /
 # $kz[BG.<name>] (in kz_prompt_colors), blanking every entry in no-colour mode so a
 # skin's ${kz[FG.green]} (and ${kz[BG.green]}) emit nothing. ANSI 0..15 stay symbolic so
 # they track the terminal theme; 16..255 are exact hex (truecolor), downsampled by
-# zsh/nearcolor on non-truecolor terminals. $col is the internal code palette; a skin
-# defines/overrides a hue with $KZ_PROMPT_PALETTE_<NAME> and uses $kz[FG.<name>].
-unset col _col_base
-typeset -gA col=(
+# zsh/nearcolor on non-truecolor terminals. The mutable palette is local to
+# kz_prompt_colors; a skin defines/overrides a hue with $KZ_PROMPT_PALETTE_<NAME> and
+# uses $kz[FG.<name>]. Clear pre-unification names when re-sourcing an older shell.
+unset col _col_base _ksem glyph_pad
+typeset -gA _kz_col_base=(
   black                '0'        red                  '1'
   lightgreen           '10'       olive                '#878700'
   darkkhaki            '#87875f'  gray                 '#878787'
@@ -106,13 +106,10 @@ typeset -gA col=(
   lightred             '9'        blueviolet           '#8700ff'
   brown                '#875f00'
 )
-# Immutable snapshot of the base palette; kz_prompt_colors rebuilds $fcol from it.
-typeset -gA _col_base=("${(@kv)col}")
-
 # The 16 ANSI colours, by palette name -> index. They default to symbolic %F{N} (above)
 # so they track the terminal theme, but each is overridable to a concrete colour via
-# $KZ_PROMPT_PALETTE_<NAME> (a #RRGGBB or a 0-255 index), applied to $fcol in
-# kz_prompt_colors and fed to `dim`'s RGB in _kz_load_palette.
+# $KZ_PROMPT_PALETTE_<NAME> (a #RRGGBB or a 0-255 index), applied to the public
+# $kz[FG.*] / $kz[BG.*] handles and fed to `dim`'s RGB in _kz_load_palette.
 typeset -gA _kz_basic=(
   black 0  red 1  green 2  yellow 3  blue 4  magenta 5  cyan 6  grey 7
   darkgrey 8  lightred 9  lightgreen 10  lightyellow 11  lightblue 12
@@ -228,13 +225,13 @@ function _kz_load_palette {
 }
 
 # Semantic colours: map each prompt element to a base-palette colour, resolved with
-# the live palette into the same $fcol array the segments read ($_ksem[host], $_ksem[branch],
+# the live palette into the semantic array the segments read ($_kz_sem[host], $_kz_sem[branch],
 # ...). Mirrors kz_prompt_glyphs: a defaults table, then one loop that applies any
 # $KZ_PROMPT_COLOR_<NAME> override and writes the final value. No-colour mode
 # ($_kz_nocolor) blanks the built-in defaults (so the layout still renders with zero
 # escapes) while still honouring an explicit override. Recomputed every precmd, so
 # toggling $NO_COLOR / $TERM takes effect on the next prompt.
-typeset -gA _ksem
+typeset -gA _kz_sem
 typeset -g _kz_colors_sig=''
 function kz_prompt_colors {
   # Change-detection: colours are fully determined by $_kz_nocolor and the
@@ -248,20 +245,22 @@ function kz_prompt_colors {
   # Live neutral code palette: the immutable base plus any KZ_PROMPT_PALETTE_<NAME>,
   # which may redefine a built-in hue or define a brand-new one (a #RRGGBB or 0-255 index).
   local _cn _pv
-  col=("${(@kv)_col_base}")
+  local -A _col=("${(@kv)_kz_col_base}")
   for _k in ${(k)parameters[(I)KZ_PROMPT_PALETTE_*]}; do
     _pv="${(P)_k}"; _cn="${${_k#KZ_PROMPT_PALETTE_}:l}"
-    [[ -n "$_pv" ]] && col[$_cn]="$_pv"
+    [[ -n "$_pv" ]] && _col[$_cn]="$_pv"
   done
 
   # Public styling in $kz: FG./BG. wrap each code (no %F->%K string surgery); the attribute
   # setters and RESET are the raw zsh escapes. All blank in no-colour, so ${kz[FG.green]} /
   # ${kz[BG.green]} emit nothing and the layout still renders with zero escapes.
   if (( ${_kz_nocolor:-0} )); then
-    for _cn in ${(k)col}; do kz[FG.$_cn]='' kz[BG.$_cn]=''; done
+    for _cn in ${(k)_col}; do kz[FG.$_cn]='' kz[BG.$_cn]=''; done
     kz[RESET]='' kz[BOLD]='' kz[UNDERLINE]='' kz[STANDOUT]=''
   else
-    for _cn in ${(k)col}; do kz[FG.$_cn]="%F{$col[$_cn]}" kz[BG.$_cn]="%K{$col[$_cn]}"; done
+    for _cn in ${(k)_col}; do
+      kz[FG.$_cn]="%F{${_col[$_cn]}}" kz[BG.$_cn]="%K{${_col[$_cn]}}"
+    done
     kz[RESET]='%b%u%s%f%k' kz[BOLD]='%B' kz[UNDERLINE]='%U' kz[STANDOUT]='%S'
   fi
 
@@ -312,7 +311,7 @@ function kz_prompt_colors {
     def="${d[$name]}"; (( ${_kz_nocolor:-0} )) && def=''
     raw="${(P)ov}"
     [[ -z "$raw" ]] && raw="$def"
-    _ksem[$name]="${(e)raw}"
+    _kz_sem[$name]="${(e)raw}"
   done
 }
 
@@ -320,11 +319,11 @@ function kz_prompt_colors {
 # Glyphs
 # ============================================================================
 
-# Two glyph sets feed $glyph: a Nerd Font icon set (default) and a plain-Unicode
+# Two private glyph tables feed $kz[GLYPH.*]: a Nerd Font set (default) and a plain-Unicode
 # fallback that renders in any font. $KZ_PROMPT_NERD_FONT=0 (or no/off/false)
 # picks the plain set; dumb/unknown terminals force it too. Any single glyph is
 # overridable via $KZ_PROMPT_GLYPH_<NAME> (a character, or '' to hide it).
-typeset -gA kz glyph_pad
+typeset -gA kz _kz_glyph_pad
 typeset -g _kz_glyphs_sig=''
 function kz_prompt_glyphs {
   # Change-detection: glyphs depend only on terminal dumb-ness, the nerd-font toggle,
@@ -424,7 +423,7 @@ function kz_prompt_glyphs {
   local -i c
   # Rebuild from scratch: drop any set-specific glyph (e.g. the Nerd-only host_* icons)
   # left over from a previous mode so it can't leak into the plain set.
-  glyph_pad=()
+  _kz_glyph_pad=()
   for name in ${(k)g}; do
     ov="KZ_PROMPT_GLYPH_${name:u}"
     val="${(P)ov-$sentinel}"
@@ -438,13 +437,13 @@ function kz_prompt_glyphs {
     padov="KZ_PROMPT_GLYPH_PAD_${name:u}"
     padval="${(P)padov-$sentinel}"
     if [[ "$padval" != "$sentinel" ]]; then
-      glyph_pad[$name]="$padval"
+      _kz_glyph_pad[$name]="$padval"
     else
       c=0; [[ ${#val} -eq 1 ]] && c=$(( #val ))
       if (( (c >= 0xe000 && c <= 0xf8ff) || c >= 0xf0000 )); then
-        glyph_pad[$name]=' '
+        _kz_glyph_pad[$name]=' '
       else
-        glyph_pad[$name]=''
+        _kz_glyph_pad[$name]=''
       fi
     fi
   done
@@ -491,27 +490,27 @@ function _kz_git_fallback {
   branch="$($gitcmd symbolic-ref --short HEAD 2>/dev/null)" \
     || branch="$($gitcmd rev-parse --short HEAD 2>/dev/null)"
   [[ -z "$branch" ]] && { _kz_git_reset_state; return }
-  local sep="${(e)_ksem[sep]}" none="${(e)kz[RESET]}" info="${(e)_ksem[info]}"
+  local sep="${(e)_kz_sem[sep]}" none="${(e)kz[RESET]}" info="${(e)_kz_sem[info]}"
   local gly="$kz[GLYPH.branch]"
   $gitcmd symbolic-ref --quiet HEAD &>/dev/null || gly="$kz[GLYPH.commit]"
   local warning=''
-  [[ -n "$kz[GLYPH.fallback]" ]] && warning="${(e)_ksem[fallback]}${kz[GLYPH.fallback]}${none} "
-  local s=" ${warning}${info}${gly}${none} ${(e)_ksem[branch]}${branch}${none}"
+  [[ -n "$kz[GLYPH.fallback]" ]] && warning="${(e)_kz_sem[fallback]}${kz[GLYPH.fallback]}${none} "
+  local s=" ${warning}${info}${gly}${none} ${(e)_kz_sem[branch]}${branch}${none}"
   local remote
   remote="$($gitcmd rev-parse --abbrev-ref --symbolic-full-name @{upstream} 2>/dev/null)"
-  [[ -n "$remote" ]] && s+=" ${info}${kz[GLYPH.remote]}${none} ${(e)_ksem[remote]}${remote}${none}"
+  [[ -n "$remote" ]] && s+=" ${info}${kz[GLYPH.remote]}${none} ${(e)_kz_sem[remote]}${remote}${none}"
   local staged='' unstaged='' untracked='' icons=''
   local isep="${KZ_PROMPT_GIT_SEP-$DEFAULT_KZ_PROMPT_GIT_SEP}"
   $gitcmd diff --cached --quiet --ignore-submodules 2>/dev/null || staged=1
   $gitcmd diff --quiet --ignore-submodules 2>/dev/null || unstaged=1
   [[ -n "$($gitcmd ls-files --others --exclude-standard 2>/dev/null | head -1)" ]] && untracked=1
   if [[ -n "$staged$unstaged$untracked" ]]; then
-    icons+="${(e)_ksem[dirty]}${kz[GLYPH.dirty]}${none}"
-    [[ -n "$staged" ]]    && icons+="${icons:+$isep}${(e)_ksem[added]}${kz[GLYPH.staged]}${none}"
-    [[ -n "$unstaged" ]]  && icons+="${icons:+$isep}${(e)_ksem[modified]}${kz[GLYPH.modified]}${none}"
-    [[ -n "$untracked" ]] && icons+="${icons:+$isep}${(e)_ksem[untracked]}${kz[GLYPH.untracked]}${none}"
+    icons+="${(e)_kz_sem[dirty]}${kz[GLYPH.dirty]}${none}"
+    [[ -n "$staged" ]]    && icons+="${icons:+$isep}${(e)_kz_sem[added]}${kz[GLYPH.staged]}${none}"
+    [[ -n "$unstaged" ]]  && icons+="${icons:+$isep}${(e)_kz_sem[modified]}${kz[GLYPH.modified]}${none}"
+    [[ -n "$untracked" ]] && icons+="${icons:+$isep}${(e)_kz_sem[untracked]}${kz[GLYPH.untracked]}${none}"
   else
-    icons="${(e)_ksem[clean]}${kz[GLYPH.clean]}${none}"
+    icons="${(e)_kz_sem[clean]}${kz[GLYPH.clean]}${none}"
   fi
   kz[git.branch]="$branch" kz[git.remote]="$remote"
   kz[git.staged]="${staged:+1}" kz[git.unstaged]="${unstaged:+1}" \
@@ -532,13 +531,13 @@ typeset -g _kz_git_last='' _kz_git_inflight=0
 # Render the git segment from the current VCS_STATUS_* into $_kz_prompt_git, caching
 # the result in $_kz_git_last so an in-flight prompt can show it while a query runs.
 function _kz_git_render {
-  local sep="${(e)_ksem[sep]}" none="${(e)kz[RESET]}" info="${(e)_ksem[info]}" s=''
+  local sep="${(e)_kz_sem[sep]}" none="${(e)kz[RESET]}" info="${(e)_kz_sem[info]}" s=''
   if [[ -n "$VCS_STATUS_LOCAL_BRANCH" ]]; then
-    s+=" ${info}${kz[GLYPH.branch]}${none} ${(e)_ksem[branch]}${VCS_STATUS_LOCAL_BRANCH}${none}"
+    s+=" ${info}${kz[GLYPH.branch]}${none} ${(e)_kz_sem[branch]}${VCS_STATUS_LOCAL_BRANCH}${none}"
   elif [[ -n "$VCS_STATUS_TAG" ]]; then
-    s+=" ${info}${kz[GLYPH.tag]}${none} ${(e)_ksem[branch]}${VCS_STATUS_TAG}${none}"
+    s+=" ${info}${kz[GLYPH.tag]}${none} ${(e)_kz_sem[branch]}${VCS_STATUS_TAG}${none}"
   else
-    s+=" ${info}${kz[GLYPH.commit]}${none} ${(e)_ksem[commit]}${VCS_STATUS_COMMIT[1,7]}${none}"
+    s+=" ${info}${kz[GLYPH.commit]}${none} ${(e)_kz_sem[commit]}${VCS_STATUS_COMMIT[1,7]}${none}"
   fi
   # Remote tracking branch, tagged with a per-host icon (GitHub / GitLab / Bitbucket)
   # picked from $VCS_STATUS_REMOTE_URL. Unknown hosts and the plain-Unicode set (which has
@@ -550,35 +549,35 @@ function _kz_git_render {
       (*gitlab*)    rg="${kz[GLYPH.host_gitlab]:-$rg}" ;;
       (*bitbucket*) rg="${kz[GLYPH.host_bitbucket]:-$rg}" ;;
     esac
-    s+=" ${info}${rg}${none} ${(e)_ksem[remote]}${VCS_STATUS_REMOTE_NAME}/${VCS_STATUS_REMOTE_BRANCH}${none}"
+    s+=" ${info}${rg}${none} ${(e)_kz_sem[remote]}${VCS_STATUS_REMOTE_NAME}/${VCS_STATUS_REMOTE_BRANCH}${none}"
   fi
   [[ -n "$VCS_STATUS_ACTION" ]] && \
-    s+=" ${info}${kz[GLYPH.action]}${none} ${(e)_ksem[action]}${VCS_STATUS_ACTION}${none}"
+    s+=" ${info}${kz[GLYPH.action]}${none} ${(e)_kz_sem[action]}${VCS_STATUS_ACTION}${none}"
 
   # Indicators inside the (...), joined by $KZ_PROMPT_GIT_SEP (a space by
   # default, from $DEFAULT_KZ_PROMPT_GIT_SEP; set it to '·', ':', '' or anything
   # to taste). ${icons:+$isep} inserts the separator before every indicator except the first.
   local isep="${KZ_PROMPT_GIT_SEP-$DEFAULT_KZ_PROMPT_GIT_SEP}"
   local icons=''
-  (( VCS_STATUS_STASHES )) && icons+="${icons:+$isep}${(e)_ksem[stashed]}${kz[GLYPH.stashed]}${glyph_pad[stashed]}${VCS_STATUS_STASHES}${none}"
+  (( VCS_STATUS_STASHES )) && icons+="${icons:+$isep}${(e)_kz_sem[stashed]}${kz[GLYPH.stashed]}${_kz_glyph_pad[stashed]}${VCS_STATUS_STASHES}${none}"
   # gitstatusd reports HAS_* = -1 for unstaged/conflicted/untracked when the index is
   # larger than its -m cap and it skipped the dirty scan (see KZ_PROMPT_GITSTATUS_ARGS
   # in lib/plugins.zsh). Staged is always counted exactly; the rest are then unknown, so
   # we render the dirty mark plus a single "∞" instead of guessing "clean".
   local -i dirty_unknown=$(( ${VCS_STATUS_HAS_UNSTAGED:-0} == -1 ))
   if (( dirty_unknown || VCS_STATUS_NUM_STAGED + VCS_STATUS_NUM_UNSTAGED + VCS_STATUS_NUM_UNTRACKED + VCS_STATUS_NUM_CONFLICTED )); then
-    icons+="${icons:+$isep}${(e)_ksem[dirty]}${kz[GLYPH.dirty]}${none}"
+    icons+="${icons:+$isep}${(e)_kz_sem[dirty]}${kz[GLYPH.dirty]}${none}"
   else
-    icons+="${icons:+$isep}${(e)_ksem[clean]}${kz[GLYPH.clean]}${none}"
+    icons+="${icons:+$isep}${(e)_kz_sem[clean]}${kz[GLYPH.clean]}${none}"
   fi
-  (( VCS_STATUS_COMMITS_AHEAD ))  && icons+="${icons:+$isep}${(e)_ksem[ahead]}${kz[GLYPH.ahead]}${glyph_pad[ahead]}${VCS_STATUS_COMMITS_AHEAD}${none}"
-  (( VCS_STATUS_COMMITS_BEHIND )) && icons+="${icons:+$isep}${(e)_ksem[behind]}${kz[GLYPH.behind]}${glyph_pad[behind]}${VCS_STATUS_COMMITS_BEHIND}${none}"
+  (( VCS_STATUS_COMMITS_AHEAD ))  && icons+="${icons:+$isep}${(e)_kz_sem[ahead]}${kz[GLYPH.ahead]}${_kz_glyph_pad[ahead]}${VCS_STATUS_COMMITS_AHEAD}${none}"
+  (( VCS_STATUS_COMMITS_BEHIND )) && icons+="${icons:+$isep}${(e)_kz_sem[behind]}${kz[GLYPH.behind]}${_kz_glyph_pad[behind]}${VCS_STATUS_COMMITS_BEHIND}${none}"
   # Push-remote divergence (⇧/⇩), shown only when the push target is a *different* remote
   # than the upstream (triangular / fork workflow: push to your fork, pull from upstream).
   # gitstatusd fills these in the same payload, so it costs no extra git call.
   if [[ -n "$VCS_STATUS_PUSH_REMOTE_NAME" && "$VCS_STATUS_PUSH_REMOTE_URL" != "$VCS_STATUS_REMOTE_URL" ]]; then
-    (( VCS_STATUS_PUSH_COMMITS_AHEAD ))  && icons+="${icons:+$isep}${(e)_ksem[ahead]}${kz[GLYPH.push_ahead]}${glyph_pad[push_ahead]}${VCS_STATUS_PUSH_COMMITS_AHEAD}${none}"
-    (( VCS_STATUS_PUSH_COMMITS_BEHIND )) && icons+="${icons:+$isep}${(e)_ksem[behind]}${kz[GLYPH.push_behind]}${glyph_pad[push_behind]}${VCS_STATUS_PUSH_COMMITS_BEHIND}${none}"
+    (( VCS_STATUS_PUSH_COMMITS_AHEAD ))  && icons+="${icons:+$isep}${(e)_kz_sem[ahead]}${kz[GLYPH.push_ahead]}${_kz_glyph_pad[push_ahead]}${VCS_STATUS_PUSH_COMMITS_AHEAD}${none}"
+    (( VCS_STATUS_PUSH_COMMITS_BEHIND )) && icons+="${icons:+$isep}${(e)_kz_sem[behind]}${kz[GLYPH.push_behind]}${_kz_glyph_pad[push_behind]}${VCS_STATUS_PUSH_COMMITS_BEHIND}${none}"
   fi
   # Staged / unstaged detail. With KZ_PROMPT_GIT_SPLIT set, the single staged and
   # unstaged counts break into per-type marks -- added (+), changed (~), deleted (-) --
@@ -591,25 +590,25 @@ function _kz_git_render {
   if (( split && ! dirty_unknown )); then
     local -i s_new=VCS_STATUS_NUM_STAGED_NEW s_del=VCS_STATUS_NUM_STAGED_DELETED
     local -i s_mod=VCS_STATUS_NUM_STAGED-s_new-s_del
-    (( s_new > 0 )) && icons+="${icons:+$isep}${(e)_ksem[added]}${kz[GLYPH.added]}${glyph_pad[added]}${s_new}${none}"
-    (( s_mod > 0 )) && icons+="${icons:+$isep}${(e)_ksem[added]}${kz[GLYPH.changed]}${glyph_pad[changed]}${s_mod}${none}"
-    (( s_del > 0 )) && icons+="${icons:+$isep}${(e)_ksem[added]}${kz[GLYPH.deleted]}${glyph_pad[deleted]}${s_del}${none}"
+    (( s_new > 0 )) && icons+="${icons:+$isep}${(e)_kz_sem[added]}${kz[GLYPH.added]}${_kz_glyph_pad[added]}${s_new}${none}"
+    (( s_mod > 0 )) && icons+="${icons:+$isep}${(e)_kz_sem[added]}${kz[GLYPH.changed]}${_kz_glyph_pad[changed]}${s_mod}${none}"
+    (( s_del > 0 )) && icons+="${icons:+$isep}${(e)_kz_sem[added]}${kz[GLYPH.deleted]}${_kz_glyph_pad[deleted]}${s_del}${none}"
   else
-    (( VCS_STATUS_NUM_STAGED )) && icons+="${icons:+$isep}${(e)_ksem[added]}${kz[GLYPH.staged]}${glyph_pad[staged]}${VCS_STATUS_NUM_STAGED}${none}"
+    (( VCS_STATUS_NUM_STAGED )) && icons+="${icons:+$isep}${(e)_kz_sem[added]}${kz[GLYPH.staged]}${_kz_glyph_pad[staged]}${VCS_STATUS_NUM_STAGED}${none}"
   fi
 
   if (( dirty_unknown )); then
-    icons+="${icons:+$isep}${(e)_ksem[untracked]}${kz[GLYPH.unknown]}${glyph_pad[unknown]}${none}"
+    icons+="${icons:+$isep}${(e)_kz_sem[untracked]}${kz[GLYPH.unknown]}${_kz_glyph_pad[unknown]}${none}"
   else
     if (( split )); then
       local -i u_del=VCS_STATUS_NUM_UNSTAGED_DELETED u_mod=VCS_STATUS_NUM_UNSTAGED-u_del
-      (( u_mod > 0 )) && icons+="${icons:+$isep}${(e)_ksem[modified]}${kz[GLYPH.changed]}${glyph_pad[changed]}${u_mod}${none}"
-      (( u_del > 0 )) && icons+="${icons:+$isep}${(e)_ksem[modified]}${kz[GLYPH.deleted]}${glyph_pad[deleted]}${u_del}${none}"
+      (( u_mod > 0 )) && icons+="${icons:+$isep}${(e)_kz_sem[modified]}${kz[GLYPH.changed]}${_kz_glyph_pad[changed]}${u_mod}${none}"
+      (( u_del > 0 )) && icons+="${icons:+$isep}${(e)_kz_sem[modified]}${kz[GLYPH.deleted]}${_kz_glyph_pad[deleted]}${u_del}${none}"
     else
-      (( VCS_STATUS_NUM_UNSTAGED )) && icons+="${icons:+$isep}${(e)_ksem[modified]}${kz[GLYPH.modified]}${glyph_pad[modified]}${VCS_STATUS_NUM_UNSTAGED}${none}"
+      (( VCS_STATUS_NUM_UNSTAGED )) && icons+="${icons:+$isep}${(e)_kz_sem[modified]}${kz[GLYPH.modified]}${_kz_glyph_pad[modified]}${VCS_STATUS_NUM_UNSTAGED}${none}"
     fi
-    (( VCS_STATUS_NUM_CONFLICTED )) && icons+="${icons:+$isep}${(e)_ksem[unmerged]}${kz[GLYPH.conflicted]}${glyph_pad[conflicted]}${VCS_STATUS_NUM_CONFLICTED}${none}"
-    (( VCS_STATUS_NUM_UNTRACKED ))  && icons+="${icons:+$isep}${(e)_ksem[untracked]}${kz[GLYPH.untracked]}${glyph_pad[untracked]}${VCS_STATUS_NUM_UNTRACKED}${none}"
+    (( VCS_STATUS_NUM_CONFLICTED )) && icons+="${icons:+$isep}${(e)_kz_sem[unmerged]}${kz[GLYPH.conflicted]}${_kz_glyph_pad[conflicted]}${VCS_STATUS_NUM_CONFLICTED}${none}"
+    (( VCS_STATUS_NUM_UNTRACKED ))  && icons+="${icons:+$isep}${(e)_kz_sem[untracked]}${kz[GLYPH.untracked]}${_kz_glyph_pad[untracked]}${VCS_STATUS_NUM_UNTRACKED}${none}"
   fi
 
   kz[git.branch]="${VCS_STATUS_LOCAL_BRANCH:-${VCS_STATUS_TAG:-${VCS_STATUS_COMMIT[1,7]}}}"
@@ -670,7 +669,7 @@ function _kz_git_segment {
     *)  # tout: a query is in flight. Show the last-known status (if any) plus a subtle
         # loading mark, so a slow or first paint reads as "refreshing", not blank/frozen.
         _kz_git_inflight=1
-        _kz_prompt_git="${_kz_git_last} ${(e)_ksem[loading]}${kz[GLYPH.loading]}${glyph_pad[loading]}${(e)kz[RESET]}"
+        _kz_prompt_git="${_kz_git_last} ${(e)_kz_sem[loading]}${kz[GLYPH.loading]}${_kz_glyph_pad[loading]}${(e)kz[RESET]}"
         ;;
   esac
 }
@@ -679,7 +678,7 @@ function _kz_git_segment {
 typeset -g _kz_prompt_venv=''
 function _kz_venv_segment {
   if [[ -n "$VIRTUAL_ENV" ]]; then
-    _kz_prompt_venv=" ${(e)_ksem[info]}${kz[GLYPH.venv]}${(e)kz[RESET]} ${(e)_ksem[venv]}${VIRTUAL_ENV:t}${(e)kz[RESET]}"
+    _kz_prompt_venv=" ${(e)_kz_sem[info]}${kz[GLYPH.venv]}${(e)kz[RESET]} ${(e)_kz_sem[venv]}${VIRTUAL_ENV:t}${(e)kz[RESET]}"
   else
     _kz_prompt_venv=''
   fi
@@ -820,14 +819,14 @@ function _kz_status_segment {
   if (( ${_kz_prompt_last_exit:-0} != 0 )); then
     body="${(e)KZ_PROMPT_ERROR-$DEFAULT_KZ_PROMPT_ERROR}"
     if [[ -n "$body" ]]; then
-      item="${(e)_ksem[status_err]}${body}${(e)kz[RESET]}"
+      item="${(e)_kz_sem[status_err]}${body}${(e)kz[RESET]}"
       out+="$item"
     fi
   fi
   if [[ -n "$_kz_prompt_duration" ]]; then
     body="${(e)KZ_PROMPT_DURATION-$DEFAULT_KZ_PROMPT_DURATION}"
     if [[ -n "$body" ]]; then
-      sp="${out:+ }"; item="${(e)_ksem[duration]}${body}${(e)kz[RESET]}"
+      sp="${out:+ }"; item="${(e)_kz_sem[duration]}${body}${(e)kz[RESET]}"
       out+="${sp}${item}"
     fi
   fi
@@ -856,7 +855,7 @@ function _kz_keymap_update {
   fi
   if [[ "$ZLE_STATE" == *overwrite* ]]; then
     _kz_prompt_keymap="${(e)KZ_PROMPT_KEYMAP_OVERWRITE-$DEFAULT_KZ_PROMPT_KEYMAP_OVERWRITE}"
-    _kz_prompt_overwrite=" ${(e)_ksem[overwrite]}${kz[GLYPH.overwrite]}${(e)kz[RESET]}"
+    _kz_prompt_overwrite=" ${(e)_kz_sem[overwrite]}${kz[GLYPH.overwrite]}${(e)kz[RESET]}"
   else
     _kz_prompt_overwrite=''
   fi
@@ -1017,7 +1016,7 @@ function _kz_dim_string {
   local s=$1 style="${KZ_PROMPT_TRANSIENT_STYLE:-dim}"
   [[ "$style" == (keep|none|off) ]] && { REPLY="$s"; return }
   local mute=0; [[ "$style" == (mute|grey|gray) ]] && mute=1
-  local grey="${(e)_ksem[transmuted]}"
+  local grey="${(e)_kz_sem[transmuted]}"
   local -a parts=("${(@ps:%F{:)s}")
   local out="${parts[1]}" p spec rest
   for p in "${(@)parts[2,-1]}"; do
@@ -1218,9 +1217,9 @@ function kz_prompt_setup {
 
   _kz_setup_lifecycle
 
-  DEFAULT_KZ_PROMPT_KEYMAP_PRIMARY='${_ksem[caret1]}${kz[GLYPH.caret]}${kz[RESET]}${_ksem[caret2]}${kz[GLYPH.caret]}${kz[RESET]}${_ksem[caret3]}${kz[GLYPH.caret]}${kz[RESET]}'
-  DEFAULT_KZ_PROMPT_KEYMAP_ALTERNATE='${_ksem[caret3]}${kz[GLYPH.caret_alt]}${kz[RESET]}${_ksem[caret2]}${kz[GLYPH.caret_alt]}${kz[RESET]}${_ksem[caret1]}${kz[GLYPH.caret_alt]}${kz[RESET]}'
-  DEFAULT_KZ_PROMPT_KEYMAP_OVERWRITE='${_ksem[overwrite]}${kz[GLYPH.caret]}${kz[GLYPH.caret]}${kz[GLYPH.caret]}${kz[RESET]}'
+  DEFAULT_KZ_PROMPT_KEYMAP_PRIMARY='${_kz_sem[caret1]}${kz[GLYPH.caret]}${kz[RESET]}${_kz_sem[caret2]}${kz[GLYPH.caret]}${kz[RESET]}${_kz_sem[caret3]}${kz[GLYPH.caret]}${kz[RESET]}'
+  DEFAULT_KZ_PROMPT_KEYMAP_ALTERNATE='${_kz_sem[caret3]}${kz[GLYPH.caret_alt]}${kz[RESET]}${_kz_sem[caret2]}${kz[GLYPH.caret_alt]}${kz[RESET]}${_kz_sem[caret1]}${kz[GLYPH.caret_alt]}${kz[RESET]}'
+  DEFAULT_KZ_PROMPT_KEYMAP_OVERWRITE='${_kz_sem[overwrite]}${kz[GLYPH.caret]}${kz[GLYPH.caret]}${kz[GLYPH.caret]}${kz[RESET]}'
 
   # Seed the keymap caret so a prompt char shows even where zle-line-init never fires
   # (e.g. Emacs `M-x shell`). precmd resolves it again after ~/.zshrc.local loads.
@@ -1236,15 +1235,15 @@ function kz_prompt_setup {
 
   # Per-segment defaults. Each is a deferred string; dynamic ones read the
   # $_kz_prompt_* / state vars the precmd computes.
-  DEFAULT_KZ_PROMPT_OS='${kz[GLYPH.os]:+"${_ksem[host]}${kz[GLYPH.os]}${kz[RESET]} "}'
-  DEFAULT_KZ_PROMPT_CONTEXT='${_kz_is_container:+" ${_ksem[container]}${kz[GLYPH.container]}${kz[RESET]}"}${_kz_is_ssh:+" ${_ksem[ssh]}${kz[GLYPH.ssh]}${kz[RESET]}"}'
-  DEFAULT_KZ_PROMPT_ERR='%(?.${_ksem[status_ok]}${kz[GLYPH.dot]}${kz[RESET]}.${_ksem[status_err]}${kz[GLYPH.dot]}${kz[RESET]})'
+  DEFAULT_KZ_PROMPT_OS='${kz[GLYPH.os]:+"${_kz_sem[host]}${kz[GLYPH.os]}${kz[RESET]} "}'
+  DEFAULT_KZ_PROMPT_CONTEXT='${_kz_is_container:+" ${_kz_sem[container]}${kz[GLYPH.container]}${kz[RESET]}"}${_kz_is_ssh:+" ${_kz_sem[ssh]}${kz[GLYPH.ssh]}${kz[RESET]}"}'
+  DEFAULT_KZ_PROMPT_ERR='%(?.${_kz_sem[status_ok]}${kz[GLYPH.dot]}${kz[RESET]}.${_kz_sem[status_err]}${kz[GLYPH.dot]}${kz[RESET]})'
   DEFAULT_KZ_PROMPT_ERROR='${kz[GLYPH.return]} ${_kz_prompt_last_exit}'
-  DEFAULT_KZ_PROMPT_VIM='${VIM:+" ${_ksem[vim]}${kz[GLYPH.vim]}${kz[RESET]}"}'
-  DEFAULT_KZ_PROMPT_EMACS='${INSIDE_EMACS:+" ${_ksem[emacs]}${kz[GLYPH.emacs]}${kz[RESET]}"}'
-  DEFAULT_KZ_PROMPT_ETCTL='${ETCTL_SESSION:+" ${_ksem[info]}etctl${kz[RESET]}:${_ksem[etctl]}${ETCTL_SESSION}${kz[RESET]}"}'
-  DEFAULT_KZ_PROMPT_JOBS='%(1j. ${_ksem[jobs]}${kz[GLYPH.jobs]}${glyph_pad[jobs]}%j${kz[RESET]}.)'
-  DEFAULT_KZ_PROMPT_DURATION='${kz[GLYPH.duration]}${glyph_pad[duration]}${_kz_prompt_duration}'
+  DEFAULT_KZ_PROMPT_VIM='${VIM:+" ${_kz_sem[vim]}${kz[GLYPH.vim]}${kz[RESET]}"}'
+  DEFAULT_KZ_PROMPT_EMACS='${INSIDE_EMACS:+" ${_kz_sem[emacs]}${kz[GLYPH.emacs]}${kz[RESET]}"}'
+  DEFAULT_KZ_PROMPT_ETCTL='${ETCTL_SESSION:+" ${_kz_sem[info]}etctl${kz[RESET]}:${_kz_sem[etctl]}${ETCTL_SESSION}${kz[RESET]}"}'
+  DEFAULT_KZ_PROMPT_JOBS='%(1j. ${_kz_sem[jobs]}${kz[GLYPH.jobs]}${_kz_glyph_pad[jobs]}%j${kz[RESET]}.)'
+  DEFAULT_KZ_PROMPT_DURATION='${kz[GLYPH.duration]}${_kz_glyph_pad[duration]}${_kz_prompt_duration}'
   DEFAULT_KZ_PROMPT_USER='%n'
   DEFAULT_KZ_PROMPT_HOST='%M'
   DEFAULT_KZ_PROMPT_IP='${_kz_prompt_ip}'
@@ -1267,13 +1266,13 @@ function kz_prompt_setup {
   # Unlike the older segments, an explicit empty value hides the overwrite marker.
   kz[overwrite]='${(e)KZ_PROMPT_OVERWRITE-$DEFAULT_KZ_PROMPT_OVERWRITE}'
   # The rest wrap a segment in its own colour, or compose other segments.
-  kz[user]='${_ksem[user]}${(e)KZ_PROMPT_USER:-$DEFAULT_KZ_PROMPT_USER}${kz[RESET]}'
-  kz[time]='${_ksem[time]}${(e)KZ_PROMPT_TIME:-$DEFAULT_KZ_PROMPT_TIME}${kz[RESET]}'
-  kz[pwd]='${_ksem[pwd]}${(e)KZ_PROMPT_PWD:-$DEFAULT_KZ_PROMPT_PWD}${kz[RESET]}'
+  kz[user]='${_kz_sem[user]}${(e)KZ_PROMPT_USER:-$DEFAULT_KZ_PROMPT_USER}${kz[RESET]}'
+  kz[time]='${_kz_sem[time]}${(e)KZ_PROMPT_TIME:-$DEFAULT_KZ_PROMPT_TIME}${kz[RESET]}'
+  kz[pwd]='${_kz_sem[pwd]}${(e)KZ_PROMPT_PWD:-$DEFAULT_KZ_PROMPT_PWD}${kz[RESET]}'
   # The transient caret, as a handle, so the transient layout composes it the way PROMPT
   # composes $kz[caret] -- no $DEFAULT_KZ_PROMPT_* leaks into a copyable skin.
   kz[transient_caret]='${(e)KZ_PROMPT_TRANSIENT_CARET:-$DEFAULT_KZ_PROMPT_TRANSIENT_CARET}'
-  kz[host]="$kz[os]\${_ksem[host]}\${(e)KZ_PROMPT_HOST:-\$DEFAULT_KZ_PROMPT_HOST}\${kz[RESET]} \${_ksem[ip]}(\${(e)KZ_PROMPT_IP:-\$DEFAULT_KZ_PROMPT_IP})\${kz[RESET]}"
+  kz[host]="$kz[os]\${_kz_sem[host]}\${(e)KZ_PROMPT_HOST:-\$DEFAULT_KZ_PROMPT_HOST}\${kz[RESET]} \${_kz_sem[ip]}(\${(e)KZ_PROMPT_IP:-\$DEFAULT_KZ_PROMPT_IP})\${kz[RESET]}"
   kz[info]="$kz[user] at $kz[host]"
 
   SPROMPT='zsh: correct $kz[FG.red]%R%f to $kz[FG.green]%r%f [nyae]? '
@@ -1305,7 +1304,7 @@ function kz_prompt_setup {
   # The default composes the pwd (live colour + KZ_PROMPT_PWD_STYLE) and the caret;
   # each line is resolved and restyled (dim/mute/keep) per-accept. An explicit
   # KZ_PROMPT_TRANSIENT_PROMPT='' disables transience.
-  DEFAULT_KZ_PROMPT_TRANSIENT_CARET='${_ksem[transient_caret]}${kz[GLYPH.caret]}${kz[RESET]}'
+  DEFAULT_KZ_PROMPT_TRANSIENT_CARET='${_kz_sem[transient_caret]}${kz[GLYPH.caret]}${kz[RESET]}'
   DEFAULT_KZ_PROMPT_TRANSIENT_PROMPT='$kz[pwd] $kz[transient_caret] '
   DEFAULT_KZ_PROMPT_TRANSIENT_RPROMPT=''
   _kz_setup_transient_widgets
