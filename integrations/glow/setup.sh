@@ -6,7 +6,7 @@
 _kz_setup_glow() {
   command -v glow >/dev/null 2>&1 || return 0
 
-  local here style config_path current_style='' current_width='' temp set_style=
+  local here style config_path='' current_style='' current_width='' temp set_style=
   local -a config
 
   here="$(kz_script_dir "${BASH_SOURCE[0]:-$0}")"
