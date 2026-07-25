@@ -84,6 +84,12 @@ def render(
         'source "$KRONUZSH/lib/prompt.zsh"\n'
         "kz_prompt_setup\n"
         f"{skin_line}"
+        "function _kz_preview_ready {\n"
+        "  print -n $'\\x1eREADY\\x1e'\n"
+        "  add-zle-hook-widget -d line-init _kz_preview_ready\n"
+        "}\n"
+        "autoload -Uz add-zle-hook-widget\n"
+        "add-zle-hook-widget line-init _kz_preview_ready\n"
     )
     with open(os.path.join(home, ".zshrc"), "w") as fh:
         fh.write(zshrc)
@@ -142,9 +148,9 @@ def render(
     # Sentinels are emitted via $'...' so they only appear in the shell's output:
     # the echoed command line shows the literal `$'\x1e...'`, never the control byte.
     # 1. Wait until ZLE is actually reading a line before typing: input sent earlier is
-    #    dropped. zsh enables bracketed paste (`\x1b[?2004h`) right before each read, so
-    #    the first one is the definitive "ready for input" signal.
-    wait_for(b"\x1b[?2004h", timeout=15)
+    #    dropped. A one-shot line-init hook provides a shell-native readiness signal
+    #    without depending on terminal-specific bracketed-paste output.
+    wait_for(b"\x1eREADY\x1e", timeout=15)
 
     # 2. Enter the demo repo. cd is resent every iteration (idempotent) in case the very
     #    first keystroke still races ZLE, and we confirm arrival by the reported basename.
