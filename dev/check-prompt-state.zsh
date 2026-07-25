@@ -9,6 +9,9 @@ source runcoms/zshenv 2>/dev/null
 source dev/fake-gitstatus.zsh
 source lib/prompt.zsh
 kz_prompt_setup
+# This is a state/rendering test, not a lifecycle test. A real preexec between the
+# synthetic timestamp below and _kz_duration_segment would replace that timestamp.
+preexec_functions=(${preexec_functions:#_kz_duration_preexec})
 kz_prompt_colors
 _kz_git_render
 

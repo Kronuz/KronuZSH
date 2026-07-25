@@ -193,7 +193,14 @@ def main() -> None:
                 os.path.join(ROOT, "skins", f"{name}.zsh"), home, project
             )
             out.write(f"\n=== {name} ===\n".encode())
-            out.write(line("ORIGINAL", sgr(up_left), sgr(up_right)) + b"\n")
+            out.write(
+                line(
+                    "ORIGINAL",
+                    normalize_dynamic(sgr(up_left)),
+                    normalize_dynamic(sgr(up_right)),
+                )
+                + b"\n"
+            )
             out.write(
                 line(
                     "KRONUZSH",
