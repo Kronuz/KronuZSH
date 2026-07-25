@@ -13,6 +13,11 @@ _kz_setup_fsh() {
 
   [ -r "$plugin" ] || return 0
 
+  if [ -n "$KRONUZ_DRY_RUN" ]; then
+    kz_info "would apply the fast-syntax-highlighting theme"
+    return 0
+  fi
+
   if zsh -fc "source '$plugin'; fast-theme '$here/Kronuz.ini' -q" >/dev/null 2>&1; then
     kz_ok "fast-syntax-highlighting" "Kronuz theme applied"
     kz_manage_file "syntax theme cache" "$cache"

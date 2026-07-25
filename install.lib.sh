@@ -10,9 +10,12 @@
 # and always used; colour and the wider emoji are gated on an interactive colour TTY.
 
 : "${KRONUZ_FORCE:=}"
+: "${KRONUZ_DRY_RUN:=}"
 : "${KRONUZ_FILES:=}"
 : "${KRONUZ_HINTS:=}"
 : "${KRONUZ_NO_BACKUP:=}"
+: "${KRONUZ_BACKUP_ROOT:=${XDG_STATE_HOME:-$HOME/.local/state}/kronuzsh/backups}"
+: "${KRONUZ_BACKUP_ID:=$(date +%Y%m%d-%H%M%S)}"
 
 # Ephemeral managed-file registry. Integrations rebuild it on every setup run; it is
 # an inventory of the active configuration, not a log of changes from this invocation.
@@ -105,12 +108,12 @@ kz_manage_file() {
 }
 
 # kz_show_managed_files: with --files, render the active inventory and every adjacent
-# timestamped KronuZSH backup. Missing managed paths are omitted.
+# backup under the XDG state directory. Missing managed paths are omitted.
 kz_show_managed_files() {
   [ -n "$KRONUZ_FILES" ] || return 0
   [ "${#_kz_managed_paths[@]}" -gt 0 ] || return 0
 
-  local i label path backup
+  local i label path backup relative
 
   kz_head "Managed files" "📁"
 
@@ -122,9 +125,19 @@ kz_show_managed_files() {
       kz_info "file ($label): $(kz_tilde "$path")"
     fi
 
-    for backup in "$path".*.kronuzsh.bak; do
+    case "$path" in
+      "$HOME"/*) relative="home/${path#"$HOME"/}" ;;
+      *)         relative="absolute/${path#/}" ;;
+    esac
+    for backup in "$KRONUZ_BACKUP_ROOT"/*/"$relative"; do
       [ -e "$backup" ] || [ -L "$backup" ] || continue
       kz_info "backup ($label): $(kz_tilde "$backup")"
+    done
+
+    # Pre-XDG backups remain visible until the user removes them.
+    for backup in "$path".*.kronuzsh.bak; do
+      [ -e "$backup" ] || [ -L "$backup" ] || continue
+      kz_info "legacy backup ($label): $(kz_tilde "$backup")"
     done
   done
 }
@@ -150,6 +163,7 @@ kz_script_dir() {
 # kz_option <option>: apply one shared installer option. Returns 1 if unknown.
 kz_option() {
   case "$1" in
+    -n|--dry-run)   KRONUZ_DRY_RUN=1 ;;
     -f|--force)     KRONUZ_FORCE=1 ;;
     --files)        KRONUZ_FILES=1 ;;
     --hints)        KRONUZ_HINTS=1 ;;
@@ -159,9 +173,9 @@ kz_option() {
 }
 
 # kz_backup [--move] <file>: copy FILE (preserving metadata), or move it with --move,
-# to the shared timestamped backup convention. Prints the backup path for reporting.
+# into the per-install XDG state backup tree. Prints the backup path for reporting.
 kz_backup() {
-  local mode=copy src backup stamp
+  local mode=copy src backup relative
 
   if [ "${1:-}" = --move ]; then
     mode=move
@@ -176,8 +190,12 @@ kz_backup() {
     return 0
   fi
 
-  stamp="$(date +%Y%m%d%H%M%S)"
-  backup="$src.$stamp.kronuzsh.bak"
+  case "$src" in
+    "$HOME"/*) relative="home/${src#"$HOME"/}" ;;
+    *)         relative="absolute/${src#/}" ;;
+  esac
+  backup="$KRONUZ_BACKUP_ROOT/$KRONUZ_BACKUP_ID/$relative"
+  mkdir -p "$(dirname "$backup")"
 
   if [ "$mode" = move ]; then
     mv "$src" "$backup" || return
@@ -218,6 +236,13 @@ kz_commit_file() {
 
   local label="$1" path="$2" replacement="$3"
 
+  if [ -n "$KRONUZ_DRY_RUN" ]; then
+    kz_info "would write $(kz_tilde "$path")"
+    rm -f "$replacement"
+    kz_manage_file "$label" "$path"
+    return 0
+  fi
+
   mkdir -p "$(dirname "$path")"
   if [ -f "$path" ] || [ -L "$path" ]; then
     kz_backup_file "$label" "$path"
@@ -252,6 +277,19 @@ kz_manage_link() {
   kz_manage_file "$label" "$destination"
   kz_managed_link_active "$label" "$source" "$destination" && return 0
 
+  if [ -n "$KRONUZ_DRY_RUN" ]; then
+    if [ -e "$destination" ] || [ -L "$destination" ]; then
+      if [ -n "$KRONUZ_NO_BACKUP" ]; then
+        kz_info "would replace $(kz_tilde "$destination") without a backup"
+      else
+        kz_info "would back up and replace $(kz_tilde "$destination")"
+      fi
+    else
+      kz_info "would link $(kz_tilde "$destination") -> $(kz_tilde "$source")"
+    fi
+    return 0
+  fi
+
   mkdir -p "$(dirname "$destination")"
 
   if [ -e "$destination" ] || [ -L "$destination" ]; then
@@ -271,6 +309,15 @@ kz_done() {
 # for non-interactive installs; off a TTY (no answer possible) it defaults to No.
 # Returns 0 for yes, 1 for no.
 kz_confirm() {
+  if [ -n "$KRONUZ_DRY_RUN" ]; then
+    if [ -n "$KRONUZ_FORCE" ]; then
+      kz_info "would accept: $1"
+      return 0
+    fi
+    kz_info "would prompt: $1"
+    return 1
+  fi
+
   if [ -n "$KRONUZ_FORCE" ] || [ -n "${KRONUZ_YES:-}" ]; then
     return 0
   fi

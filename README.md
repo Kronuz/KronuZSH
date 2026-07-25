@@ -93,16 +93,28 @@ see [nerd_fonts.md](nerd_fonts.md).
   back to direct `git` calls when `gitstatusd` cannot run.
 
 ```bash
-git clone --recursive https://github.com/Kronuz/KronuZSH.git ~/.config/KronuZSH
-cd ~/.config/KronuZSH && ./install.sh
+git clone --recursive https://github.com/Kronuz/KronuZSH.git ~/.local/share/KronuZSH
+cd ~/.local/share/KronuZSH && ./install.sh
 exec zsh
 ```
 
-`install.sh` symlinks the runcoms (`~/.zshenv`, `~/.zshrc`, `~/.zprofile`,
+`install.sh` uses the conventional default-install plus `--dry-run`, `--force`,
+`--uninstall`, and `--help` interface. It symlinks the runcoms (`~/.zshenv`,
+`~/.zshrc`, `~/.zprofile`,
 `~/.zlogin`, `~/.zlogout`) at this repo's `runcoms/`, backing up anything it
 replaces, and inits the plugin submodules. It's idempotent; `./install.sh
 --uninstall` restores the backups. Symlinks mean editing `~/.zshrc` edits the
 tracked `runcoms/zshrc` directly, and `$KRONUZSH` self-resolves through them.
+
+Backups live under
+`${XDG_STATE_HOME:-$HOME/.local/state}/kronuzsh/backups/<timestamp>/home/`
+instead of beside active configuration, so backup directories cannot be mistaken
+for live plugins or settings. Uninstall also recognizes the older adjacent
+`*.kronuzsh.bak` convention.
+
+Use `./install.sh --dry-run` to preview the complete setup without changing user
+files, Git configuration, caches, or submodules. Add `--force` to that preview to
+show which optional integration prompts force would accept.
 
 Use `./install.sh --force` to apply the Kronuz theme over conflicting tool
 preferences without prompting, `--hints` for optional usage and maintenance notes, or

@@ -70,8 +70,10 @@ _kz_setup_tldr() {
     && awk '/^\[updates\]/{s=1; next} /^\[/{s=0} s && /^auto_update[[:space:]]*=[[:space:]]*true/{ok=1} END{exit !ok}' "$config_path"; then
     kz_ok "tldr" "already themed"
   elif [ ! -f "$config_path" ]; then
-    mkdir -p "$(dirname "$config_path")"
-    if tldr --config-path "$config_path" --seed-config >/dev/null 2>&1; then
+    if [ -n "$KRONUZ_DRY_RUN" ]; then
+      kz_info "would seed and theme $(kz_tilde "$config_path")"
+    elif mkdir -p "$(dirname "$config_path")" \
+      && tldr --config-path "$config_path" --seed-config >/dev/null 2>&1; then
       apply=1
     else
       kz_skip "tldr" "could not seed config"

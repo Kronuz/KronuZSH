@@ -12,10 +12,13 @@ _kz_setup_glow() {
   here="$(kz_script_dir "${BASH_SOURCE[0]:-$0}")"
   style="$here/kronuz.json"
 
-  # Ask glow for its platform-native path, then fall back for older versions.
-  config_path="$(glow --help 2>/dev/null \
-    | sed -n 's/.*--config string.*(default \(.*\))$/\1/p' \
-    | head -n1)"
+  # Ask glow for its platform-native path. Some releases create their config and
+  # log even for --help, so a dry run uses the documented platform fallback.
+  if [ -z "$KRONUZ_DRY_RUN" ]; then
+    config_path="$(glow --help 2>/dev/null \
+      | sed -n 's/.*--config string.*(default \(.*\))$/\1/p' \
+      | head -n1)"
+  fi
   if [ -z "$config_path" ]; then
     case "$(uname -s)" in
       Darwin) config_path="$HOME/Library/Preferences/glow/glow.yml" ;;

@@ -17,7 +17,7 @@ fi
 for _kz_arg in "$@"; do
   case "$_kz_arg" in
     -h|--help)
-      printf 'Usage: %s [--files] [--force] [--hints] [--no-backup]\n' "$0"
+      printf 'Usage: %s [--dry-run] [--files] [--force] [--hints] [--no-backup]\n' "$0"
       exit 0
       ;;
     *) kz_option "$_kz_arg" || { printf 'Unknown option: %s\n' "$_kz_arg" >&2; exit 2; } ;;

@@ -28,6 +28,13 @@ implementation modules live in `lib/`. `install.sh` symlinks
 `~/.{zshenv,zprofile,zshrc,zlogin,zlogout}` -> `runcoms/*`, and `$KRONUZSH`
 self-resolves from `runcoms/zshrc` via `${(%):-%x}:A:h:h`.
 
+The installer has default install plus `--dry-run`, `--force`, `--uninstall`,
+and `--help`. Dry-run must not change user files, global Git configuration,
+caches, or submodules. Backups mirror their original paths under
+`${XDG_STATE_HOME:-$HOME/.local/state}/kronuzsh/backups/<timestamp>/`; do not
+put inactive backups beside live configuration because plugin and skill
+discovery can mistake them for active content.
+
 - `runcoms/zshenv` (all shells): env. `runcoms/zprofile` (login): sources
   `~/.profile` for cross-shell env. `runcoms/zshrc` (interactive): the entry that
   sources the `lib/` modules below. `runcoms/zlogin`: bg-compiles the compdump.

@@ -15,6 +15,11 @@ _kz_setup_bat() {
 
   integration_dir="$(cd -- "$(kz_script_dir "${BASH_SOURCE[0]:-$0}")/.." && pwd -P)"
 
+  if [ -n "$KRONUZ_DRY_RUN" ]; then
+    kz_info "would rebuild the bat theme cache"
+    return 0
+  fi
+
   if BAT_CONFIG_DIR="$integration_dir" "$bat" cache --build >/dev/null 2>&1; then
     kz_ok "bat + delta" "Kronuz theme cached"
     kz_hint "rebuild after editing: BAT_CONFIG_DIR=$(kz_tilde "$integration_dir") $bat cache --build"
