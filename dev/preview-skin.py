@@ -77,6 +77,7 @@ def render(
         git_setup = f'source "{REPO}/dev/fake-gitstatus.zsh"\n'
     zshrc = (
         f'export KRONUZSH="{REPO}"\n'
+        "export KZ_PROMPT_TRANSIENT_STYLE=keep\n"
         'source "$KRONUZSH/runcoms/zshenv" 2>/dev/null\n'
         "setopt PROMPT_SUBST\n"
         f"{git_setup}"
