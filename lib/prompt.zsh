@@ -1230,9 +1230,9 @@ function kz_prompt_reset_skin {
 
 # Reset the previous skin and source a new one in one operation. This is the
 # recommended switcher for interactive use; direct `source` remains supported.
-function prompt {
+function kz_skin {
   if (( $# != 1 )); then
-    print -u2 'usage: prompt SKIN|PATH_TO_SKIN'
+    print -u2 'usage: kz_skin SKIN|PATH_TO_SKIN'
     return 2
   fi
   local skin=$1 candidate
@@ -1245,9 +1245,6 @@ function prompt {
   kz_prompt_reset_skin
   builtin source -- "$skin"
 }
-
-# Namespaced alias for scripts or setups where `prompt` is already taken.
-function kz_prompt { prompt "$@" }
 
 function kz_prompt_setup {
   setopt LOCAL_OPTIONS

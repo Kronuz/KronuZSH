@@ -20,19 +20,19 @@ When switching between bundled skins, reset the previous layout first so an opti
 the new skin does not set cannot leak through:
 
 ```zsh
-prompt "$KRONUZSH/skins/spaceship.zsh"
+kz_skin "$KRONUZSH/skins/spaceship.zsh"
 ```
 
 Skin names are resolved from the bundled gallery, so the shorter forms work too:
 
 ```zsh
-prompt spaceship
+kz_skin spaceship
 ```
 
 The `.zsh` suffix is optional. A readable path is also accepted when importing or
 developing a skin outside the gallery.
 
-`prompt` clears only layout and segment overrides. Palette, glyph, terminal,
+`kz_skin` clears only layout and segment overrides. Palette, glyph, terminal,
 Git-engine, and machine-specific settings remain intact. Direct `source` is still useful
 when deliberately layering a small override on top of an existing skin.
 
