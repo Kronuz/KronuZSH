@@ -124,7 +124,8 @@ KRONUZSH    [34m~/project[0m[34m[24m[34m[27m[34m[39m[49m on main [33m�
 === spaceship ===
 ORIGINAL    [36m➜[39m [32m~/project[39m on [34mmain[39m [31m✗[39m
 [32m❯[39m 
-KRONUZSH    [36m➜ [32m~/project[0m[32m[24m[32m[27m[32m[39m[49m[34mon main [31m✗ [32m✚ ⇡[0m[32m[24m[32m[27m[32m[39m[49m[K
+KRONUZSH    [36m➜ [32m~/project[0m[32m[24m[32m[27m[32m[39m[49m [34mon main [31m✗ [32m✚ ⇡[0m[32m[24m[32m[27m[32m[39m[49m[K
+[32m❯ 
 
 === starship ===
 ORIGINAL    [34m➜[39m [36m~/project[39m [35m main[39m [31m✘[39m
@@ -134,7 +135,7 @@ KRONUZSH    [34m➜ [36m~/project[0m[36m[24m[36m[27m[36m[39m[49m[38;2
 
 === liquidprompt ===
 ORIGINAL    [34m~/project[39m [36m(main [31m✗[32m +[33m ?[36m)[39m
-[32m$[39m     RPROMPT 18:42:29
+[32m$[39m     RPROMPT 18:56:30
 KRONUZSH    [34m~/project[0m[34m[24m[34m[27m[34m[39m[49m[36m(main [31m✗ [32m+ [33m?[0m[33m[24m[33m[27m[33m[39m[49m)[K
 [32m%     RPROMPT 18:00:00
 
