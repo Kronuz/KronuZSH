@@ -31,6 +31,7 @@ jobs:
           files=(
             runcoms/*
             lib/*.zsh
+            skins/*.zsh
             integrations/*.zsh
             integrations/*/*.zsh
             zshrc.local.example
@@ -56,6 +57,9 @@ jobs:
 
       - name: Check prompt namespace
         run: zsh dev/check-prompt-namespace.zsh
+
+      - name: Check declarative skins
+        run: zsh dev/check-skins.zsh
 
   shellcheck:
     name: ShellCheck

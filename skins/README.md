@@ -1,8 +1,10 @@
 # Skins
 
 A **skin** reshapes the KronuZSH prompt without touching the engine. The whole visible
-layout is deferred, so a skin is just a few variables you set *after* the prompt loads
-(from `~/.zshrc.local`); the change takes effect at the next render, no rebuild.
+layout is deferred, so a bundled skin contains only declarative `KZ_*` assignments
+(plus comments and blank lines), set *after* the prompt loads from `~/.zshrc.local`.
+No functions, hooks, commands, or other executable prompt code belong in a skin.
+The change takes effect at the next render, no rebuild.
 
 ## Using one
 
@@ -62,7 +64,7 @@ dev/preview-skin.py skins/minimal.zsh   # prints a preview and asserts the marks
 ## Reformatting git
 
 Most skins just place `$kz[git]` (the engine's own git segment) in the layout. To
-render git *differently* (robbyrussell's `git:(branch)`, an emoji, an Agnoster segment),
+render git *differently* (robbyrussell's `git:(branch)` or an emoji),
 override `KZ_PROMPT_GIT` and compose it from the git-state keys the engine
 computes every prompt (from gitstatusd, or the direct-git fallback):
 
@@ -83,23 +85,23 @@ KZ_PROMPT_GIT='${kz[git.branch]:+ ${kz[FG.blue]}git:(${kz[FG.red]}${kz[git.branc
 
 **Use `${kz[FG.name]}` for colour inside a `${var:+...}` conditional, not a literal
 `%F{...}`.** A bare `}` (from `%F{blue}`) ends the conditional early and truncates the
-segment; `${kz[FG.blue]}` is a balanced `${...}` and survives. Use `${kz[BG.name]}` for
-powerline-style backgrounds. `robbyrussell.zsh`, `pure.zsh`, `emoji.zsh`, and
-`agnoster.zsh` all follow this.
+segment; `${kz[FG.blue]}` is a balanced `${...}` and survives. Use `${kz[BG.name]}`
+for powerline-style backgrounds. `robbyrussell.zsh`, `pure.zsh`, and `emoji.zsh`
+all follow the balanced foreground form.
 
 ## Compatibility skins
 
 Names borrowed from another prompt are compatibility targets, not loose inspiration.
 Their defaults are compared against pinned upstream versions over clean and dirty
 repositories, success and failure, nested paths, virtualenvs, jobs, and duration where
-the upstream supports them. A named skin stays in the gallery only when at least 90%
-of the applicable visual cells and styles match. See
+the upstream supports them. The score records how much is faithfully reproducible; a
+sub-90% candidate stays available with its missing states documented so it can be
+judged from the side-by-side ANSI captures rather than discarded automatically. See
 [`dev/skin-fidelity.md`](../dev/skin-fidelity.md) for the scope and score.
 
-This deliberately excludes broad environment dashboards such as Powerlevel10k,
-Spaceship, and Starship. KronuZSH can imitate one screenshot from each, but it does
-not currently expose enough language, cloud, package, battery, and tool state to call
-that a 90%-faithful skin.
+Broad environment dashboards such as Powerlevel10k, Spaceship, and Starship remain
+reference candidates. KronuZSH can reproduce their core layouts, but declarative
+configuration cannot yet cover all language, cloud, package, battery, and tool state.
 
 ## Gallery
 
@@ -112,4 +114,4 @@ that a 90%-faithful skin.
 | `pure.zsh`         | Pure-compatible two-line path/Git/context/status prompt         |
 | `robbyrussell.zsh` | Oh My Zsh's default: `➜ dir git:(branch) ✗`                     |
 | `emoji.zsh`        | playful all-emoji: `📁 dir 🌿 branch ⚡`                          |
-| `agnoster.zsh`     | Agnoster's conditional Powerline ribbon                         |
+| `agnoster.zsh`     | Agnoster's path/Git ribbon; optional segments documented         |

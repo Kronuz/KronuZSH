@@ -30,10 +30,34 @@ states count against coverage; they are not silently removed from the denominato
 
 | Skin | Fidelity | Deliberate engine substitutions |
 | --- | ---: | --- |
-| Agnoster | 98% | gitstatus replaces `vcs_info`; same visible default states |
+| Agnoster | 76% overall; 100% path/Git | conditional status/context/venv segments omitted |
 | Pure | 93% | no Node/Nix/custom hook fields; Git state comes from gitstatus |
 | robbyrussell | 100% | gitstatus replaces Oh My Zsh's Git helper |
 
-Powerlevel10k, Spaceship, and Starship were evaluated but rejected as compatibility
-skins: their default environment/tool module range cannot reach 90% with KronuZSH's
-current normalized state. Native skins remain free to be original designs.
+Sub-90% skins are retained with their gaps stated. Powerlevel10k, Spaceship, and
+Starship were evaluated but do not yet have useful declarative candidates: their
+environment/tool module range overwhelms the core visual match. Native skins remain
+free to be original designs.
+
+## Side-by-side ANSI
+
+The notation below is zsh's prompt-level ANSI (`%F`/`%K`); `print -P` turns it into
+terminal SGR bytes without depending on a screenshot or font rasterizer.
+
+### Agnoster, clean repository
+
+```text
+upstream  %K{blue}%F{black} %~ %K{green}%F{blue}%F{black}  main %k%F{green}%f
+skin      %K{blue}%F{black} %~ %K{green}%F{blue}%F{black}  main %k%F{green}%f
+```
+
+### Agnoster, dirty repository
+
+```text
+upstream  %K{blue}%F{black} %~ %K{yellow}%F{blue}%F{black}  main ± %k%F{yellow}%f
+skin      %K{blue}%F{black} %~ %K{yellow}%F{blue}%F{black}  main ± %k%F{yellow}%f
+```
+
+The upstream may prepend status/context and insert virtualenv before the path; the
+declarative skin cannot conditionally join those ribbons. That missing matrix coverage,
+not the cells shown above, accounts for Agnoster's score.
