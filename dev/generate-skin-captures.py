@@ -28,12 +28,16 @@ spec.loader.exec_module(preview)
 # dev/skin-fidelity.md. `print -P` below converts these to literal SGR bytes.
 ORIGINALS = {
     "af-magic": (
-        "%F{237}" + ("-" * 240) + "%f\n%F{32}~/project %F{75}(%F{78}main%F{214}*%F{75})%f %F{105}»%f ",
+        "%F{237}"
+        + ("-" * 240)
+        + "%f\n%F{32}~/project %F{75}(%F{78}main%F{214}*%F{75})%f %F{105}»%f ",
         "%F{237}kronuz@kronuz%f",
     ),
     "agnoster": (
-        "%K{blue}%F{black} ~/project %K{yellow}%F{blue}%F{black}"
-        "  main ± %k%F{yellow}%f ",
+        (
+            "%K{blue}%F{black} ~/project %K{yellow}%F{blue}%F{black}"
+            "  main ± %k%F{yellow}%f "
+        ),
         "",
     ),
     "asciiship": (
@@ -41,23 +45,31 @@ ORIGINALS = {
         "",
     ),
     "bira": (
-        "╭─%B%F{green}kronuz@kronuz%f%b %B%F{blue}~/project %f%b"
-        "%F{yellow}‹main%F{red}●%F{yellow}› %f\n╰─%B$%b ",
+        (
+            "╭─%B%F{green}kronuz@kronuz%f%b %B%F{blue}~/project %f%b"
+            "%F{yellow}‹main%F{red}●%F{yellow}› %f\n╰─%B$%b "
+        ),
         "",
     ),
     "cloud": (
-        "%B%F{cyan}☁  %B%F{green}project %B%F{cyan}%F{green}[%F{cyan}main"
-        "%F{green}] %F{yellow}⚡ %f %B%F{blue} % %f%b",
+        (
+            "%B%F{cyan}☁  %B%F{green}project %B%F{cyan}%F{green}[%F{cyan}main"
+            "%F{green}] %F{yellow}⚡ %f %B%F{blue} % %f%b"
+        ),
         "",
     ),
     "dst": (
-        "\n%F{magenta}kronuz%f@%F{yellow}kronuz%f: %B%F{blue}~/project%f%b"
-        " %F{green}main%F{red}!%f\n$ ",
+        (
+            "\n%F{magenta}kronuz%f@%F{yellow}kronuz%f: %B%F{blue}~/project%f%b"
+            " %F{green}main%F{red}!%f\n$ "
+        ),
         "%F{green}[18:00:00]%f",
     ),
     "fino": (
-        "╭─%F{40}kronuz %F{239}at %F{33}kronuz %F{239}in %B%F{226}~/project%b"
-        " %F{239}on%f %F{255}main%F{202}✘✘✘%f\n╰─±%f ",
+        (
+            "╭─%F{40}kronuz %F{239}at %F{33}kronuz %F{239}in %B%F{226}~/project%b"
+            " %F{239}on%f %F{255}main%F{202}✘✘✘%f\n╰─±%f "
+        ),
         "",
     ),
     "geometry": (
@@ -65,7 +77,7 @@ ORIGINALS = {
         "⇡ %F{242}main%f %F{green}1s%f %F{144}●%f %F{red}⬡%f",
     ),
     "gitster": ("%F{green}➜%f ~/project main %F{green}✓%f ", ""),
-    "zim-minimal": ("%F{green}λ%f ", "%~ main ✓"),
+    "zim-minimal": ("%F{green}λ%f ", "~/project main ✓"),
     "s1ck94": ("%F{green}❯%f ", "~/project main ✗ ↑ ↓"),
     "sorin": ("%B%F{blue}~/project%f%b ", "(py3.12) %F{green}main%f %F{red}✗%f"),
     "eriner": ("%K{cyan}%F{black} ~/project %k%F{yellow} main ±%f ", ""),
@@ -76,34 +88,46 @@ ORIGINALS = {
         "main %F{red}✗%f",
     ),
     "kiwi": (
-        "%B%F{green}┌[%F{cyan}kiwish-4.2%F{green}]-(%F{white}~/project"
-        "%F{green})-[%f%F{white}git:%B%F{white}main%B%F{green}]-\n└> % %f%b",
+        (
+            "%B%F{green}┌[%F{cyan}kiwish-4.2%F{green}]-(%F{white}~/project"
+            "%F{green})-[%f%F{white}git:%B%F{white}main%B%F{green}]-\n└> % %f%b"
+        ),
         "",
     ),
     "lambda-mod": (
-        "\n%B%F{green}λ%f%b %B%F{yellow}kronuz%f%b %F{magenta}[~/project]%f"
-        " at %F{blue} main%f %B%F{green}+%F{blue}!%F{cyan}?%f%b\n"
-        "%B%F{cyan}→%f%b ",
+        (
+            "\n%B%F{green}λ%f%b %B%F{yellow}kronuz%f%b %F{magenta}[~/project]%f"
+            " at %F{blue} main%f %B%F{green}+%F{blue}!%F{cyan}?%f%b\n"
+            "%B%F{cyan}→%f%b "
+        ),
         " %B%F{white}[%F{blue}0123456%F{white}]%f%b",
     ),
     "lukerandall": (
-        "%B%F{green}kronuz@kronuz%f%b %B%F{blue}~/project%f%b "
-        "%F{yellow}(main %% + *)%f %B»%b ",
+        (
+            "%B%F{green}kronuz@kronuz%f%b %B%F{blue}~/project%f%b "
+            "%F{yellow}(main %% + *)%f %B»%b "
+        ),
         "",
     ),
     "pi": (
-        " %B%F{green}π%f%b: %F{blue}project%f %B%F{green}main%f%b"
-        " %F{yellow}✗%f %F{magenta}❯%f ",
+        (
+            " %B%F{green}π%f%b: %F{blue}project%f %B%F{green}main%f%b"
+            " %F{yellow}✗%f %F{magenta}❯%f "
+        ),
         "",
     ),
     "pygmalion": (
-        "%F{magenta}kronuz%F{cyan}@%F{yellow}kronuz%F{red}:%F{cyan}~/project"
-        "%F{red}|%f%F{green}main%F{yellow}⚡%f %F{cyan}⇒%f  ",
+        (
+            "%F{magenta}kronuz%F{cyan}@%F{yellow}kronuz%F{red}:%F{cyan}~/project"
+            "%F{red}|%f%F{green}main%F{yellow}⚡%f %F{cyan}⇒%f  "
+        ),
         "",
     ),
     "pure": (
-        "%F{blue}~/project%f %F{242}main%F{218}*%f %F{cyan}⇡%f"
-        " %F{cyan}≡%f\n%F{magenta}❯%f ",
+        (
+            "%F{blue}~/project%f %F{242}main%F{218}*%f %F{cyan}⇡%f"
+            " %F{cyan}≡%f\n%F{magenta}❯%f "
+        ),
         "",
     ),
     "powerlevel10k": (
@@ -123,18 +147,21 @@ ORIGINALS = {
         "%*",
     ),
     "robbyrussell": (
-        "%B%F{green}➜%f%b  %F{cyan}project%f %B%F{blue}git:(%F{red}"
-        "main%F{blue})%f%b %F{yellow}✗%f ",
+        (
+            "%B%F{green}➜%f%b  %F{cyan}project%f %B%F{blue}git:(%F{red}"
+            "main%F{blue})%f%b %F{yellow}✗%f "
+        ),
         "",
     ),
     "sobole": (
-        "%B%F{blue}~/project%f%b %F{green}main%f %F{red}✗%f\n"
-        "%F{black}»%f ",
+        "%B%F{blue}~/project%f%b %F{green}main%f %F{red}✗%f\n%F{black}»%f ",
         "",
     ),
     "steeef": (
-        "\n%F{135}kronuz%f at %F{166}kronuz%f in %F{118}~/project%f "
-        "(%F{81}main%F{166}●%F{118}●%F{161}●%f) \n$ ",
+        (
+            "\n%F{135}kronuz%f at %F{166}kronuz%f in %F{118}~/project%f "
+            "(%F{81}main%F{166}●%F{118}●%F{161}●%f) \n$ "
+        ),
         "",
     ),
     "sunaku": (
@@ -143,13 +170,17 @@ ORIGINALS = {
     ),
     "typewritten": (
         "%F{blue}❯%f ",
-        "%F{magenta}project%f -> %F{magenta}main%f %F{green}+%f"
-        " %F{blue}?%f %F{yellow}!%f %F{blue}|•%f %F{yellow}$%f",
+        (
+            "%F{magenta}project%f -> %F{magenta}main%f %F{green}+%f"
+            " %F{blue}?%f %F{yellow}!%f %F{blue}|•%f %F{yellow}$%f"
+        ),
     ),
     "ys": (
-        "\n%B%F{blue}#%f%b %F{cyan}kronuz%f @ %F{green}kronuz %f"
-        "in %B%F{yellow}~/project%f%b on%F{blue} git:%F{cyan}main"
-        " %F{red}x%f [18:00:00] \n%B%F{red}$ %f%b",
+        (
+            "\n%B%F{blue}#%f%b %F{cyan}kronuz%f @ %F{green}kronuz %f"
+            "in %B%F{yellow}~/project%f%b on%F{blue} git:%F{cyan}main"
+            " %F{red}x%f [18:00:00] \n%B%F{red}$ %f%b"
+        ),
         "",
     ),
     "zsh-redhat": ("[kronuz@kronuz project]$ ", ""),
@@ -189,7 +220,9 @@ def main() -> None:
     try:
         out = sys.stdout.buffer
         out.write(b"KronuZSH skin fidelity -- literal ANSI/SGR captures\n")
-        out.write(b"fixture: ~/project, main, staged + modified + untracked + ahead + stash\n")
+        out.write(
+            b"fixture: ~/project, main, staged + modified + untracked + ahead + stash\n"
+        )
         out.write(b"view with: less -R dev/skin-captures.ansi\n")
         for name, (up_left, up_right) in ORIGINALS.items():
             home = tempfile.mkdtemp(prefix="home-", dir=tmp)

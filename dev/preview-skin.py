@@ -91,6 +91,9 @@ def render(
         **os.environ,
         "HOME": home,
         "ZDOTDIR": home,
+        "USER": "kronuz",
+        "LOGNAME": "kronuz",
+        "HOST": "kronuz",
         "KRONUZSH": REPO,
         "TERM": "xterm-256color",
         "COLORTERM": "truecolor",
@@ -195,7 +198,9 @@ def render(
     tail = bytes(buf)
 
     def between(label: str) -> bytes:
-        m = re.search(rb"\x01" + label.encode() + rb"\x02(.*?)\x01END\x02", tail, re.S)
+        m = re.search(
+            rb"\x01" + label.encode() + rb"\x02(.*?)\x01END\x02", tail, re.DOTALL
+        )
         return (m.group(1) if m else b"").replace(b"\r", b"").strip(b"\n")
 
     layers = {
