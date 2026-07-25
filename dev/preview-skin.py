@@ -109,7 +109,10 @@ def render(
 
     pid, fd = pty.fork()
     if pid == 0:
-        os.execvpe("zsh", ["zsh", "-i"], env)
+        # -d disables global startup files. Ubuntu's /etc/zsh/zshrc otherwise runs
+        # compinit before our isolated .zshrc and can stop for an interactive
+        # insecure-directory prompt inherited from the Actions environment.
+        os.execvpe("zsh", ["zsh", "-d", "-i"], env)
     fcntl.ioctl(fd, termios.TIOCSWINSZ, struct.pack("HHHH", 60, cols, 0, 0))
 
     buf = bytearray()
