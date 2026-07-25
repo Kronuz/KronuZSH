@@ -10,7 +10,7 @@ KRONUZSH    [38;5;237m---------------------------------------------------------
 
 === agnoster ===
 ORIGINAL    [44m[30m ~/project [43m[34m[30m  main ± [49m[33m[39m 
-KRONUZSH    [44m[30m ~/project [43m[34m[30m  main ± [49m[33m[39m 
+KRONUZSH    [44m[30m ~/project [43m[34m[30m  main ± [0m[30m[43m[24m[30m[43m[27m[30m[43m[39m[49m[33m[0m[33m[24m[33m[27m[33m[39m[49m 
 
 === asciiship ===
 ORIGINAL    ~/project [on branch main + ! ? >] via py3.12 *
@@ -22,7 +22,7 @@ KRONUZSH    [K
 ORIGINAL    ╭─[1m[32mkronuz@kronuz[39m[0m [1m[34m~/project [39m[0m[33m‹main[31m●[33m› [39m
 ╰─[1m$[0m 
 KRONUZSH    ╭─[1m[32mkronuz@kronuz[0m[32m[24m[32m[27m[32m[39m[49m [1m[34m~/project [0m[34m[24m[34m[27m[34m[39m[49m[33m‹main[31m●[33m› [0m[33m[24m[33m[27m[33m[39m[49m[K
-╰─[1m$[0m 
+╰─[1m$[0m[24m[27m[39m[49m 
 
 === cloud ===
 ORIGINAL    [1m[36m☁  [1m[36m[32mproject [1m[32m[36m[32m[[36mmain[32m] [33m⚡ [39m [1m[34m [39m[0m
@@ -48,7 +48,7 @@ KRONUZSH     ▲[0m[24m[27m[39m[49m [34m~/project[0m[34m[24m[34m[27m
 
 === gitster ===
 ORIGINAL    [32m➜[39m ~/project main [32m✓[39m 
-KRONUZSH    [32m➜ ~/project [38;2;255;255;255mmain 0123456 [33m✗[0m[38;2;0;0;3m[24m[38;2;0;0;3m[27m[38;2;0;0;3m[39m[49m 
+KRONUZSH    [32m➜ [0m[32m[24m[32m[27m[32m[39m[49m~/project [38;2;255;255;255mmain 0123456 [33m✗[0m[38;2;0;0;3m[24m[38;2;0;0;3m[27m[38;2;0;0;3m[39m[49m 
 
 === zim-minimal ===
 ORIGINAL    [32mλ[39m     RPROMPT ~/code/KronuZSH main ✓
@@ -56,11 +56,11 @@ KRONUZSH    [32m❯[0m[32m[24m[32m[27m[32m[39m[49m     RPROMPT ~/projec
 
 === s1ck94 ===
 ORIGINAL    [32m❯[39m     RPROMPT ~/project main ✗ ↑ ↓
-KRONUZSH    [32m❯     RPROMPT ~/project main 0123456 ✗ ↑
+KRONUZSH    [32m❯[0m[32m[24m[32m[27m[32m[39m[49m     RPROMPT ~/project main 0123456 ✗ ↑
 
 === sorin ===
 ORIGINAL    [1m[34m~/project[39m[0m     RPROMPT (py3.12) [32mmain[39m [31m✗[39m
-KRONUZSH    [1m[34m~/project[0m[34m[24m[34m[27m[34m[39m[49m     RPROMPT [32m❯ [32mmain [31m✗ [32m✚ [35m↑[0m[35m[24m[35m[27m[35m[39m[49m
+KRONUZSH    [1m[34m~/project[0m[34m[24m[34m[27m[34m[39m[49m     RPROMPT [32m❯[0m[32m[24m[32m[27m[32m[39m[49m [32mmain [31m✗ [32m✚ [35m↑[0m[35m[24m[35m[27m[35m[39m[49m
 
 === eriner ===
 ORIGINAL    [46m[30m ~/project [49m[33m main ±[39m 
@@ -75,7 +75,7 @@ ORIGINAL    18:00:00 ~/project (main ± ↑ ↓ $)
 
 KRONUZSH    [K
 18:00:00 ~/project [34m(main ± ↑ $[0m[34m[24m[34m[27m[34m[39m[49m)[K
-[32m% 
+[32m%[0m[32m[24m[32m[27m[32m[39m[49m 
 
 === itchy ===
 ORIGINAL    [36mkronuz@kronuz[39m [33m~/project[39m
@@ -119,25 +119,25 @@ KRONUZSH    [34m~/project[0m[34m[24m[34m[27m[34m[39m[49m [38;5;242mmai
 ORIGINAL    [34m~/project[39m on [32mmain[39m [33m✘[39m
 [32m❯[39m     RPROMPT (py3.12) 18:00:00
 KRONUZSH    [34m~/project[0m[34m[24m[34m[27m[34m[39m[49m on main [33m✘ [36m⇡[K
-[32m❯     RPROMPT 18:00:00
+[32m❯[0m[32m[24m[32m[27m[32m[39m[49m     RPROMPT 18:00:00
 
 === spaceship ===
 ORIGINAL    [36m➜[39m [32m~/project[39m on [34mmain[39m [31m✗[39m
 [32m❯[39m 
 KRONUZSH    [36m➜ [32m~/project[0m[32m[24m[32m[27m[32m[39m[49m [34mon main [31m✗ [32m✚ ⇡[0m[32m[24m[32m[27m[32m[39m[49m[K
-[32m❯ 
+[32m❯[0m[32m[24m[32m[27m[32m[39m[49m 
 
 === starship ===
 ORIGINAL    [34m➜[39m [36m~/project[39m [35m main[39m [31m✘[39m
 [32m❯[39m 
 KRONUZSH    [34m➜ [36m~/project[0m[36m[24m[36m[27m[36m[39m[49m [38;2;175;0;175m main ✘ ⇡[0m[38;2;175;0;175m[24m[38;2;175;0;175m[27m[38;2;175;0;175m[39m[49m[K
-[32m❯ 
+[32m❯[0m[32m[24m[32m[27m[32m[39m[49m 
 
 === liquidprompt ===
 ORIGINAL    [34m~/project[39m [36m(main [31m✗[32m +[33m ?[36m)[39m
-[32m$[39m     RPROMPT 19:00:53
+[32m$[39m     RPROMPT 19:04:59
 KRONUZSH    [34m~/project[0m[34m[24m[34m[27m[34m[39m[49m[36m(main [31m✗ [32m+ [33m?[0m[33m[24m[33m[27m[33m[39m[49m)[K
-[32m%     RPROMPT 18:00:00
+[32m%[0m[32m[24m[32m[27m[32m[39m[49m     RPROMPT 18:00:00
 
 === robbyrussell ===
 ORIGINAL    [1m[32m➜[39m[0m  [36mproject[39m [1m[34mgit:([31mmain[34m)[39m[0m [33m✗[39m 
