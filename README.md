@@ -1,6 +1,6 @@
 # KronuZSH
 
-**KronuZSH** is a thin, prezto-free zsh setup: my prompt, four plugins, and a small
+**KronuZSH** is a thin, prezto-free zsh setup: my prompt, five plugins, and a small
 amount of config, with no framework underneath. It replaces a 7-years-behind prezto
 fork with something I maintain end to end.
 
@@ -25,6 +25,7 @@ me that I actually use is now maintained here or supplied by a standalone plugin
   [fast-syntax-highlighting](https://github.com/zdharma-continuum/fast-syntax-highlighting),
   [zsh-autosuggestions](https://github.com/zsh-users/zsh-autosuggestions),
   [zsh-history-substring-search](https://github.com/zsh-users/zsh-history-substring-search),
+  [zsh-autoenv](https://github.com/Tarrasch/zsh-autoenv),
   and [gitstatus](https://github.com/romkatv/gitstatus).
 - **config** (in `lib/`): `options.zsh`, `history.zsh`, `colors.zsh`,
   `completion.zsh`, `keybindings.zsh`, `aliases.zsh`, `functions.zsh`,
@@ -43,6 +44,7 @@ noticed after removing it—read ["Molting Zsh: Down to the core"](https://kronu
 - [Prompt and fonts](#fonts-nerd-font)
 - [Install](#install)
 - [Machine-local config](#machine-local-config)
+- [Per-directory environments](#per-directory-environments)
 - [Shell conveniences](#shell-conveniences)
 - [Git prompt engine](#gitstatusd-the-git-prompt-engine)
 - [External tools](#external-tools)
@@ -131,14 +133,35 @@ Two tiers, by language:
   `.zshrc` runs and `integrations/init.zsh` can detect the tool.
 - **`~/.zshrc.local`** — zsh-only interactive machine tweaks (the
   `KZ_PROMPT_COLOR_HOST` and other `KZ_PROMPT_*` overrides, zstyles, tool
-  hooks not already covered by an integration, such as `nvm`). Sourced last,
-  if present. Copy the template and edit:
+  hooks not already covered by an integration, such as `nvm`). Sourced after the core
+  prompt setup and before zsh-autoenv's initial directory scan, if present. Copy the
+  template and edit:
 
   ```bash
   cp ~/.config/KronuZSH/zshrc.local.example ~/.zshrc.local
   ```
 
 `/etc/profile` is left to the system.
+
+## Per-directory environments
+
+KronuZSH bundles [zsh-autoenv](https://github.com/Tarrasch/zsh-autoenv). An approved
+`.autoenv.zsh` is sourced when you enter its directory; `autostash` preserves and
+restores exported variables, ordinary Zsh parameters, aliases, and functions when you
+leave. Unknown or changed files are displayed at entry and require typing `yes` before
+they run.
+
+Stash before changing either shell-local state or an explicitly exported variable:
+
+```zsh
+autostash KZ_PROMPT_COLOR_HOST
+KZ_PROMPT_COLOR_HOST='$kz[FG.green]'
+autostash PROJECT_MODE
+export PROJECT_MODE=development
+```
+
+The prompt shows `env:<project>` while an environment is loaded. See the
+[runnable example](dev/autoenv-example/) for the complete enter/leave flow.
 
 ## Shell conveniences
 
@@ -183,7 +206,7 @@ into `~/.cache/gitstatus/` (from GitHub releases). Nothing is committed here.
 
 KronuZSH wires in a set of modern CLI tools **when they're installed**, and
 silently skips them when they aren't, so the same config works on your laptop, a
-fresh box, or a server with none of them. The wired set (fzf, fd, zoxide, direnv, bat,
+fresh box, or a server with none of them. The wired set (fzf, fd, zoxide, bat,
 ripgrep, git-delta, eza, yazi) gets key bindings, aliases, env, or git
 config; a longer list of "just run them" tools (lazygit, jq, dust, btop, ...) is
 worth having too.
@@ -194,13 +217,13 @@ shared Kronuz theming. The quick install:
 
 ```bash
 # macOS
-brew install fd bat fzf zoxide direnv ripgrep git-delta eza yazi
+brew install fd bat fzf zoxide ripgrep git-delta eza yazi
 
 # Debian / Ubuntu  (fd installs as `fdfind`, bat as `batcat`; init.zsh detects both)
-sudo apt install fd-find bat fzf zoxide direnv ripgrep git-delta
+sudo apt install fd-find bat fzf zoxide ripgrep git-delta
 
 # Fedora
-sudo dnf install fd-find bat fzf zoxide direnv ripgrep git-delta
+sudo dnf install fd-find bat fzf zoxide ripgrep git-delta
 ```
 
 On a minimal or locked-down distro that lacks them, install via Rust

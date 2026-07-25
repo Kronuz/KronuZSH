@@ -5,11 +5,12 @@ it. It's a single self-contained theme in [`lib/prompt.zsh`](lib/prompt.zsh), no
 For the internals (how the deferred strings render, how to add a segment), see the
 "prompt" section of [`AGENTS.md`](AGENTS.md); this file is the user-facing manual.
 
-Every option is an ordinary Zsh parameter that you set in `~/.zshrc.local` (in your
-home directory, never committed). Do not `export` prompt options: they only affect the
-current shell and its prompt. All of them are optional; out of the box the prompt
-auto-detects your terminal, OS, and session. Nerd Font glyphs are enabled by default,
-with a plain-Unicode set available for terminals using another font.
+Every option is an ordinary Zsh parameter normally set in `~/.zshrc.local`. A project's
+approved `.autoenv.zsh` can scope an override with `autostash`; stash first and assign
+separately so the prompt parameter stays shell-local. Do not `export` prompt options:
+they affect only the current shell and its prompt. All of them are optional; out of the
+box the prompt auto-detects your terminal, OS, and session. Nerd Font glyphs are enabled
+by default, with a plain-Unicode set available for terminals using another font.
 
 ## What you see
 
@@ -33,7 +34,7 @@ Read top to bottom:
 kronuz       user         %n
 at host…     host         OS logo (Nerd Font) + hostname + cached LAN IP
 ⎇ main …     git          branch/tag/commit, ahead/behind, staged/modified/…
-env:project   direnv       project root containing the detected .envrc
+env:project   autoenv      project root containing the loaded .autoenv.zsh
 venv myproj  venv         the active Python virtualenv ($VIRTUAL_ENV)
 ```
 
@@ -43,7 +44,7 @@ the info line and the input line). Bottom line: `[time]`, the working directory,
 the caret (`❯❯❯`) you type at. On the **right** (RPROMPT), an overwrite-mode mark
 appears while overwrite mode is active; Vim/Emacs indicators appear when the shell is
 running inside either editor. Segments that have nothing to show (no git repo, no
-direnv context, no venv) simply don't render, so the prompt stays as short as the
+autoenv context, no venv) simply don't render, so the prompt stays as short as the
 moment allows.
 
 Other segments that appear when relevant: a background-jobs count, an SSH or
@@ -248,7 +249,7 @@ The semantic names and their defaults:
 | `untracked`                  | dark grey                     | untracked count                                      |
 | `loading`                    | dark grey                     | in-flight async git query mark                       |
 | `stashed`                    | light steel blue              | stash count                                          |
-| `direnv`                     | aqua                          | direnv project root                                  |
+| `autoenv`                    | aqua                          | zsh-autoenv project root                             |
 | `venv`                       | white                         | virtualenv name                                      |
 | `jobs`                       | gold                          | background-jobs count                                |
 | `duration`                   | goldenrod                     | command duration                                     |
@@ -306,17 +307,16 @@ The Eternal Terminal session cue is the separate `etctl:<name>` tag (in magenta)
 shown whenever `$ETCTL_SESSION` is set, so you can tell at a glance which managed
 remote session a shell belongs to.
 
-### Direnv context
+### zsh-autoenv context
 
-When direnv has found an `.envrc` or configured `.env` file, the prompt shows
+When zsh-autoenv has approved and sourced a `.autoenv.zsh`, the prompt shows
 `env:<root>` beside the Git and virtualenv segments. The root comes from
-`$DIRENV_FILE`, so entering a subdirectory keeps the environment boundary visible
-without running another command from the prompt.
+zsh-autoenv's in-shell loaded-file stack, so entering a subdirectory keeps the
+environment boundary visible without running another command from the prompt.
 
-Direnv sets `$DIRENV_FILE` even when that file is blocked or failed to load. The badge
-therefore means “direnv context detected,” while direnv's own message remains the
-source of truth for approval and load errors. Set `KZ_PROMPT_DIRENV=''` to hide it,
-or use `$kz[direnv.file]` and `$kz[direnv.root]` in a custom skin.
+Declined files never enter that stack, so the badge means “autoenv sourced,” not merely
+“file detected.” Set `KZ_PROMPT_AUTOENV=''` to hide it, or use
+`$kz[autoenv.file]` and `$kz[autoenv.root]` in a custom skin.
 
 ### Working directory
 
@@ -511,7 +511,7 @@ deferred so it is resolved whenever the prompt is drawn.
 | `KZ_PROMPT_TIME`      | current time (`[%*]`)                                                                |
 | `KZ_PROMPT_PWD`       | working directory generated according to `KZ_PROMPT_PWD_STYLE`                   |
 | `KZ_PROMPT_GIT`       | generated git status                                                                 |
-| `KZ_PROMPT_DIRENV`    | detected direnv project root (`env:<root>`); `''` hides it                         |
+| `KZ_PROMPT_AUTOENV`   | loaded zsh-autoenv project root (`env:<root>`); `''` hides it                      |
 | `KZ_PROMPT_VENV`      | active Python virtualenv                                                             |
 | `KZ_PROMPT_JOBS`      | background-job glyph and count                                                       |
 | `KZ_PROMPT_CONTEXT`   | container and SSH badges                                                             |
@@ -570,7 +570,7 @@ fully enumerated in the linked table or directly in the description.
 | `KZ_PROMPT_GIT_SPLIT`            | `0`              | `1`/`yes`/`on`/`true` breaks the single staged/unstaged counts into per-type marks — added `+`, changed `~`, deleted `-` — coloured by group (the staged and modified colours). Off shows one aggregate count per group.                                                                                                                                                                             |
 | `KZ_PROMPT_COLOR_<NAME>`         | per color        | Override one semantic color. All public names are in the [color table](#colors).                                                                                                                                                                                                                                                                                                                     |
 | `KZ_PROMPT_PALETTE_<NAME>`       | terminal palette | Define or override a base hue with `#RRGGBB` or a 0–255 index. Built-in names include `BLACK`, `RED`, `GREEN`, `YELLOW`, `BLUE`, `MAGENTA`, `CYAN`, `GREY`, `DARKGREY`, `LIGHTRED`, `LIGHTGREEN`, `LIGHTYELLOW`, `LIGHTBLUE`, `LIGHTMAGENTA`, `LIGHTCYAN`, `LIGHTGREY`; custom names work too and become `$kz[FG.<name>]` / `$kz[BG.<name>]`. This changes display colors and the RGB used by `dim`. |
-| `KZ_PROMPT_<SEGMENT>`            | built in         | Replace one complete segment or outcome item. Names: `OS`, `ERR`, `ERROR`, `DURATION`, `USER`, `HOST`, `IP`, `TIME`, `PWD`, `GIT`, `DIRENV`, `VENV`, `JOBS`, `CONTEXT`, `ETCTL`, `VIM`, `EMACS`, `OVERWRITE`, `PROMPT`; see [Replacing a whole segment](#replacing-a-whole-segment).                                                                                                                |
+| `KZ_PROMPT_<SEGMENT>`            | built in         | Replace one complete segment or outcome item. Names: `OS`, `ERR`, `ERROR`, `DURATION`, `USER`, `HOST`, `IP`, `TIME`, `PWD`, `GIT`, `AUTOENV`, `VENV`, `JOBS`, `CONTEXT`, `ETCTL`, `VIM`, `EMACS`, `OVERWRITE`, `PROMPT`; see [Replacing a whole segment](#replacing-a-whole-segment).                                                                                                               |
 | `KZ_PROMPT_PWD_STYLE`            | `full`           | Working-directory shortening: `full`, `short` (shortest unique prefix, `~/.c/K/i/bat`), `base` (current dir name), or `absolute` (`$HOME` expanded).                                                                                                                                                                                                                                                 |
 | `KZ_PROMPT_CMD_DURATION_MIN`     | `3`              | Seconds a command must run before its duration is shown. `0` = always.                                                                                                                                                                                                                                                                                                                               |
 | `KZ_PROMPT_IP_TTL`               | `60`             | Seconds the LAN-IP lookup is cached; lower it if prompt-time address changes must appear sooner.                                                                                                                                                                                                                                                                                                     |
@@ -589,7 +589,7 @@ fully enumerated in the linked table or directly in the description.
 | `COLORTERM`                          | (terminal)       | `24bit`/`truecolor` keeps the hex palette at 24-bit; otherwise colors degrade to 256/16 via `zsh/nearcolor`.                                                                                                                                                                                                                                                                                         |
 | `TERM`                               | (terminal)       | `dumb`/`unknown`/empty forces the plain-glyph set and no color (see no-color mode).                                                                                                                                                                                                                                                                                                                  |
 | `NO_COLOR`                           | (unset)          | Standard env var; when set, renders with no color escapes.                                                                                                                                                                                                                                                                                                                                           |
-| `DIRENV_FILE`                        | (direnv)         | Path of the detected direnv rc file; drives `env:<root>` and the normalized `$kz[direnv.*]` state.                                                                                                                                                                                                                                                                                                    |
+| `_autoenv_stack_entered`             | (zsh-autoenv)    | In-shell stack of approved, loaded `.autoenv.zsh` files; drives `env:<root>` and the normalized `$kz[autoenv.*]` state.                                                                                                                                                                                                                                                                                |
 
 Anything not set falls back to its built-in default. These are shell parameters, not
 environment settings, so they do not need `export`. Most are recomputed on each prompt

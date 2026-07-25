@@ -1,7 +1,7 @@
 # ~/.zshrc.local — your personal, machine-local zsh tweaks.
 #
-# kronuzsh sources this file last (if it exists), so it can override anything the
-# prompt and integrations set up. To use it, copy this file into place and edit:
+# kronuzsh sources this file after its core setup (and before zsh-autoenv's initial
+# directory scan), so it can override the prompt and integrations. To use it, copy:
 #
 #   cp <path-to-kronuzsh>/zshrc.local.example ~/.zshrc.local
 #
@@ -86,7 +86,8 @@ KZ_PROMPT_PWD_STYLE=short
 # KZ_PROMPT_TRANSIENT_STYLE=mute
 
 # --- Additional tool hooks (safe here: PATH is already set up by ~/.profile) ---
-# direnv is wired automatically by integrations/direnv/init.zsh when installed.
+# zsh-autoenv is bundled and loads immediately after this file, so AUTOENV_* settings
+# may be configured here before its initial directory scan.
 # export NVM_DIR="$HOME/.nvm"; [[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh"
 
 # --- Tool config (env only; nothing PATH-related) ---

@@ -27,6 +27,9 @@ kz_prompt_setup
 # Tracked example: zshrc.local.example. The real ~/.zshrc.local is yours, in $HOME.
 [[ -r "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
 
+# zsh-autoenv scans the initial directory as soon as it loads. Do that after local
+# config so a project's autostashed prompt values layer over the machine baseline.
+_kz_autoenv_setup
+
 # Startup-file bookkeeping must not become the first prompt's command status.
 return 0
-

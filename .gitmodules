@@ -10,3 +10,6 @@
 [submodule "plugins/gitstatus"]
 	path = plugins/gitstatus
 	url = https://github.com/romkatv/gitstatus
+[submodule "plugins/zsh-autoenv"]
+	path = plugins/zsh-autoenv
+	url = https://github.com/Tarrasch/zsh-autoenv
