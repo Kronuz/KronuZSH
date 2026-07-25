@@ -8,10 +8,12 @@ is byte-stable. Redirect stdout to dev/skin-captures.ansi.
 
 from __future__ import annotations
 
+import getpass
 import importlib.util
 import os
 import re
 import shutil
+import socket
 import subprocess
 import sys
 import tempfile
@@ -209,6 +211,8 @@ def line(label: str, left: bytes, right: bytes) -> bytes:
 
 
 def normalize_dynamic(value: bytes) -> bytes:
+    value = value.replace(getpass.getuser().encode(), b"kronuz")
+    value = value.replace(socket.gethostname().split(".", 1)[0].encode(), b"kronuz")
     value = re.sub(rb"\b\d\d:\d\d:\d\d\b", b"18:00:00", value)
     value = re.sub(rb"\[(?:\d+\.)+\d+\]", b"[5.9.2]", value)
     return value
