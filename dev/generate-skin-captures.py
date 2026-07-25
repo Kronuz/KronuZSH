@@ -160,9 +160,15 @@ ORIGINALS = {
 
 
 def sgr(prompt: str) -> bytes:
+    env = {
+        **os.environ,
+        "TERM": "xterm-256color",
+        "COLORTERM": "truecolor",
+    }
     return subprocess.run(
         ["zsh", "-fc", 'print -nrP -- "$1"', "capture", prompt],
         check=True,
+        env=env,
         stdout=subprocess.PIPE,
     ).stdout
 

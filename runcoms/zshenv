@@ -23,4 +23,6 @@ fi
 typeset -gU cdpath fpath mailpath path
 
 # macOS: `open` is the browser.
-[[ "$OSTYPE" == darwin* ]] && export BROWSER='open'
+if [[ "$OSTYPE" == darwin* ]]; then
+  export BROWSER='open'
+fi
