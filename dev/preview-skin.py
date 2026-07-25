@@ -27,6 +27,7 @@ import pty
 import re
 import select
 import shutil
+import signal
 import struct
 import sys
 import tempfile
@@ -139,68 +140,115 @@ def render(
                 return -1
             read_some(min(0.2, end - time.time()))
 
+    def must_wait(token: bytes, label: str, timeout: float, frm: int = 0) -> int:
+        pos = wait_for(token, timeout=timeout, frm=frm)
+        if pos == -1:
+            raise RuntimeError(
+                f"timed out waiting for {label}; PTY tail={bytes(buf[-500:])!r}"
+            )
+        return pos
+
     def send(s: str) -> None:
         os.write(fd, s.encode())
 
+    child_reaped = False
+
+    def wait_child(timeout: float) -> bool:
+        nonlocal child_reaped
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            try:
+                done, _ = os.waitpid(pid, os.WNOHANG)
+            except ChildProcessError:
+                child_reaped = True
+                return True
+            if done == pid:
+                child_reaped = True
+                return True
+            time.sleep(0.02)
+        return False
+
+    def terminate_child() -> None:
+        if child_reaped:
+            return
+        for sig in (signal.SIGTERM, signal.SIGKILL):
+            try:
+                os.kill(pid, sig)
+            except ProcessLookupError:
+                break
+            if wait_child(1.0):
+                return
+        try:
+            os.waitpid(pid, 0)
+        except ChildProcessError:
+            pass
+
     target = os.path.basename(repo_dir).encode()
 
-    # Sentinels are emitted via $'...' so they only appear in the shell's output:
-    # the echoed command line shows the literal `$'\x1e...'`, never the control byte.
-    # 1. Wait until ZLE is actually reading a line before typing: input sent earlier is
-    #    dropped. A one-shot line-init hook provides a shell-native readiness signal
-    #    without depending on terminal-specific bracketed-paste output.
-    ready = b"\x1eREADY\x1e"
-    wait_for(ready, timeout=15)
+    try:
+        # Sentinels are emitted via $'...' so they only appear in the shell's output:
+        # the echoed command line shows the literal `$'\x1e...'`, never the control byte.
+        # 1. Wait until ZLE is actually reading a line before typing: input sent earlier is
+        #    dropped. A persistent line-init hook provides a shell-native readiness signal
+        #    without depending on terminal-specific bracketed-paste output.
+        ready = b"\x1eREADY\x1e"
+        must_wait(ready, "initial ZLE readiness", timeout=10)
 
-    # 2. Enter the demo repo. cd is resent every iteration (idempotent) in case the very
-    #    first keystroke still races ZLE, and we confirm arrival by the reported basename.
-    for _ in range(20):
+        # 2. Enter the demo repo. cd is resent every iteration (idempotent) in case the
+        #    first keystroke still races ZLE, and arrival is confirmed by the basename.
         frm = len(buf)
         send(
             f"builtin cd {repo_dir} 2>/dev/null; print -n $'\\x1eP:'${{PWD:t}}$'\\x1e'\r"
         )
-        j = wait_for(b"\x1eP:", timeout=1.5, frm=frm)
-        if j != -1:
-            k = buf.find(b"\x1e", j)
-            if bytes(buf[j:k]) == target:
-                wait_for(ready, timeout=2.0, frm=k)
-                break
-        time.sleep(0.03)
+        j = must_wait(b"\x1eP:", "demo-directory marker", timeout=3.0, frm=frm)
+        k = buf.find(b"\x1e", j)
+        if k == -1 or bytes(buf[j:k]) != target:
+            raise RuntimeError(
+                f"failed to enter demo directory {target!r}; "
+                f"reported {bytes(buf[j:k])!r}"
+            )
+        must_wait(ready, "ZLE readiness after cd", timeout=3.0, frm=k)
 
-    # 3. Run one command and wait for its completion mark, so raw_cycle is guaranteed to
-    #    contain a full A/B/C/D + 1337 cycle for the OSC check. (Git is synchronous via
-    #    the fake, so there is nothing async to wait on.)
-    frm = len(buf)
-    send("builtin true\r")
-    wait_for(ready, timeout=2.0, frm=frm)
-    raw_cycle = bytes(buf)
-
-    # 4. Render the three layers. Inline $'\x01LABEL\x02' markers bound each printed
-    #    body; the echoed command (ZLE stays active) holds only the literal `$'...'`.
-    def grab(label: str, expr: str) -> None:
+        # 3. Run one command and wait for ZLE to return, so raw_cycle is guaranteed to
+        #    contain a full A/B/C/D + 1337 cycle for the OSC check. (Git is synchronous
+        #    via the fake, so there is nothing async to wait on.)
         frm = len(buf)
-        send(
-            f"print -n $'\\x01{label}\\x02'; print -rP -- \"{expr}\"; print -n $'\\x01END\\x02'\r"
-        )
-        end = wait_for(b"\x01END\x02", timeout=3.0, frm=frm)
-        wait_for(ready, timeout=2.0, frm=end)
+        send("builtin true\r")
+        must_wait(ready, "ZLE readiness after command", timeout=3.0, frm=frm)
+        raw_cycle = bytes(buf)
 
-    grab("PROMPT", "${(e)${(e)KZ_PROMPT_PROMPT-$DEFAULT_KZ_PROMPT_PROMPT}}")
-    grab("RPROMPT", "${(e)${(e)KZ_PROMPT_RPROMPT-$DEFAULT_KZ_PROMPT_RPROMPT}}")
-    grab(
-        "TRANS",
-        "${(e)${(e)KZ_PROMPT_TRANSIENT_PROMPT-$DEFAULT_KZ_PROMPT_TRANSIENT_PROMPT}}",
-    )
-    grab(
-        "TRANS-R",
-        "${(e)${(e)KZ_PROMPT_TRANSIENT_RPROMPT-$DEFAULT_KZ_PROMPT_TRANSIENT_RPROMPT}}",
-    )
-    send("exit\r")
-    os.close(fd)
-    try:
-        os.waitpid(pid, 0)  # reap the shell so gitstatusd is torn down before cleanup
-    except OSError:
-        pass
+        # 4. Render the four layers. Inline $'\x01LABEL\x02' markers bound each printed
+        #    body; the echoed command (ZLE stays active) holds only the literal `$'...'`.
+        def grab(label: str, expr: str) -> None:
+            frm = len(buf)
+            send(
+                f"print -n $'\\x01{label}\\x02'; print -rP -- \"{expr}\"; "
+                "print -n $'\\x01END\\x02'\r"
+            )
+            end = must_wait(
+                b"\x01END\x02", f"{label} render marker", timeout=3.0, frm=frm
+            )
+            must_wait(ready, f"ZLE readiness after {label}", timeout=3.0, frm=end)
+
+        grab("PROMPT", "${(e)${(e)KZ_PROMPT_PROMPT-$DEFAULT_KZ_PROMPT_PROMPT}}")
+        grab("RPROMPT", "${(e)${(e)KZ_PROMPT_RPROMPT-$DEFAULT_KZ_PROMPT_RPROMPT}}")
+        grab(
+            "TRANS",
+            "${(e)${(e)KZ_PROMPT_TRANSIENT_PROMPT-$DEFAULT_KZ_PROMPT_TRANSIENT_PROMPT}}",
+        )
+        grab(
+            "TRANS-R",
+            "${(e)${(e)KZ_PROMPT_TRANSIENT_RPROMPT-$DEFAULT_KZ_PROMPT_TRANSIENT_RPROMPT}}",
+        )
+        send("exit\r")
+        wait_child(0.1)
+    finally:
+        try:
+            os.close(fd)
+        except OSError:
+            pass
+        terminate_child()
+
     tail = bytes(buf)
 
     def between(label: str) -> bytes:
