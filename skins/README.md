@@ -29,6 +29,8 @@ Skin names are resolved from the bundled gallery, so the shorter forms work too:
 kz_skin spaceship
 ```
 
+`kz_skin <TAB>` completes every bundled skin name.
+
 The `.zsh` suffix is optional. A readable path is also accepted when importing or
 developing a skin outside the gallery.
 

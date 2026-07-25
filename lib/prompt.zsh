@@ -1246,6 +1246,14 @@ function kz_skin {
   builtin source -- "$skin"
 }
 
+function _kz_skin_completion {
+  local dir="${KRONUZSH:-${${(%):-%x}:A:h:h}}/skins"
+  local -a names=( "$dir"/*.zsh(N:t:r) )
+  _describe 'KronuZSH skins' names
+}
+
+(( $+functions[compdef] )) && compdef _kz_skin_completion kz_skin
+
 function kz_prompt_setup {
   setopt LOCAL_OPTIONS
   unsetopt XTRACE KSH_ARRAYS
