@@ -67,7 +67,7 @@ jobs:
       - name: Check skin captures
         run: |
           python3 dev/generate-skin-captures.py > "$RUNNER_TEMP/skin-captures.ansi"
-          cmp dev/skin-captures.ansi "$RUNNER_TEMP/skin-captures.ansi"
+          diff -u dev/skin-captures.ansi "$RUNNER_TEMP/skin-captures.ansi"
 
   shellcheck:
     name: ShellCheck
