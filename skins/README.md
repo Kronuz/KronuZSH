@@ -20,13 +20,12 @@ When switching between bundled skins, reset the previous layout first so an opti
 the new skin does not set cannot leak through:
 
 ```zsh
-kz_prompt_use_skin "$KRONUZSH/skins/spaceship.zsh"
+prompt "$KRONUZSH/skins/spaceship.zsh"
 ```
 
 Skin names are resolved from the bundled gallery, so the shorter forms work too:
 
 ```zsh
-kz_prompt_use_skin spaceship
 prompt spaceship
 ```
 
