@@ -120,6 +120,18 @@ configuration cannot yet cover all language, cloud, package, battery, and tool s
 | `robbyrussell.zsh` | Oh My Zsh's default: `➜ dir git:(branch) ✗`                     |
 | `emoji.zsh`        | playful all-emoji: `📁 dir 🌿 branch ⚡`                          |
 | `agnoster.zsh`     | Agnoster's path/Git ribbon; optional segments documented         |
+| `eriner.zsh`       | Zim Eriner's cyan/yellow powerline variant                       |
+| `asciiship.zsh`    | Zim's readable two-line branch/status prompt                     |
+| `gitster.zsh`      | Zim Gitster's compact arrow and Git verdict                      |
+| `zim-minimal.zsh`  | Zim Minimal's lambda with right-aligned path/Git                 |
+| `s1ck94.zsh`       | Zim S1ck94's arrow with right-aligned repository state            |
+| `sorin.zsh`        | Zim/Prezto Sorin's blue path and Git RPROMPT                     |
+| `magicmace.zsh`    | Zim Magicmace's bracketed path and long rule                     |
+| `hometown.zsh`     | Zim Hometown's timestamped multiline layout                      |
+| `powerlevel10k.zsh`| Powerlevel10k's compact two-line classic                       |
+| `spaceship.zsh`    | Spaceship's directory/context/Git layout                         |
+| `starship.zsh`     | Starship's broadly portable two-line shape                       |
+| `liquidprompt.zsh` | Liquid Prompt's adaptive directory/VCS core                      |
 | `geometry.zsh`     | Geometry's sparse left prompt and Git RPROMPT                     |
 | `typewritten.zsh`  | Typewritten's prompt-left, context-right layout                   |
 | `lambda-mod.zsh`   | Lambda Mod's two-line lambda/Git prompt                           |

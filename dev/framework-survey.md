@@ -19,6 +19,20 @@ Fade, Fire, Oliver, Pws, Redhat, Suse, Walters, and Zefram plus control themes.
 Zim features Agnoster, Asciiship, Bira, Eriner, Gitster, Hometown, Magicmace, Minimal,
 S1ck94, Sorin, and Steeef.
 
+The broader survey also covers the major standalone prompt systems: Powerlevel10k,
+Spaceship, Starship, Liquid Prompt, Pure, and Geometry. Their full implementations are
+feature engines rather than skins; the bundled files reproduce their recognizable default
+composition from the state KronuZSH exposes, while deliberately avoiding theme-specific
+functions and subprocesses.
+
+All 11 Zim featured themes now have corresponding skins. Bira, Steeef, and Agnoster
+share implementations with other frameworks; the remaining eight have dedicated files.
+Gitster is the closest reproduction. Asciiship, Hometown, Sorin, and the powerline-family
+themes retain their recognizable layouts but cannot reproduce every upstream transition
+without putting functions into a skin (which is deliberately not allowed). The normalized
+Git state covers their common branch, dirty, staged, untracked, action, ahead/behind,
+stash, and commit details.
+
 ## Implemented in this pass
 
 Sixteen additional declarative skins were selected to cover distinct visual families,

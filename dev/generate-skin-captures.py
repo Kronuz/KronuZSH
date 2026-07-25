@@ -36,6 +36,10 @@ ORIGINALS = {
         "  main ± %k%F{yellow}%f ",
         "",
     ),
+    "asciiship": (
+        "~/project [on branch main + ! ? >] via py3.12 *\n$ ",
+        "",
+    ),
     "bira": (
         "╭─%B%F{green}kronuz@kronuz%f%b %B%F{blue}~/project %f%b"
         "%F{yellow}‹main%F{red}●%F{yellow}› %f\n╰─%B$%b ",
@@ -60,6 +64,13 @@ ORIGINALS = {
         " %F{default}▲%f %F{blue}~/project%f ",
         "⇡ %F{242}main%f %F{green}1s%f %F{144}●%f %F{red}⬡%f",
     ),
+    "gitster": ("%F{green}➜%f ~/project main %F{green}✓%f ", ""),
+    "zim-minimal": ("%F{green}λ%f ", "%~ main ✓"),
+    "s1ck94": ("%F{green}❯%f ", "~/project main ✗ ↑ ↓"),
+    "sorin": ("%B%F{blue}~/project%f%b ", "(py3.12) %F{green}main%f %F{red}✗%f"),
+    "eriner": ("%K{cyan}%F{black} ~/project %k%F{yellow} main ±%f ", ""),
+    "magicmace": ("%F{green}kronuz%f %F{blue}[~/project]%f [main * ↑ ↓]── ", ""),
+    "hometown": ("18:00:00 ~/project (main ± ↑ ↓ $)\n% ", ""),
     "itchy": (
         "%F{cyan}kronuz@kronuz%f %F{yellow}~/project%f\n%F{green}☺%f  ",
         "main %F{red}✗%f",
@@ -94,6 +105,22 @@ ORIGINALS = {
         "%F{blue}~/project%f %F{242}main%F{218}*%f %F{cyan}⇡%f"
         " %F{cyan}≡%f\n%F{magenta}❯%f ",
         "",
+    ),
+    "powerlevel10k": (
+        "%F{blue}~/project%f on %F{green}main%f %F{yellow}✘%f\n%F{green}❯%f ",
+        "(py3.12) 18:00:00",
+    ),
+    "spaceship": (
+        "%F{cyan}➜%f %F{green}~/project%f on %F{blue}main%f %F{red}✗%f\n%F{green}❯%f ",
+        "",
+    ),
+    "starship": (
+        "%F{blue}➜%f %F{cyan}~/project%f %F{magenta} main%f %F{red}✘%f\n%F{green}❯%f ",
+        "",
+    ),
+    "liquidprompt": (
+        "%F{blue}~/project%f %F{cyan}(main %F{red}✗%F{green} +%F{yellow} ?%F{cyan})%f\n%F{green}$%f ",
+        "%*",
     ),
     "robbyrussell": (
         "%B%F{green}➜%f%b  %F{cyan}project%f %B%F{blue}git:(%F{red}"
