@@ -20,6 +20,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
+        with:
+          submodules: true
 
       - name: Install Zsh on Ubuntu
         if: runner.os == 'Linux'
