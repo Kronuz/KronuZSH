@@ -25,9 +25,18 @@ function _kz_test_make_venv {
 typeset -g _KZ_TEST_OLD_PATH=$PATH
 export VIRTUAL_ENV=${${(%):-%x}:A:h:h}
 export PATH="$VIRTUAL_ENV/bin:$PATH"
+export VIRTUAL_ENV_PROMPT=.venv
+if [[ -z "${VIRTUAL_ENV_DISABLE_PROMPT-}" ]]; then
+  typeset -g _KZ_TEST_OLD_PROMPT=${PROMPT-}
+  PROMPT="(.venv) ${PROMPT-}"
+fi
 function deactivate {
   export PATH=$_KZ_TEST_OLD_PATH
-  unset VIRTUAL_ENV _KZ_TEST_OLD_PATH
+  if (( ${+_KZ_TEST_OLD_PROMPT} )); then
+    PROMPT=$_KZ_TEST_OLD_PROMPT
+    unset _KZ_TEST_OLD_PROMPT
+  fi
+  unset VIRTUAL_ENV VIRTUAL_ENV_PROMPT _KZ_TEST_OLD_PATH
   unfunction deactivate
 }
 ' > "$root/.venv/bin/activate"
@@ -40,17 +49,24 @@ command mkdir -p "$project/sub" "$project/sibling" "$nested/deep" "$outside"
 _kz_test_make_venv "$project"
 _kz_test_make_venv "$nested"
 
+# Start outside the checkout so a .venv in $HOME or another parent cannot become
+# part of the test baseline.
+builtin cd "$outside"
+unset VIRTUAL_ENV_DISABLE_PROMPT
 source "$original/lib/python.zsh"
 _kz_python_venv_setup
 
 local baseline_path=$PATH
+local baseline_prompt=${PROMPT-}
 local parent_venv="${project:A}/.venv"
 local nested_venv="${nested:A}/.venv"
 
 builtin cd "$project/sub"
 [[ "${VIRTUAL_ENV:-}" == "$parent_venv" \
   && "$_kz_managed_venv" == "$parent_venv" \
-  && "$PATH" == "$parent_venv/bin:"* ]] \
+  && "$PATH" == "$parent_venv/bin:"* \
+  && "${PROMPT-}" == "$baseline_prompt" \
+  && "${VIRTUAL_ENV_PROMPT:-}" == .venv ]] \
   || _kz_test_fail "nearest parent .venv was not activated"
 
 # Re-sourcing KronuZSH must preserve ownership and not duplicate the chpwd hook.
@@ -92,6 +108,17 @@ builtin cd "$project/sub"
 builtin cd "$outside"
 [[ -z "${VIRTUAL_ENV:-}" && -z "$_kz_managed_venv" && "$PATH" == "$baseline_path" ]] \
   || _kz_test_fail "leaving the project did not restore the original shell state"
+
+# An explicitly empty override restores virtualenv's stock prompt prefix.
+VIRTUAL_ENV_DISABLE_PROMPT=''
+builtin cd "$project/sub"
+[[ "${PROMPT-}" == "(.venv) $baseline_prompt" \
+  && "${VIRTUAL_ENV_PROMPT:-}" == .venv ]] \
+  || _kz_test_fail "empty prompt override did not restore virtualenv's prefix"
+builtin cd "$outside"
+[[ "${PROMPT-}" == "$baseline_prompt" && -z "${VIRTUAL_ENV_PROMPT:-}" ]] \
+  || _kz_test_fail "deactivation did not restore the prompt"
+VIRTUAL_ENV_DISABLE_PROMPT=1
 
 # An environment that existed before the hook took ownership always wins.
 typeset -gi _kz_test_manual_deactivations=0

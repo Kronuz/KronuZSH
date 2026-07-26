@@ -153,6 +153,10 @@ never replaced or deactivated. The existing venv prompt segment shows the active
 environment. Set `KZ_AUTO_VENV=0` in `~/.zshrc.local` to disable automatic
 activation.
 
+KronuZSH disables virtualenv's stock `(.venv)` prefix because the prompt already has
+its own venv segment. Set `VIRTUAL_ENV_DISABLE_PROMPT=''` in `~/.zshrc.local` if you
+want both.
+
 ## Shell conveniences
 
 The small built-in command set stays deliberately conventional: `d` prints the

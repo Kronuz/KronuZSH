@@ -53,7 +53,9 @@ discovery can mistake them for active content.
 `lib/python.zsh` owns automatic `.venv` activation. Its `chpwd` hook searches upward
 for the nearest `.venv/bin/activate` and records only environments it activates in
 `$_kz_managed_venv`. Never remove that ownership check: manually activated
-environments must not be replaced or deactivated. Setup runs after
+environments must not be replaced or deactivated. It defaults
+`VIRTUAL_ENV_DISABLE_PROMPT=1` so activate scripts do not duplicate the native venv
+segment; an explicitly empty value restores the stock prefix. Setup runs after
 `~/.zshrc.local` so `KZ_AUTO_VENV=0` can disable both the hook and initial scan.
 
 The bar for adding anything: keep only the **genuinely useful** part, lean and in

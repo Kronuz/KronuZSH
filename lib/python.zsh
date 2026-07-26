@@ -4,6 +4,11 @@
 # replaced or deactivated. Only the environment recorded in _kz_managed_venv belongs
 # to this hook.
 
+# KronuZSH already renders the active environment, so keep virtualenv's activate
+# script from prepending a second "(.venv)" to PROMPT. An explicitly set value,
+# including an empty one, wins.
+export VIRTUAL_ENV_DISABLE_PROMPT=${VIRTUAL_ENV_DISABLE_PROMPT-1}
+
 typeset -g _kz_managed_venv=${_kz_managed_venv:-}
 
 function _kz_python_venv_update {

@@ -89,6 +89,8 @@ KZ_PROMPT_PWD_STYLE=short
 # Automatically activate the nearest .venv as you move through a project. The hook
 # never replaces or deactivates an environment that it did not activate itself:
 # KZ_AUTO_VENV=0
+# Restore virtualenv's stock "(.venv)" prefix in addition to KronuZSH's venv segment:
+# VIRTUAL_ENV_DISABLE_PROMPT=''
 
 # --- Tool hooks (safe here: PATH is already set up by ~/.profile) ---
 # export NVM_DIR="$HOME/.nvm"; [[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh"
