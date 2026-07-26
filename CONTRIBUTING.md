@@ -31,6 +31,7 @@ for file in install.sh install.lib.sh integrations/setup.sh integrations/*/setup
 done
 shellcheck --external-sources install.sh install.lib.sh integrations/setup.sh integrations/*/setup.sh
 bash dev/check-integrations.sh
+zsh dev/check-auto-venv.zsh
 ```
 
 For prompt behavior, also start a real interactive Zsh in a PTY. A manual

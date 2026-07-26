@@ -20,8 +20,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
-        with:
-          submodules: true
 
       - name: Install Zsh on Ubuntu
         if: runner.os == 'Linux'
@@ -56,6 +54,9 @@ jobs:
 
       - name: Check integration structure
         run: bash dev/check-integrations.sh
+
+      - name: Check automatic Python virtualenvs
+        run: zsh dev/check-auto-venv.zsh
 
       - name: Check prompt namespace
         run: zsh dev/check-prompt-namespace.zsh

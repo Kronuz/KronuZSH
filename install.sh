@@ -36,8 +36,7 @@ _have_any() {
 recommend_tools() {
   # "<name> <command(s) to probe>"; fd/bat ship under two names on Debian.
   local -a tools=(
-    "fd fd fdfind" "bat bat batcat" "fzf fzf" "zoxide zoxide"
-    "ripgrep rg"
+    "fd fd fdfind" "bat bat batcat" "fzf fzf" "zoxide zoxide" "ripgrep rg"
     "git-delta delta" "eza eza" "yazi yazi" "lazygit lazygit" "hyperfine hyperfine"
     "jq jq" "yq yq" "dust dust" "duf duf" "btop btop" "procs procs" "sd sd"
     "tealdeer tldr" "tokei tokei" "glow glow" "xh xh"

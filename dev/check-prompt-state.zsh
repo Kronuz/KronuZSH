@@ -56,27 +56,6 @@ _kz_venv_segment
   return 1
 }
 
-typeset -ga _autoenv_stack_entered=(/tmp/example-project/.autoenv.zsh)
-_kz_autoenv_segment
-[[ "${kz[autoenv.file]}" == "$_autoenv_stack_entered[-1]" \
-  && "${kz[autoenv.root]}" == example-project \
-  && "${(e)kz[autoenv]}" == *env*example-project* ]] || {
-  print -u2 -r -- "autoenv state or rendered segment was not exposed"
-  return 1
-}
-KZ_PROMPT_AUTOENV=''
-[[ -z "${(e)kz[autoenv]}" ]] || {
-  print -u2 -r -- "an empty KZ_PROMPT_AUTOENV did not hide the segment"
-  return 1
-}
-unset KZ_PROMPT_AUTOENV
-_autoenv_stack_entered=()
-_kz_autoenv_segment
-[[ -z "${kz[autoenv.file]}" && -z "${kz[autoenv.root]}" ]] || {
-  print -u2 -r -- "autoenv state leaked outside an autoenv context"
-  return 1
-}
-
 _kz_cmd_start=$(( EPOCHREALTIME - 4 ))
 _kz_duration_segment
 [[ -n "${kz[duration]}" ]] || {

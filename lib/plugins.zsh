@@ -1,6 +1,6 @@
 # Plugins. All vendored as git submodules under plugins/.
-# Load order matters: gitstatus (for the prompt) first, autosuggestions,
-# history-substring-search, and zsh-autoenv next, fast-syntax-highlighting LAST.
+# Load order matters: gitstatus (for the prompt) first, autosuggestions and
+# history-substring-search next, fast-syntax-highlighting LAST.
 
 # gitstatus: a fast git status daemon (powers the prompt's git segment). The prompt
 # queries it *non-blockingly* (see _kz_git_segment): it waits at most
@@ -44,17 +44,6 @@ bindkey '^[[A' history-substring-search-up
 bindkey '^[[B' history-substring-search-down
 bindkey '^P'   history-substring-search-up
 bindkey '^N'   history-substring-search-down
-
-# zsh-autoenv: source approved per-directory Zsh environments on entry and restore
-# variables declared with autostash on exit. Defer sourcing until runcoms/zshrc has
-# loaded ~/.zshrc.local: upstream scans $PWD immediately, and project prompt overrides
-# must layer on top of the machine-local baseline even when Zsh starts inside a project.
-typeset -gi _kz_autoenv_loaded=0
-function _kz_autoenv_setup {
-  (( _kz_autoenv_loaded )) && return 0
-  source "$KRONUZSH/plugins/zsh-autoenv/autoenv.zsh" || return
-  _kz_autoenv_loaded=1
-}
 
 # fast-syntax-highlighting: MUST be sourced last (it wraps ZLE widgets).
 source "$KRONUZSH/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"

@@ -16,6 +16,7 @@ source "$KRONUZSH/lib/completion.zsh"
 source "$KRONUZSH/lib/keybindings.zsh"
 source "$KRONUZSH/lib/aliases.zsh"
 source "$KRONUZSH/lib/functions.zsh"
+source "$KRONUZSH/lib/python.zsh"
 source "$KRONUZSH/lib/terminal.zsh"
 source "$KRONUZSH/lib/plugins.zsh"
 source "$KRONUZSH/integrations/init.zsh"   # optional external tools (fzf, zoxide, ...), each guarded
@@ -27,9 +28,9 @@ kz_prompt_setup
 # Tracked example: zshrc.local.example. The real ~/.zshrc.local is yours, in $HOME.
 [[ -r "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
 
-# zsh-autoenv scans the initial directory as soon as it loads. Do that after local
-# config so a project's autostashed prompt values layer over the machine baseline.
-_kz_autoenv_setup
+# Register after local config so KZ_AUTO_VENV can disable the native hook. The initial
+# scan handles shells opened directly inside a project.
+_kz_python_venv_setup
 
 # Startup-file bookkeeping must not become the first prompt's command status.
 return 0

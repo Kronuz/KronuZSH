@@ -36,38 +36,4 @@ if grep -En '(\|\|[[:space:]]+return[[:space:]]*$|^[[:space:]]*return[[:space:]]
   failed=1
 fi
 
-root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
-sandbox="$(mktemp -d)"
-trap 'rm -rf -- "$sandbox"' EXIT
-mkdir -p "$sandbox/project"
-cat > "$sandbox/project/.autoenv.zsh" <<'EOF'
-autostash KZ_PROMPT_COLOR_HOST='$kz[FG.green]'
-autostash AUTOENV_NEW_VALUE=created
-autostash AUTOENV_EXPORTED_VALUE
-export AUTOENV_EXPORTED_VALUE=overridden
-EOF
-
-if ! AUTOENV_AUTH_FILE="$sandbox/auth" zsh -fc '
-  KZ_PROMPT_COLOR_HOST=original
-  export AUTOENV_EXPORTED_VALUE=exported-original
-  source "$1/plugins/zsh-autoenv/autoenv.zsh"
-  _autoenv_authorize "$2/project/.autoenv.zsh"
-  _autoenv_authorized_env_file "$2/project/.autoenv.zsh" || return 1
-
-  cd "$2/project"
-  [[ "$KZ_PROMPT_COLOR_HOST" == '\''$kz[FG.green]'\'' \
-    && "$AUTOENV_NEW_VALUE" == created \
-    && "$AUTOENV_EXPORTED_VALUE" == overridden \
-    && "${_autoenv_stack_entered[-1]:t}" == .autoenv.zsh ]] || return 1
-
-  cd "$2"
-  [[ "$KZ_PROMPT_COLOR_HOST" == original \
-    && ${+AUTOENV_NEW_VALUE} -eq 0 \
-    && "$AUTOENV_EXPORTED_VALUE" == exported-original \
-    && ${#_autoenv_stack_entered} -eq 0 ]]
-' zsh "$root" "$sandbox"; then
-  printf 'zsh-autoenv must load approved files and restore shell state on exit\n' >&2
-  failed=1
-fi
-
 exit "$failed"

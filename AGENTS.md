@@ -9,13 +9,13 @@ Own the whole thing, no framework. Everything kept is either mine (the prompt) o
 a standalone plugin. The prompt was ported off a prezto theme; its prezto
 dependencies were replaced with small native pieces:
 
-| prezto gave                 | replaced by                                                                                   |
-| --------------------------- | --------------------------------------------------------------------------------------------- |
-| `git-info` + `async` worker | gitstatus (gitstatusd) + a direct-`git` fallback                                              |
-| `python-info` (venv)        | `_kz_venv_segment` (`$VIRTUAL_ENV`)                                                       |
-| `editor-info` (keymap)      | `_kz_keymap_update` (zle hooks)                                                           |
-| `prompt-pwd`                | `_kz_pwd_segment` (`${(%):-%~}`, with `KZ_PROMPT_PWD_STYLE` full/short/base/absolute) |
-| `spectrum` (prompt colors)  | `$kz[FG.*]` / `$kz[BG.*]` wrap the private palette in `lib/prompt.zsh`                        |
+| prezto gave                 | replaced by                                                                                      |
+| --------------------------- | ------------------------------------------------------------------------------------------------ |
+| `git-info` + `async` worker | gitstatus (gitstatusd) + a direct-`git` fallback                                                 |
+| `python-info` (venv)        | `_kz_venv_segment` (`$VIRTUAL_ENV`) and `lib/python.zsh`                                         |
+| `editor-info` (keymap)      | `_kz_keymap_update` (zle hooks)                                                                 |
+| `prompt-pwd`                | `_kz_pwd_segment` (`${(%):-%~}`, with `KZ_PROMPT_PWD_STYLE` full/short/base/absolute)             |
+| `spectrum` (prompt colors)  | `$kz[FG.*]` / `$kz[BG.*]` wrap the private palette in `lib/prompt.zsh`                           |
 
 Dropped from the prezto version: the `async` worker (gitstatusd is the async
 engine), `pmodload`/`vcs_info`, and a stray debug `echo >> /tmp/prompt_kronuz` that
@@ -42,12 +42,19 @@ discovery can mistake them for active content.
   `~/.profile` for cross-shell env. `runcoms/zshrc` (interactive): the entry that
   sources the `lib/` modules below. `runcoms/zlogin`: bg-compiles the compdump.
 - `runcoms/zshrc` order: `zshenv → lib/options → lib/history → lib/colors →
-  lib/completion → lib/keybindings → lib/aliases → lib/functions → lib/terminal →
-  lib/plugins → integrations/init → lib/prompt → kz_prompt_setup →
-  ~/.zshrc.local → _kz_autoenv_setup`. (`lib/options` globally enables the prompt options before setup;
+  lib/completion → lib/keybindings → lib/aliases → lib/functions → lib/python →
+  lib/terminal → lib/plugins → integrations/init → lib/prompt → kz_prompt_setup →
+  ~/.zshrc.local → _kz_python_venv_setup`. (`lib/options` globally enables the
+  prompt options before setup;
   `lib/colors` sets `$LS_COLORS` before `lib/completion` so the completion menu
   picks it up, plus `$GREP_COLORS`,
   `$LESS_TERMCAP`, and BSD `$LSCOLORS` — see "File colours" below.)
+
+`lib/python.zsh` owns automatic `.venv` activation. Its `chpwd` hook searches upward
+for the nearest `.venv/bin/activate` and records only environments it activates in
+`$_kz_managed_venv`. Never remove that ownership check: manually activated
+environments must not be replaced or deactivated. Setup runs after
+`~/.zshrc.local` so `KZ_AUTO_VENV=0` can disable both the hook and initial scan.
 
 The bar for adding anything: keep only the **genuinely useful** part, lean and in
 an obviously-named file, and prefer zsh-native over a vendored module (that's why
@@ -60,16 +67,11 @@ manual, register it as `_kz_help_native[wrapper]=command`. Do this only for hybr
 compatibility wrappers such as `cat`; genuine helpers such as `y` should document their
 function implementation.
 
-In `lib/plugins.zsh` the order matters: **gitstatus first**, autosuggestions,
-history-substring-search, and zsh-autoenv next, **fast-syntax-highlighting LAST** (it
-wraps ZLE widgets, so anything that defines widgets must come before it).
-Autosuggestions uses `ZSH_AUTOSUGGEST_MANUAL_REBIND`: its first precmd runs after that
-complete stack is loaded, binds once, then removes its own precmd hook. Do not move the
-binding earlier.
-
-`_kz_autoenv_setup` is defined with the other plugin wiring but invoked after
-`~/.zshrc.local`: zsh-autoenv scans `$PWD` as soon as it is sourced, and a project
-environment must layer over machine-local prompt settings when Zsh starts inside it.
+In `lib/plugins.zsh` the order matters: **gitstatus first**, autosuggestions and
+history-substring-search next, **fast-syntax-highlighting LAST** (it wraps ZLE
+widgets, so anything that defines widgets must come before it). Autosuggestions uses
+`ZSH_AUTOSUGGEST_MANUAL_REBIND`: its first precmd runs after that complete stack is
+loaded, binds once, then removes its own precmd hook. Do not move the binding earlier.
 
 ## File colours (ls / eza / fd / completion): the vivid pipeline
 
@@ -229,10 +231,10 @@ char in a comment.
 Each segment is a deferred string `kz[x]="${(e)KZ_PROMPT_X:-$DEFAULT_KZ_PROMPT_X}"`,
 and `PROMPT`/`RPROMPT` splice the `$kz[...]` together. Dynamic data is computed
 in `kz_prompt_precmd` into private vars for pwd/venv (`_kz_prompt_pwd`,
-`_kz_prompt_venv`) and normalized `$kz[git.*]` / `$kz[autoenv.*]` state.
+`_kz_prompt_venv`) and into `$kz[git.*]` for git state.
 
 Current layout:
-`PROMPT = status err info context etctl git autoenv venv jobs \n time pwd caret`
+`PROMPT = status err info context etctl git venv jobs \n time pwd caret`
 (plus normal OSC 133 `A`/`B` marks when transience is off). With transience on, the
 live prompt is unmarked; accepting a command or blank line keeps the dimmed previous
 status/duration by default, then emits `A`/`B` only around the pwd/caret prompt line.
@@ -390,14 +392,7 @@ path. A `KZ_PROMPT_GIT` override composes them declaratively
 (`${kz[git.branch]:+...}`), so a skin reshapes git with no hook of its own and it works
 under gitstatusd and the fallback alike. Inside a `${var:+...}` conditional, colour with
 `${kz[FG.name]}`, never a literal `%F{...}` (a bare `}` ends the conditional early).
-Other normalized content state includes `$kz[autoenv.file]`, `$kz[autoenv.root]`,
-`$kz[venv.name]`, and `$kz[duration]`.
-
-The zsh-autoenv segment stays fork-free: its chpwd hook maintains the in-shell
-`$_autoenv_stack_entered` array, and `_kz_autoenv_segment` derives the top rc file and
-project root from it. Only approved, sourced files enter that stack, so the badge
-means “autoenv loaded.” Project files should use `autostash` for every
-parameter they change so zsh-autoenv restores values and attributes on exit.
+Other normalized content state includes `$kz[venv.name]` and `$kz[duration]`.
 
 ### Skins
 
@@ -549,8 +544,10 @@ hand-rolling a new capture script:
 - **`dev/normalize-prompt-stream.zsh IN OUT [ROOT]`** — replaces only the values that
   must vary between runs (wall-clock time, host, repo root) while preserving every
   control byte, so a protocol or cursor-motion change still fails the golden compare.
-- **`dev/check-integrations.sh`** — sanity-checks external-tool wiring and zsh-autoenv
-  enter/leave restoration (also referenced from `CONTRIBUTING.md`).
+- **`dev/check-integrations.sh`** — sanity-checks the external-tool integration wiring
+  (also referenced from `CONTRIBUTING.md`).
+- **`dev/check-auto-venv.zsh`** — exercises nearest-parent discovery, nested
+  environment switching, shell restoration, manual-environment ownership, and opt-out.
 - **`dev/check-prompt-namespace.zsh`** — guards the prompt's public/private variable
   boundary, including cleanup of the old `$col` palette on re-source. CI runs it on
   macOS and Linux.

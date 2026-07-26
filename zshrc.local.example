@@ -1,7 +1,7 @@
 # ~/.zshrc.local — your personal, machine-local zsh tweaks.
 #
-# kronuzsh sources this file after its core setup (and before zsh-autoenv's initial
-# directory scan), so it can override the prompt and integrations. To use it, copy:
+# kronuzsh sources this file after its core setup and before the initial automatic
+# .venv scan, so it can override the prompt and integrations. To use it, copy:
 #
 #   cp <path-to-kronuzsh>/zshrc.local.example ~/.zshrc.local
 #
@@ -85,9 +85,12 @@ KZ_PROMPT_PWD_STYLE=short
 # How the whole collapsed line (pwd, caret, command) is restyled: dim (default), mute, keep.
 # KZ_PROMPT_TRANSIENT_STYLE=mute
 
-# --- Additional tool hooks (safe here: PATH is already set up by ~/.profile) ---
-# zsh-autoenv is bundled and loads immediately after this file, so AUTOENV_* settings
-# may be configured here before its initial directory scan.
+# --- Python ---
+# Automatically activate the nearest .venv as you move through a project. The hook
+# never replaces or deactivates an environment that it did not activate itself:
+# KZ_AUTO_VENV=0
+
+# --- Tool hooks (safe here: PATH is already set up by ~/.profile) ---
 # export NVM_DIR="$HOME/.nvm"; [[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh"
 
 # --- Tool config (env only; nothing PATH-related) ---
