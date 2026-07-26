@@ -219,7 +219,7 @@ def normalize_dynamic(value: bytes) -> bytes:
     }
     for identity in sorted(identities, key=len, reverse=True):
         value = value.replace(identity, b"kronuz")
-    value = re.sub(rb"\b\d\d:\d\d:\d\d\b", b"18:00:00", value)
+    value = re.sub(rb"\b\d{1,2}:\d\d:\d\d\b", b"18:00:00", value)
     value = re.sub(rb"\[(?:\d+\.)+\d+\]", b"[5.9.2]", value)
     return value
 
