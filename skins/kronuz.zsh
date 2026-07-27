@@ -9,3 +9,6 @@ KZ_PROMPT_PROMPT='$kz[err] $kz[info]$kz[context]$kz[etctl]$kz[git]$kz[venv]$kz[j
 KZ_PROMPT_RPROMPT='$kz[overwrite]$kz[vim]$kz[emacs]'
 # Collapsed scrollback line (see the scrollback post): the path, then a dimmed caret.
 KZ_PROMPT_TRANSIENT_PROMPT='$kz[pwd] $kz[transient_caret] '
+# A green host marker and a matching green path (root stays red).
+KZ_PROMPT_COLOR_HOST='$kz[FG.green]'
+KZ_PROMPT_COLOR_PWD='%(!.$kz[FG.tomato].$kz[FG.mediumspringgreen])'
