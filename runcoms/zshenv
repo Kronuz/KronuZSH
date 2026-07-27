@@ -1,6 +1,8 @@
-# Environment, for ALL shells. Symlinked from ~/.zshenv -> runcoms/zshenv.
-# Keep this generic; machine-specific PATH/exports go in ~/.profile, interactive
-# tweaks in ~/.zshrc.local.
+# ~/.zshenv — sourced for EVERY zsh (login, non-login, interactive, and scripts),
+# first and always. Symlinked ~/.zshenv -> runcoms/zshenv. Keep it fast and generic:
+# env that any zsh needs (EDITOR/PAGER, path-array hygiene). Machine PATH belongs in
+# ~/.profile (the login env, inherited by children); interactive tweaks in ~/.zshrc
+# / ~/.zshrc.local.
 
 export EDITOR=vim
 export VISUAL=vim

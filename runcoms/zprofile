@@ -1,6 +1,6 @@
-# Login-shell setup. Sourced for login shells, before zshrc.
-#
-# Cross-shell machine env (PATH and exports that bash, sh, and zsh should all
-# share) belongs in ~/.profile, in POSIX sh syntax. bash and sh read it natively
-# as login shells; source it here so zsh login shells get it too.
+# ~/.zprofile — sourced for LOGIN zsh only, after ~/.zshenv and before ~/.zshrc.
+# Symlinked ~/.zprofile -> runcoms/zprofile. Runs once per login; exports set now are
+# inherited by every later non-login shell and script. Put login-time, non-interactive
+# setup here. Cross-shell machine env (PATH/exports) lives in ~/.profile — read natively
+# by sh/bash at login, and sourced below so zsh login shells match.
 [[ -r "$HOME/.profile" ]] && source "$HOME/.profile"

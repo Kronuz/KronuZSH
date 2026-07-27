@@ -1,4 +1,6 @@
-# Login-shell setup, sourced after zshrc.
+# ~/.zlogin — sourced for LOGIN zsh only, AFTER ~/.zshrc (once per login, with the
+# interactive shell fully set up). Symlinked ~/.zlogin -> runcoms/zlogin. Put a login
+# banner/MOTD or deferred background work here.
 # Adapted from Prezto (MIT); see LICENSE for copyright and license notices.
 #
 # Background-compile the completion dump so the next shell starts a touch faster.

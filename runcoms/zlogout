@@ -1,4 +1,5 @@
-# Sourced by zsh on logout of a login shell.
+# ~/.zlogout — sourced for LOGIN zsh only, on logout. Symlinked ~/.zlogout ->
+# runcoms/zlogout. Put cleanup or a parting message here.
 # Adapted from Prezto (MIT); see LICENSE for copyright and license notices.
 
 # Execute code only if STDERR is bound to a TTY.

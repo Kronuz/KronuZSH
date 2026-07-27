@@ -1,5 +1,8 @@
-# kronuzsh: a lean, prezto-free zsh setup.
-# Interactive entry point. Symlinked from ~/.zshrc -> runcoms/zshrc.
+# ~/.zshrc — kronuzsh: a lean, prezto-free zsh setup. INTERACTIVE entry point, sourced
+# for every interactive zsh (login and non-login: terminals, tabs, tmux, nested shells).
+# Symlinked ~/.zshrc -> runcoms/zshrc. Put prompt, completion, keybindings, aliases,
+# functions, and tool hooks here; env/PATH belongs in ~/.profile (login). Per-machine
+# tweaks go in ~/.zshrc.local (sourced near the end).
 #
 # Author: Germán Méndez Bravo (Kronuz) <german.mb@gmail.com>
 
