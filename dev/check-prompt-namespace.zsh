@@ -34,3 +34,29 @@ kz_prompt_colors
   print -u2 -r -- "public palette handle is wrong: ${kz[FG.ocean]-<unset>}"
   return 1
 }
+
+# Reset through the public skin command. Every present and future prompt override
+# must disappear, while settings outside the KZ_PROMPT_* namespace survive.
+typeset -g KRONUZSH=$PWD
+KZ_PROMPT_FUTURE_OPTION=must-disappear
+KZ_PROMPT_TERMINAL_INTEGRATION=0
+KZ_AUTO_VENV=off
+_kz_pal_loaded=1
+kz_skin reset
+local -a prompt_overrides=(${(k)parameters[(I)KZ_PROMPT_*]})
+(( $#prompt_overrides == 0 )) || {
+  print -u2 -r -- "prompt overrides survived reset: ${prompt_overrides[*]}"
+  return 1
+}
+[[ $KZ_AUTO_VENV == off ]] || {
+  print -u2 -r -- "reset removed an unrelated KZ_* setting"
+  return 1
+}
+(( _kz_pal_loaded == 0 )) || {
+  print -u2 -r -- "reset left the transient palette cache armed"
+  return 1
+}
+kz_skin reset || {
+  print -u2 -r -- "reset was not idempotent"
+  return 1
+}

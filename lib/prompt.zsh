@@ -1217,15 +1217,11 @@ function _kz_setup_transient_widgets {
   _kz_pal_loaded=0
 }
 
-# Clear only the layout/segment overrides used by bundled skins. Palette, glyph,
-# terminal, Git-engine, and machine-specific settings intentionally survive.
+# Clear the complete public prompt-configuration namespace. Matching the namespace
+# keeps this correct as new prompt knobs are added; unrelated KZ_* settings survive.
 function kz_prompt_reset_skin {
-  local -a skin_vars=(
-    KZ_PROMPT_PROMPT KZ_PROMPT_RPROMPT KZ_PROMPT_TRANSIENT_PROMPT
-    KZ_PROMPT_TRANSIENT_RPROMPT KZ_PROMPT_TRANSIENT_CARET
-    KZ_PROMPT_GIT KZ_PROMPT_PWD KZ_PROMPT_VENV KZ_PROMPT_CARET KZ_PROMPT_STATUS
-  )
-  unset ${^skin_vars}
+  unset -m 'KZ_PROMPT_*' || true
+  _kz_pal_loaded=0
 }
 
 # Reset the previous skin and source a new one in one operation. This is the

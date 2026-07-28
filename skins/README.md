@@ -29,14 +29,21 @@ Skin names are resolved from the bundled gallery, so the shorter forms work too:
 kz_skin spaceship
 ```
 
+Use the comment-only `reset` skin to return to the built-in prompt:
+
+```zsh
+kz_skin reset
+```
+
 `kz_skin <TAB>` completes every bundled skin name.
 
 The `.zsh` suffix is optional. A readable path is also accepted when importing or
 developing a skin outside the gallery.
 
-`kz_skin` clears only layout and segment overrides. Palette, glyph, terminal,
-Git-engine, and machine-specific settings remain intact. Direct `source` is still useful
-when deliberately layering a small override on top of an existing skin.
+`kz_skin` clears every `KZ_PROMPT_*` setting before sourcing the selected skin. Put
+machine-specific prompt overrides after `kz_skin` in `~/.zshrc.local` when you want
+them to survive a skin change. Direct `source` remains useful when deliberately
+layering a small override on top of an existing skin.
 
 ## Writing one
 
