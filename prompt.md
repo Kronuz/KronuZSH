@@ -230,10 +230,10 @@ The semantic names and their defaults:
 
 | Name(s)                      | Default                       | Used for                                             |
 | ---------------------------- | ----------------------------- | ---------------------------------------------------- |
-| `host`                       | silver                        | hostname (colour it per machine to tell boxes apart) |
+| `host`                       | blue; green over SSH; purple in a container | hostname and session context               |
 | `ip`                         | dark grey                     | LAN IP next to the host                              |
 | `user`                       | bold white                    | username                                             |
-| `pwd`                        | white (red as root)           | working directory                                    |
+| `pwd`                        | aqua; medium spring green over SSH; violet in a container (red as root) | working directory |
 | `time`                       | dark grey                     | `[clock]`                                            |
 | `info`, `sep`                | dark grey                     | the "at" / separators                                |
 | `status_ok` / `status_err`   | green / red                   | the status dot and exit code                         |

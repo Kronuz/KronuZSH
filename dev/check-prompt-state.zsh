@@ -19,9 +19,6 @@ preexec_functions=(${preexec_functions:#_kz_duration_preexec})
   return 1
 }
 
-# The kronuz skin uses the public context flags, with containers winning when an
-# SSH session is itself inside one.
-source skins/kronuz.zsh
 function _kz_test_context_colors {
   local ssh=$1 container=$2 host_name=$3 pwd_name=$4
   local host_key="FG.$host_name" pwd_key="FG.$pwd_name"
@@ -34,6 +31,19 @@ function _kz_test_context_colors {
     print -u2 -r -- "wrong context colors for ssh=${ssh:-0}, container=${container:-0}"
     return 1
   }
+}
+_kz_test_context_colors '' '' blue aqua
+_kz_test_context_colors 1 '' green mediumspringgreen
+_kz_test_context_colors '' 1 purple violet
+_kz_test_context_colors 1 1 purple violet
+
+# The copyable kronuz skin must remain identical to the built-in configuration.
+source skins/kronuz.zsh
+[[ "$KZ_PROMPT_PROMPT" == "$DEFAULT_KZ_PROMPT_PROMPT" \
+  && "$KZ_PROMPT_RPROMPT" == "$DEFAULT_KZ_PROMPT_RPROMPT" \
+  && "$KZ_PROMPT_TRANSIENT_PROMPT" == "$DEFAULT_KZ_PROMPT_TRANSIENT_PROMPT" ]] || {
+  print -u2 -r -- "kronuz skin layout drifted from the built-in prompt"
+  return 1
 }
 _kz_test_context_colors '' '' blue aqua
 _kz_test_context_colors 1 '' green mediumspringgreen

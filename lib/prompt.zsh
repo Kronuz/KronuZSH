@@ -300,8 +300,8 @@ function kz_prompt_colors {
     sep        '$kz[FG.darkgrey]'
     ip         '$kz[FG.darkgrey]'
     time       '$kz[FG.darkgrey]'
-    host       '$kz[FG.silver]'
-    pwd        '%(!.$kz[FG.tomato].$kz[FG.white])'
+    host       '${${kz[context.container]:+${kz[FG.purple]}}:-${${kz[context.ssh]:+${kz[FG.green]}}:-${kz[FG.blue]}}}'
+    pwd        '%(!.${kz[FG.tomato]}.${${kz[context.container]:+${kz[FG.violet]}}:-${${kz[context.ssh]:+${kz[FG.mediumspringgreen]}}:-${kz[FG.aqua]}}})'
     user       '%(!.%B$kz[FG.tomato].%B$kz[FG.white])'
   )
   local name ov raw def

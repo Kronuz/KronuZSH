@@ -163,7 +163,8 @@ presentation keys in `$kz`:
   (see the transient section). The engine publishes each hue as `$kz[FG.<name>]` and
   `$kz[BG.<name>]`; the mutable raw-code palette is function-local and never exposed.
 - **Semantic palette (`$_kz_sem`)**: a local defaults table maps each role to a full style
-  expression (`branch '%B$kz[FG.white]'`, `host '$kz[FG.silver]'`, ...), then one loop
+  expression (`branch '%B$kz[FG.white]'`, with `host` and `pwd` selected from the
+  public session-context keys), then one loop
   applies any `KZ_PROMPT_COLOR_<ROLE>` override and writes the **resolved** style
   (`${(e)}` expands the `$kz[FG.*]` refs) into `$_kz_sem[<role>]`. Recomputed every precmd.
 
@@ -199,11 +200,11 @@ for free. An explicit
 set (PUA would be tofu). The keymap arrow is seeded in setup so a prompt char shows
 even where ZLE is off (Emacs `M-x shell`), where `zle-line-init` never fires.
 
-The **host** color is the `host` semantic color (a neutral silver by default, meant to
-be coloured per machine in `~/.zshrc.local` — e.g. green for a VM, blue for a laptop — so
-boxes are tellable apart at a glance). The Eternal Terminal cue is the separate **etctl**
-segment (`$ETCTL_SESSION`), not a host-color change. (The old prezto theme tinted the
-host by `$ET_VERSION`; that wasn't ported.)
+The **host** and **pwd** colors encode the fixed session context: blue/aqua locally,
+green/mediumspringgreen over SSH, and purple/violet in a container (which wins when
+both flags are set); root keeps the pwd tomato. The Eternal Terminal cue is the
+separate **etctl** segment (`$ETCTL_SESSION`), not a host-color change. (The old
+prezto theme tinted the host by `$ET_VERSION`; that wasn't ported.)
 
 ### Glyphs (Nerd Font, with a plain fallback)
 

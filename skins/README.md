@@ -145,7 +145,7 @@ configuration cannot yet cover all language, cloud, package, battery, and tool s
 
 | Skin               | Look                                                           |
 | ------------------ | -------------------------------------------------------------- |
-| `kronuz.zsh`       | the built-in layout, written out and annotated to copy + tweak |
+| `kronuz.zsh`       | the built-in prompt, written out and annotated to copy + tweak |
 | `minimal.zsh`      | a single spare line: path, git, a lone magenta caret           |
 | `classic.zsh`      | the plain bash look: `user@host:dir$`                          |
 | `retro.zsh`        | a green-CRT DOS memory: `C:\dir\>`                             |
