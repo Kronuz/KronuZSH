@@ -111,6 +111,8 @@ computes every prompt (from gitstatusd, or the direct-git fallback):
 Other normalized state useful to skins includes `$kz[venv.name]`, `$kz[duration]`,
 `$kz[context.ssh]`, and `$kz[context.container]`. They are empty when inactive;
 both context flags can be set when an SSH session runs inside a container.
+Bundled skins must consume these public keys rather than private `$_kz_*` engine
+state; `dev/check-skins.zsh` enforces that boundary.
 
 Each is empty when absent, so a plain `${var:+...}` tests it — no hook, no arithmetic,
 and it works under both gitstatusd and the fallback:

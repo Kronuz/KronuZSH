@@ -14,6 +14,11 @@ for file in skins/*.zsh; do
       print -u2 -r -- "$file:$number: skins may contain only KZ_* assignments"
       failed=1
     fi
+    if [[ "$line" == *'_kz_'* ]]; then
+      print -u2 -r -- \
+        "$file:$number: skins may not depend on private _kz_* state; use public \$kz[...] keys"
+      failed=1
+    fi
   done < "$file"
 done
 

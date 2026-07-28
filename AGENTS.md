@@ -397,6 +397,8 @@ under gitstatusd and the fallback alike. Inside a `${var:+...}` conditional, col
 Other normalized content state includes `$kz[venv.name]`, `$kz[duration]`,
 `$kz[context.ssh]`, and `$kz[context.container]`. The context keys are fixed at
 setup; both may be `1` for an SSH session inside a container.
+Skins must consume these public keys rather than private `$_kz_*` engine state;
+`dev/check-skins.zsh` enforces that boundary.
 
 ### Skins
 
