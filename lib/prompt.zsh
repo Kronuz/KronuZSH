@@ -337,8 +337,12 @@ function kz_prompt_glyphs {
   local -A g
   local os_nerd=''
   case "$OSTYPE" in
-    darwin*) os_nerd=$'\uf179' ;;  # nf-fa-apple
-    linux*)  os_nerd=$'\uf17c' ;;  # nf-fa-linux (Tux)
+    linux*)               os_nerd=$'\uf17c' ;;  # 
+    darwin*)              os_nerd=$'\uf179' ;;  # 
+    msys*|cygwin*|mingw*) os_nerd=$'\uf17c' ;;  # 
+    *bsd*|dragonfly*)     os_nerd=$'\uf30c' ;;  # 
+    solaris*)             os_nerd=$'\uf185' ;;  # 
+    # other options could be \uf306 (), \uf31b (), \uf316 ()
   esac
   if (( ${_kz_dumb:-0} )) || [[ "${(L)KZ_PROMPT_NERD_FONT:-1}" == (0|no|off|false) ]]; then
     g=(
