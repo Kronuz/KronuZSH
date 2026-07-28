@@ -12,6 +12,34 @@ kz_prompt_setup
 # This is a state/rendering test, not a lifecycle test. A real preexec between the
 # synthetic timestamp below and _kz_duration_segment would replace that timestamp.
 preexec_functions=(${preexec_functions:#_kz_duration_preexec})
+
+[[ "${kz[context.ssh]}" == "$_kz_is_ssh" \
+  && "${kz[context.container]}" == "$_kz_is_container" ]] || {
+  print -u2 -r -- "session context was not exposed"
+  return 1
+}
+
+# The kronuz skin uses the public context flags, with containers winning when an
+# SSH session is itself inside one.
+source skins/kronuz.zsh
+function _kz_test_context_colors {
+  local ssh=$1 container=$2 host_name=$3 pwd_name=$4
+  local host_key="FG.$host_name" pwd_key="FG.$pwd_name"
+  kz[context.ssh]=$ssh
+  kz[context.container]=$container
+  _kz_colors_sig=''
+  kz_prompt_colors
+  [[ "${_kz_sem[host]}" == "${kz[$host_key]}" \
+    && "${_kz_sem[pwd]}" == "%(!.${kz[FG.tomato]}.${kz[$pwd_key]})" ]] || {
+    print -u2 -r -- "wrong context colors for ssh=${ssh:-0}, container=${container:-0}"
+    return 1
+  }
+}
+_kz_test_context_colors '' '' blue aqua
+_kz_test_context_colors 1 '' green mediumspringgreen
+_kz_test_context_colors '' 1 purple violet
+_kz_test_context_colors 1 1 purple violet
+
 kz_prompt_colors
 _kz_git_render
 

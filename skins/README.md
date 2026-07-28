@@ -61,7 +61,8 @@ Compose them from the unified `$kz` array:
   `$kz[UNDERLINE]`, `$kz[STANDOUT]`, `$kz[RESET]`, and glyphs like `$kz[GLYPH.caret]`.
 - **lowercase keys are content**: segment handles like `$kz[git]`, `$kz[pwd]`,
   `$kz[caret]`, `$kz[nl]`, plus live git state like `$kz[git.branch]` and
-  `$kz[git.dirty]`.
+  `$kz[git.dirty]`, and session flags `$kz[context.ssh]` /
+  `$kz[context.container]`.
 
 Normal zsh prompt escapes (`%~`, `%n`, `%m`, `%c`) still work. PROMPT/RPROMPT are the
 layout that arranges these pieces.
@@ -107,8 +108,9 @@ computes every prompt (from gitstatusd, or the direct-git fallback):
 | `$kz[git.ahead]` / `$kz[git.behind]` / `$kz[git.stashed]`                              | count, `''` when zero                      |
 | `$kz[git.remote]`                                                                      | `remote/branch`, `''` when none            |
 
-Other normalized state useful to skins includes `$kz[venv.name]` and
-`$kz[duration]`. They are empty when inactive.
+Other normalized state useful to skins includes `$kz[venv.name]`, `$kz[duration]`,
+`$kz[context.ssh]`, and `$kz[context.container]`. They are empty when inactive;
+both context flags can be set when an SSH session runs inside a container.
 
 Each is empty when absent, so a plain `${var:+...}` tests it — no hook, no arithmetic,
 and it works under both gitstatusd and the fallback:

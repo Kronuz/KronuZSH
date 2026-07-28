@@ -26,8 +26,11 @@ cd "$(dirname "$0")/.." || exit 1
 
 digest="$(
   for skin in "" skins/*.zsh; do
-    python3 dev/preview-skin.py --raw $skin 2>&1 | grep -E 'raw:|OSC|==='
-  done | sed -E 's/\[[0-9]{1,2}:[0-9]{2}:[0-9]{2}\]/[TIME]/g'
+    preview_args=(--raw)
+    [[ -n "$skin" ]] && preview_args+=("$skin")
+    env -u NO_COLOR python3 dev/preview-skin.py "${preview_args[@]}" 2>&1 \
+      | grep -E 'raw:|OSC|==='
+  done | sed -E 's/[0-9]{1,2}:[0-9]{2}:[0-9]{2}/[TIME]/g'
 )"
 printf '%s\n' "$digest"
 

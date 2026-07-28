@@ -394,7 +394,9 @@ path. A `KZ_PROMPT_GIT` override composes them declaratively
 (`${kz[git.branch]:+...}`), so a skin reshapes git with no hook of its own and it works
 under gitstatusd and the fallback alike. Inside a `${var:+...}` conditional, colour with
 `${kz[FG.name]}`, never a literal `%F{...}` (a bare `}` ends the conditional early).
-Other normalized content state includes `$kz[venv.name]` and `$kz[duration]`.
+Other normalized content state includes `$kz[venv.name]`, `$kz[duration]`,
+`$kz[context.ssh]`, and `$kz[context.container]`. The context keys are fixed at
+setup; both may be `1` for an SSH session inside a container.
 
 ### Skins
 

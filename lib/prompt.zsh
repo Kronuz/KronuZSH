@@ -1281,11 +1281,13 @@ function kz_prompt_setup {
   typeset -g _kz_is_ssh='' _kz_is_container=''
   [[ -n "$SSH_CONNECTION" || -n "$SSH_TTY" || -n "$SSH_CLIENT" ]] && _kz_is_ssh=1
   [[ -f /.dockerenv || -f /run/.containerenv || -n "$container" ]] && _kz_is_container=1
+  kz[context.ssh]=$_kz_is_ssh
+  kz[context.container]=$_kz_is_container
 
   # Per-segment defaults. Each is a deferred string; dynamic ones read the
   # $_kz_prompt_* / state vars the precmd computes.
   DEFAULT_KZ_PROMPT_OS='${kz[GLYPH.os]:+"${_kz_sem[host]}${kz[GLYPH.os]}${kz[RESET]} "}'
-  DEFAULT_KZ_PROMPT_CONTEXT='${_kz_is_container:+" ${_kz_sem[container]}${kz[GLYPH.container]}${kz[RESET]}"}${_kz_is_ssh:+" ${_kz_sem[ssh]}${kz[GLYPH.ssh]}${kz[RESET]}"}'
+  DEFAULT_KZ_PROMPT_CONTEXT='${kz[context.container]:+" ${_kz_sem[container]}${kz[GLYPH.container]}${kz[RESET]}"}${kz[context.ssh]:+" ${_kz_sem[ssh]}${kz[GLYPH.ssh]}${kz[RESET]}"}'
   DEFAULT_KZ_PROMPT_ERR='%(?.${_kz_sem[status_ok]}${kz[GLYPH.dot]}${kz[RESET]}.${_kz_sem[status_err]}${kz[GLYPH.dot]}${kz[RESET]})'
   DEFAULT_KZ_PROMPT_ERROR='${kz[GLYPH.return]} ${_kz_prompt_last_exit}'
   DEFAULT_KZ_PROMPT_VIM='${VIM:+" ${_kz_sem[vim]}${kz[GLYPH.vim]}${kz[RESET]}"}'

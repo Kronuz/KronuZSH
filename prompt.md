@@ -299,6 +299,10 @@ Two badges are detected once at shell startup and stay for its life:
 - **Container**: shown when `/.dockerenv`, `/run/.containerenv`, or `$container`
   indicates you're inside one.
 
+Skins can read the same state through `$kz[context.ssh]` and
+`$kz[context.container]`. Each is `1` when active and empty otherwise; both can be
+active when an SSH session runs inside a container.
+
 The Eternal Terminal session cue is the separate `etctl:<name>` tag (in magenta),
 shown whenever `$ETCTL_SESSION` is set, so you can tell at a glance which managed
 remote session a shell belongs to.
