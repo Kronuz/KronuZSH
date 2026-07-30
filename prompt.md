@@ -59,7 +59,7 @@ KZ_PROMPT_NERD_FONT=0
 # Show a command's duration sooner (default: only when it ran 3s+):
 KZ_PROMPT_CMD_DURATION_MIN=1
 
-# Past commands collapse to a faded caret. Make the faded command grey instead
+# Past commands collapse to a faded caret. Make the faded command neutral instead
 # of dimmed, or turn the whole transient behavior off:
 KZ_PROMPT_TRANSIENT_STYLE=mute
 KZ_PROMPT_TRANSIENT_PROMPT=''
@@ -199,6 +199,21 @@ Color is fully automatic. There are two layers:
    downsampled by `zsh/nearcolor` on terminals that can't do truecolor.
 2. A **semantic layer** that maps each part of the prompt to a base color.
 
+Neutral names are explicit about whether they follow the terminal theme or use a fixed
+truecolor:
+
+| Name(s) | Value |
+| --- | --- |
+| `neutral` / `muted` / `bright` | ANSI 7 / 8 / 15 (theme-relative) |
+| `gray` | `#878787` |
+| `darkgray` | `#afafaf` |
+| `lightgray` | `#c6c6c6` |
+
+There is no `dimgray`; use `black`. The British `grey`, `darkgrey`, and `lightgrey`
+spellings remain compatibility aliases. Overriding either spelling with
+`KZ_PROMPT_PALETTE_<NAME>` updates both aliases; if both spellings are set, the canonical
+American `GRAY` form wins.
+
 Override any semantic color with `KZ_PROMPT_COLOR_<NAME>`. The value is
 evaluated, so you can reference a base-palette name or write a raw escape:
 
@@ -207,7 +222,7 @@ KZ_PROMPT_COLOR_HOST='$kz[FG.chartreuse]'   # by palette name
 KZ_PROMPT_COLOR_TIME='%F{45}'             # by raw zsh color
 KZ_PROMPT_COLOR_BRANCH='%B$kz[FG.white]'    # %B = bold
 KZ_PROMPT_COLOR_TRANSCARET='$kz[FG.cyan]'   # collapsed caret
-KZ_PROMPT_COLOR_TRANSMUTED='$kz[FG.grey]'   # mute-style prompt text
+KZ_PROMPT_COLOR_TRANSMUTED='$kz[FG.neutral]'   # mute-style prompt text
 ```
 
 You can also define or override a **base hue** with `KZ_PROMPT_PALETTE_<NAME>` (a
@@ -231,11 +246,11 @@ The semantic names and their defaults:
 | Name(s)                      | Default                       | Used for                                             |
 | ---------------------------- | ----------------------------- | ---------------------------------------------------- |
 | `host`                       | blue; green over SSH; purple in a container | hostname and session context               |
-| `ip`                         | dark grey                     | LAN IP next to the host                              |
+| `ip`                         | dark gray                     | LAN IP next to the host                              |
 | `user`                       | bold white                    | username                                             |
 | `pwd`                        | aqua; medium spring green over SSH; violet in a container (red as root) | working directory |
-| `time`                       | dark grey                     | `[clock]`                                            |
-| `info`, `sep`                | dark grey                     | the "at" / separators                                |
+| `time`                       | dark gray                     | `[clock]`                                            |
+| `info`, `sep`                | dark gray                     | the "at" / separators                                |
 | `status_ok` / `status_err`   | green / red                   | the status dot and exit code                         |
 | `branch`, `remote`, `commit` | white                         | git ref names                                        |
 | `clean` / `dirty`            | forest green / brown          | worktree state icon                                  |
@@ -243,8 +258,8 @@ The semantic names and their defaults:
 | `added` / `action`           | dark orange                   | staged changes / in-progress operation               |
 | `fallback`                   | gold                          | direct-git fallback warning                          |
 | `modified` / `unmerged`      | red                           | unstaged changes / conflicts                         |
-| `untracked`                  | dark grey                     | untracked count                                      |
-| `loading`                    | dark grey                     | in-flight async git query mark                       |
+| `untracked`                  | dark gray                     | untracked count                                      |
+| `loading`                    | dark gray                     | in-flight async git query mark                       |
 | `stashed`                    | light steel blue              | stash count                                          |
 | `venv`                       | white                         | virtualenv name                                      |
 | `jobs`                       | gold                          | background-jobs count                                |
@@ -254,7 +269,7 @@ The semantic names and their defaults:
 | `vim` / `emacs`              | bold green                    | shell-running-inside-editor indicators               |
 | `overwrite`                  | red                           | overwrite-mode mark                                  |
 | `transient_caret`            | bold white                    | the collapsed transient caret                        |
-| `transmuted`                 | dark grey                     | flat prompt color used by the `mute` transient style |
+| `transmuted`                 | dark gray                     | flat prompt color used by the `mute` transient style |
 | `caret1/2/3`                 | red/yellow/green              | the three carets of `❯❯❯`                            |
 
 (`caret1/2/3` are also swapped to all-red when running as root, via a `%(!..)`
@@ -381,7 +396,7 @@ styles below, and listed in full in the option reference):
 | `KZ_PROMPT_PPROMPT`           | `$kz[status]`     | The **preprompt**: a deferred `${...}` string (composed from `$kz[...]` like `PROMPT`) printed as output above the prompt, once per command. The default is the status line (exit code / duration); `''` prints nothing above the prompt; set it to anything to inject your own preprompt. Since it is output, it stays in scrollback as the prompt collapses and survives a screen clear (Cmd-K) without reappearing. |
 | `KZ_PROMPT_TRANSIENT_STYLE`  | `dim`   | How the collapsed line — the pwd, caret, and the just-run **command** — is restyled: `dim`, `mute`, or `keep`.                                                                                                                                                                                                                          |
 | `KZ_PROMPT_TRANSIENT_DIM`    | `0.7`   | For `dim`: darkness factor, `0` = black, `1` = unchanged. Lower is darker.                                                                                                                                                                                                                                                              |
-| `KZ_PROMPT_TRANSIENT_HL`     | `fg=8`  | For `mute`: the `region_highlight` spec to paint the command with (default = grey).                                                                                                                                                                                                                                                     |
+| `KZ_PROMPT_TRANSIENT_HL`     | `fg=8`  | For `mute`: the `region_highlight` spec to paint the command with (default = gray).                                                                                                                                                                                                                                                     |
 
 The three styles:
 
@@ -399,16 +414,16 @@ The three styles:
 
   ```zsh
   # iTerm "Snazzy" — your terminal's 16 ANSI colors as #RRGGBB.
-  KZ_PROMPT_PALETTE_BLACK='#000000'    KZ_PROMPT_PALETTE_DARKGREY='#686868'
+  KZ_PROMPT_PALETTE_BLACK='#000000'    KZ_PROMPT_PALETTE_MUTED='#686868'
   KZ_PROMPT_PALETTE_RED='#ff5c57'      KZ_PROMPT_PALETTE_LIGHTRED='#ff5c57'
   KZ_PROMPT_PALETTE_GREEN='#5af78e'    KZ_PROMPT_PALETTE_LIGHTGREEN='#5af78e'
   KZ_PROMPT_PALETTE_YELLOW='#f3f99d'   KZ_PROMPT_PALETTE_LIGHTYELLOW='#f3f99d'
   KZ_PROMPT_PALETTE_BLUE='#57c7ff'     KZ_PROMPT_PALETTE_LIGHTBLUE='#57c7ff'
   KZ_PROMPT_PALETTE_MAGENTA='#ff6ac1'  KZ_PROMPT_PALETTE_LIGHTMAGENTA='#ff6ac1'
   KZ_PROMPT_PALETTE_CYAN='#9aedfe'     KZ_PROMPT_PALETTE_LIGHTCYAN='#9aedfe'
-  KZ_PROMPT_PALETTE_GREY='#f1f1f0'     KZ_PROMPT_PALETTE_LIGHTGREY='#eff0eb'
+  KZ_PROMPT_PALETTE_NEUTRAL='#f1f1f0'  KZ_PROMPT_PALETTE_BRIGHT='#eff0eb'
   ```
-- **`mute`** repaints the whole command in one flat color (grey by default; change
+- **`mute`** repaints the whole command in one flat color (muted by default; change
   it with `KZ_PROMPT_TRANSIENT_HL`).
 - **`keep`** leaves the syntax colors untouched.
 
@@ -568,7 +583,7 @@ fully enumerated in the linked table or directly in the description.
 | `KZ_PROMPT_GIT_SEP`              | `' '` (space)    | String inserted between the git detail indicators (stash / staged / modified / untracked / ahead-behind …). Set to `'·'`, `':'`, `$'\u00a0'`, or any string; `''` packs them with no separator.                                                                                                                                                                                                      |
 | `KZ_PROMPT_GIT_SPLIT`            | `0`              | `1`/`yes`/`on`/`true` breaks the single staged/unstaged counts into per-type marks — added `+`, changed `~`, deleted `-` — coloured by group (the staged and modified colours). Off shows one aggregate count per group.                                                                                                                                                                             |
 | `KZ_PROMPT_COLOR_<NAME>`         | per color        | Override one semantic color. All public names are in the [color table](#colors).                                                                                                                                                                                                                                                                                                                     |
-| `KZ_PROMPT_PALETTE_<NAME>`       | terminal palette | Define or override a base hue with `#RRGGBB` or a 0–255 index. Built-in names include `BLACK`, `RED`, `GREEN`, `YELLOW`, `BLUE`, `MAGENTA`, `CYAN`, `GREY`, `DARKGREY`, `LIGHTRED`, `LIGHTGREEN`, `LIGHTYELLOW`, `LIGHTBLUE`, `LIGHTMAGENTA`, `LIGHTCYAN`, `LIGHTGREY`; custom names work too and become `$kz[FG.<name>]` / `$kz[BG.<name>]`. This changes display colors and the RGB used by `dim`. |
+| `KZ_PROMPT_PALETTE_<NAME>`       | terminal palette | Define or override a base hue with `#RRGGBB` or a 0–255 index. Built-in names include `BLACK`, `RED`, `GREEN`, `YELLOW`, `BLUE`, `MAGENTA`, `CYAN`, `GRAY`, `DARKGRAY`, `LIGHTRED`, `LIGHTGREEN`, `LIGHTYELLOW`, `LIGHTBLUE`, `LIGHTMAGENTA`, `LIGHTCYAN`, `LIGHTGRAY`; custom names work too and become `$kz[FG.<name>]` / `$kz[BG.<name>]`. The corresponding `GREY` spellings remain compatibility aliases. This changes display colors and the RGB used by `dim`. |
 | `KZ_PROMPT_<SEGMENT>`            | built in         | Replace one complete segment or outcome item. Names: `OS`, `ERR`, `ERROR`, `DURATION`, `USER`, `HOST`, `IP`, `TIME`, `PWD`, `GIT`, `VENV`, `JOBS`, `CONTEXT`, `ETCTL`, `VIM`, `EMACS`, `OVERWRITE`, `PROMPT`; see [Replacing a whole segment](#replacing-a-whole-segment).                                                                                                                           |
 | `KZ_PROMPT_PWD_STYLE`            | `full`           | Working-directory shortening: `full`, `short` (shortest unique prefix, `~/.c/K/i/bat`), `base` (current dir name), or `absolute` (`$HOME` expanded).                                                                                                                                                                                                                                                 |
 | `KZ_PROMPT_CMD_DURATION_MIN`     | `3`              | Seconds a command must run before its duration is shown. `0` = always.                                                                                                                                                                                                                                                                                                                               |

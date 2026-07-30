@@ -47,6 +47,7 @@ typeset -gA _kz_col_base=(
   black                '0'        red                  '1'
   lightgreen           '10'       olive                '#878700'
   darkkhaki            '#87875f'  gray                 '#878787'
+  grey                 '#878787'
   lavender             '#8787af'  mediumpurple         '#8787d7'
   mediumslateblue      '#8787ff'  darkolivegreen       '#87af5f'
   darkseagreen         '#87af87'  powderblue           '#87afaf'
@@ -67,10 +68,11 @@ typeset -gA _kz_col_base=(
   plum                 '#af87af'  lightcyan            '14'
   violet               '#af87d7'  khaki                '#afaf5f'
   palegoldenrod        '#afaf87'  darkgray             '#afafaf'
+  darkgrey             '#afafaf'
   slategray            '#afafd7'  lightsteelblue       '#afafff'
-  yellowgreen          '#afd75f'  lightgrey            '15'
+  yellowgreen          '#afd75f'  bright               '15'
   honeydew             '#afd7af'  paleturquoise        '#afd7d7'
-  greenyellow          '#afff5f'  dimgray              '#000000'
+  greenyellow          '#afff5f'
   tomato               '#d70000'  deeppink             '#d7005f'
   darkorange           '#d75f00'  indianred            '#d75f5f'
   hotpink              '#d75f87'  navy                 '#00005f'
@@ -90,7 +92,8 @@ typeset -gA _kz_col_base=(
   teal                 '#005f5f'  lightgoldenrodyellow '#ffffd7'
   white                '#ffffff'  darkcyan             '#005f87'
   deepskyblue          '#005faf'  silver               '#bcbcbc'
-  lightgray            '#c6c6c6'  gainsboro            '#d0d0d0'
+  lightgray            '#c6c6c6'  lightgrey            '#c6c6c6'
+  gainsboro            '#d0d0d0'
   dodgerblue           '#005fd7'  yellow               '3'
   darkturquoise        '#0087af'  mediumspringgreen    '#00af5f'
   aqua                 '#00afff'  blue                 '4'
@@ -100,8 +103,8 @@ typeset -gA _kz_col_base=(
   lightslategray       '#5f5f87'  darkslateblue        '#5f5faf'
   slateblue            '#5f5fd7'  darkslategray        '#5f8787'
   steelblue            '#5f87d7'  royalblue            '#5f87ff'
-  grey                 '7'        mediumseagreen       '#5fd787'
-  darkgrey             '8'        mediumturquoise      '#5fd7d7'
+  neutral              '7'        mediumseagreen       '#5fd787'
+  muted                '8'        mediumturquoise      '#5fd7d7'
   forestgreen          '#5fff5f'  turquoise            '#5fffd7'
   lightred             '9'        blueviolet           '#8700ff'
   brown                '#875f00'
@@ -111,9 +114,9 @@ typeset -gA _kz_col_base=(
 # $KZ_PROMPT_PALETTE_<NAME> (a #RRGGBB or a 0-255 index), applied to the public
 # $kz[FG.*] / $kz[BG.*] handles and fed to `dim`'s RGB in _kz_load_palette.
 typeset -gA _kz_basic=(
-  black 0  red 1  green 2  yellow 3  blue 4  magenta 5  cyan 6  grey 7
-  darkgrey 8  lightred 9  lightgreen 10  lightyellow 11  lightblue 12
-  lightmagenta 13  lightcyan 14  lightgrey 15
+  black 0  red 1  green 2  yellow 3  blue 4  magenta 5  cyan 6  neutral 7
+  muted 8  lightred 9  lightgreen 10  lightyellow 11  lightblue 12
+  lightmagenta 13  lightcyan 14  bright 15
 )
 
 # Resolve a colour to (r g b), into $reply: a #rrggbb hex, a 0-255 index, or a basic
@@ -246,9 +249,31 @@ function kz_prompt_colors {
   # which may redefine a built-in hue or define a brand-new one (a #RRGGBB or 0-255 index).
   local _cn _pv
   local -A _col=("${(@kv)_kz_col_base}")
+  # A re-source in an existing shell must remove the retired fixed-neutral names;
+  # otherwise their old public $kz[FG.*]/$kz[BG.*] keys would survive in the association
+  # even though fresh shells no longer publish them.
+  local _old_neutral
+  for _old_neutral in neutral_mid neutral_light neutral_brighter dimgray; do
+    unset "kz[FG.$_old_neutral]" "kz[BG.$_old_neutral]"
+  done
   for _k in ${(k)parameters[(I)KZ_PROMPT_PALETTE_*]}; do
     _pv="${(P)_k}"; _cn="${${_k#KZ_PROMPT_PALETTE_}:l}"
     [[ -n "$_pv" ]] && _col[$_cn]="$_pv"
+  done
+  # Keep the British spellings as compatibility aliases under overrides too, not merely
+  # equal defaults. Either spelling updates both public keys; if both are explicitly set,
+  # the canonical American GRAY spelling wins deterministically.
+  local _us_gray _uk_grey _gray_name _grey_name
+  for _cn in '' dark light; do
+    _gray_name="${_cn}gray"
+    _grey_name="${_cn}grey"
+    _us_gray="KZ_PROMPT_PALETTE_${_gray_name:u}"
+    _uk_grey="KZ_PROMPT_PALETTE_${_grey_name:u}"
+    if [[ -n "${(P)_us_gray}" ]]; then
+      _col[$_grey_name]=${_col[$_gray_name]}
+    elif [[ -n "${(P)_uk_grey}" ]]; then
+      _col[$_gray_name]=${_col[$_grey_name]}
+    fi
   done
 
   # Public styling in $kz: FG./BG. wrap each code (no %F->%K string surgery); the attribute
@@ -279,7 +304,7 @@ function kz_prompt_colors {
     duration   '$kz[FG.goldenrod]'
     ssh        '$kz[FG.mediumpurple]'
     container  '$kz[FG.deepskyblue]'
-    transmuted '$kz[FG.darkgrey]'
+    transmuted '$kz[FG.muted]'
     transient_caret '%B$kz[FG.white]'
     action     '$kz[FG.darkorange]'
     fallback   '$kz[FG.gold]'
@@ -294,12 +319,12 @@ function kz_prompt_colors {
     modified   '$kz[FG.red]'
     stashed    '$kz[FG.lightsteelblue]'
     unmerged   '$kz[FG.red]'
-    untracked  '$kz[FG.darkgrey]'
-    info       '$kz[FG.darkgrey]'
-    loading    '$kz[FG.darkgrey]'
-    sep        '$kz[FG.darkgrey]'
-    ip         '$kz[FG.darkgrey]'
-    time       '$kz[FG.darkgrey]'
+    untracked  '$kz[FG.muted]'
+    info       '$kz[FG.muted]'
+    loading    '$kz[FG.muted]'
+    sep        '$kz[FG.muted]'
+    ip         '$kz[FG.muted]'
+    time       '$kz[FG.muted]'
     host       '${${kz[context.container]:+${kz[FG.purple]}}:-${${kz[context.ssh]:+${kz[FG.green]}}:-${kz[FG.blue]}}}'
     pwd        '%(!.${kz[FG.tomato]}.${${kz[context.container]:+${kz[FG.violet]}}:-${${kz[context.ssh]:+${kz[FG.mediumspringgreen]}}:-${kz[FG.aqua]}}})'
     user       '%(!.%B$kz[FG.tomato].%B$kz[FG.white])'
@@ -1047,7 +1072,7 @@ function _kz_osc_precmd {
 # On accept-line, $PROMPT collapses to a minimal caret so scrollback keeps only a
 # caret + the command for past prompts (restored before the next prompt). The
 # accepted command is restyled per $KZ_PROMPT_TRANSIENT_STYLE: dim (same hues,
-# darker), mute (one grey span), or keep. Off on dumb and when $KZ_PROMPT_TRANSIENT_PROMPT=''.
+# darker), mute (one muted span), or keep. Off on dumb and when $KZ_PROMPT_TRANSIENT_PROMPT=''.
 typeset -g _kz_prompt_full='' _kz_rprompt_full='' _kz_muting=0
 
 # Transient styling is shared by prompt strings and ZLE command highlights. Keep the
@@ -1063,18 +1088,18 @@ function _kz_dim_rgb {
 }
 
 # Resolve keep/mute/dim into $REPLY without changing prompt structure. The dim path
-# rewrites each %F{} span; mute replaces every foreground with the configured grey.
+# rewrites each %F{} span; mute replaces every foreground with the configured muted style.
 function _kz_dim_string {
   emulate -L zsh
   local s=$1 style="${KZ_PROMPT_TRANSIENT_STYLE:-dim}"
   [[ "$style" == (keep|none|off) ]] && { REPLY="$s"; return }
   local mute=0; [[ "$style" == (mute|grey|gray) ]] && mute=1
-  local grey="${(e)_kz_sem[transmuted]}"
+  local muted_style="${(e)_kz_sem[transmuted]}"
   local -a parts=("${(@ps:%F{:)s}")
   local out="${parts[1]}" p spec rest
   for p in "${(@)parts[2,-1]}"; do
     spec="${p%%\}*}"; rest="${p#*\}}"
-    if (( mute )); then out+="${grey}${rest}"
+    if (( mute )); then out+="${muted_style}${rest}"
     elif _kz_dim_rgb "$spec"; then out+="%F{$REPLY}$rest"
     else out+="%F{$spec}$rest"; fi
   done

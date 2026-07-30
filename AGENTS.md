@@ -125,13 +125,13 @@ symlinks the theme into vivid's config dir (when vivid is installed) so you can.
 - **Content categories avoid the filekind hues**, so a file's kind is never ambiguous.
   Source code is split into a few groups (general/systems **gold**, scripting **purple**,
   functional **teal**); markup pink, config amber, the three media types distinct, office
-  lime, archives red, junk/backup muted grey.
+  lime, archives red, junk/backup muted gray.
 - **vivid matches the most-specific pattern**, so a whole filename beats an extension:
   `README.md`/`CHANGELOG`/`TODO` (vivid's `text.special`/`text.todo`) render orange-bold
-  as repo landmarks, `LICENSE`/`COPYING` (`text.licenses`) muted grey, and any *other*
+  as repo landmarks, `LICENSE`/`COPYING` (`text.licenses`) muted gray, and any *other*
   `.md` falls through to markup pink. Three `.md` files can legitimately be three colours.
 - Same-colour overlaps are deliberate and semantically correct: executable extensions
-  (`.dll`, `.bat`) share the exec green; build/junk (`.bak`, `.cache`) share the muted grey.
+  (`.dll`, `.bat`) share the exec green; build/junk (`.bak`, `.cache`) share the muted gray.
 
 
 
@@ -162,6 +162,10 @@ presentation keys in `$kz`:
   overrides any hue, not just the 16 ANSI basics, and feeds both display and `dim`'s RGB
   (see the transient section). The engine publishes each hue as `$kz[FG.<name>]` and
   `$kz[BG.<name>]`; the mutable raw-code palette is function-local and never exposed.
+  Theme-relative neutral colors use semantic names: `neutral` (ANSI 7), `muted` (ANSI 8),
+  and `bright` (ANSI 15). Fixed truecolor neutrals support both spellings as exact aliases:
+  `gray` (`#878787`), `darkgray` (`#afafaf`), and `lightgray` (`#c6c6c6`);
+  their `grey` spellings remain compatibility aliases. `dimgray` is not published; use `black`.
 - **Semantic palette (`$_kz_sem`)**: a local defaults table maps each role to a full style
   expression (`branch '%B$kz[FG.white]'`, with `host` and `pwd` selected from the
   public session-context keys), then one loop
@@ -344,7 +348,7 @@ complete 16-colour result is cached), then per-colour `$KZ_PROMPT_PALETTE_<NAME>
 overrides win on top (never cached; if all 16 are set the query is skipped) — falling
 back to xterm defaults. The same overrides feed the private live palette and the
 `$kz[FG.*]` / `$kz[BG.*]` wrappers in `kz_prompt_colors`, so display and dim stay in sync),
-`mute` (grey), or `keep`. To win the
+`mute` (gray), or `keep`. To win the
 final paint over fast-syntax-highlighting it wraps fsh's `_zsh_highlight` once (not a
 `zle-line-finish` hook — `add-zle-hook-widget zle-line-finish` recurses once fsh
 re-wraps the dispatcher): the wrapper runs fsh, then re-applies our style while the
