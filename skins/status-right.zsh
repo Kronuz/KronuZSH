@@ -15,6 +15,6 @@ KZ_PROMPT_PROMPT='$kz[err] $kz[info]$kz[context]$kz[etctl]$kz[git]$kz[venv]$kz[j
 # Right prompt: the status (with a trailing space only when present), then the usual
 # overwrite-mode marker and vi / emacs keymap indicator.
 KZ_PROMPT_RPROMPT='${kz[status]:+$kz[status] }$kz[overwrite]$kz[vim]$kz[emacs]'
-# Collapsed scrollback line: submission time, path, then a dimmed caret (the status is
+# Collapsed scrollback line: submission time, path, then the transient caret (the status is
 # gone by now).
 KZ_PROMPT_TRANSIENT_PROMPT='$kz[time] $kz[pwd] $kz[transient_caret] '

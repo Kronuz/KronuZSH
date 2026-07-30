@@ -354,7 +354,8 @@ back to xterm defaults. The same overrides feed the private live palette and the
 `$kz[FG.*]` / `$kz[BG.*]` / `$kz[HL.*]` forms in `kz_prompt_colors`, so prompt display,
 flat ZLE styling, and dim stay in sync),
 any palette hue as a flat style (`muted`/ANSI 8, `neutral`/ANSI 7, `pink`, or a custom
-name), or `original`. Unknown values are reported once and fall back to `dimmed`.
+name), or `original` (the default). Unknown values are reported once and fall back to
+`original`.
 Flat styles consume the same
 live palette through `$kz[FG.<name>]` for the prompt and zsh-native
 `$kz[HL.<name>]` (`fg=<code>`) for the submitted command, so palette overrides and

@@ -7,7 +7,7 @@
 KZ_PROMPT_PROMPT='$kz[err] $kz[info]$kz[context]$kz[etctl]$kz[git]$kz[venv]$kz[jobs]$kz[nl]$kz[time] $kz[pwd] $kz[caret] '
 # Right prompt: overwrite-mode marker, then the vi / emacs keymap indicator.
 KZ_PROMPT_RPROMPT='$kz[overwrite]$kz[vim]$kz[emacs]'
-# Collapsed scrollback line: submission time, path, then a dimmed caret.
+# Collapsed scrollback line: submission time, path, then the transient caret.
 KZ_PROMPT_TRANSIENT_PROMPT='$kz[time] $kz[pwd] $kz[transient_caret] '
 # Local shells use blue/aqua, SSH uses green, and containers take precedence with
 # purple/violet. A root shell keeps the path red in every context.

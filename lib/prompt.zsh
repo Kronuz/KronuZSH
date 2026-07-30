@@ -1091,16 +1091,16 @@ function _kz_dim_rgb {
   printf -v REPLY '#%02x%02x%02x' r g b
 }
 
-# Resolve an algorithm or palette hue. Unknown names fall back to dimmed with a failure
+# Resolve an algorithm or palette hue. Unknown names fall back to original with a failure
 # status so precmd can report the bad configuration without breaking the prompt.
 function _kz_resolve_transient_style {
-  local style=${1:-dimmed}
+  local style=${1:-original}
   if [[ "$style" == (dimmed|original) ]] \
       || (( ${+kz[FG.$style]} && ${+kz[HL.$style]} )); then
     REPLY=$style
     return 0
   fi
-  REPLY=dimmed
+  REPLY=original
   return 1
 }
 
@@ -1121,7 +1121,7 @@ function _kz_transient_flat_color {
 function _kz_dim_string {
   emulate -L zsh
   local s=$1
-  _kz_resolve_transient_style "${KZ_PROMPT_TRANSIENT_STYLE:-dimmed}" || true
+  _kz_resolve_transient_style "${KZ_PROMPT_TRANSIENT_STYLE:-original}" || true
   local style=$REPLY
   [[ "$style" == original ]] && { REPLY="$s"; return }
   _kz_transient_flat_color "$style"
@@ -1164,7 +1164,7 @@ function _kz_transient_marked_prompt {
 # Restyle the command's region_highlight in place (zsh has no faint attribute, so
 # `dimmed` recolours each fg toward black at truecolor precision).
 function _kz_transient_style {
-  _kz_resolve_transient_style "${KZ_PROMPT_TRANSIENT_STYLE:-dimmed}" || true
+  _kz_resolve_transient_style "${KZ_PROMPT_TRANSIENT_STYLE:-original}" || true
   local style=$REPLY
   case "$style" in
     original) ;;
@@ -1213,7 +1213,7 @@ function _kz_transient_accept {
     _kz_transient_marked_prompt "$tp"
     PROMPT="${REPLY}" RPROMPT="$rp"
     POSTDISPLAY=''
-    _kz_resolve_transient_style "${KZ_PROMPT_TRANSIENT_STYLE:-dimmed}" || true
+    _kz_resolve_transient_style "${KZ_PROMPT_TRANSIENT_STYLE:-original}" || true
     [[ "$REPLY" != original ]] && _kz_muting=1
     zle .reset-prompt
     zle .accept-line
@@ -1252,11 +1252,11 @@ function kz_prompt_precmd {
   _kz_prompt_overwrite=''
   # Load the dim palette once, here rather than in setup, so any KZ_PROMPT_PALETTE_*
   # override / TTL / timeout from ~/.zshrc.local (sourced after setup) is in effect.
-  local _configured_transient_style="${KZ_PROMPT_TRANSIENT_STYLE:-dimmed}"
+  local _configured_transient_style="${KZ_PROMPT_TRANSIENT_STYLE:-original}"
   if _kz_resolve_transient_style "$_configured_transient_style"; then
     _kz_invalid_transient_style=''
   elif [[ "$_kz_invalid_transient_style" != "$_configured_transient_style" ]]; then
-    print -u2 -r -- "KronuZSH: unknown KZ_PROMPT_TRANSIENT_STYLE='${_configured_transient_style}'; using 'dimmed'"
+    print -u2 -r -- "KronuZSH: unknown KZ_PROMPT_TRANSIENT_STYLE='${_configured_transient_style}'; using 'original'"
     _kz_invalid_transient_style=$_configured_transient_style
   fi
   local _transient_style=$REPLY

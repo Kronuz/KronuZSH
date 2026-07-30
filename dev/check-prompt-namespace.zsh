@@ -49,8 +49,8 @@ if _kz_resolve_transient_style mute; then
   print -u2 -r -- "legacy transient style unexpectedly remained valid"
   return 1
 fi
-[[ $REPLY == dimmed ]] || {
-  print -u2 -r -- "invalid transient style did not fall back to dimmed"
+[[ $REPLY == original ]] || {
+  print -u2 -r -- "invalid transient style did not fall back to original"
   return 1
 }
 
