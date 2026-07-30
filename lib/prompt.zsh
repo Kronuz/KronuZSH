@@ -305,7 +305,7 @@ function kz_prompt_colors {
     ssh        '$kz[FG.mediumpurple]'
     container  '$kz[FG.deepskyblue]'
     transmuted '$kz[FG.muted]'
-    transient_caret '%B$kz[FG.white]'
+    transient_caret '%B$kz[FG.neutral]'
     action     '$kz[FG.darkorange]'
     fallback   '$kz[FG.gold]'
     added      '$kz[FG.darkorange]'
