@@ -263,18 +263,21 @@ removed entirely; the sole remaining terminal gate is an inline
 `TERM_PROGRAM==iTerm.app || LC_TERMINAL==iTerm2` check in `_kz_osc_preexec` for the
 CR-terminated command form (`LC_TERMINAL` kept because it survives ssh forwarding).
 
-For consistency the whole per-prompt context — `RemoteHost`, `CurrentDir`, `133;A`, OSC 7 —
-now rides in one zero-width bundle inside `_kz_osc_a`, on the mark's own line, rather than
-splitting OSC 1337 into precmd and OSC 7 into the boundary. Only `ShellIntegrationVersion`
-stays a once-per-shell precmd announcement.
+The per-prompt host/cwd reports (`RemoteHost`, `CurrentDir`, OSC 7) ride a dedicated
+zero-width `_kz_osc_ctx`, spliced immediately before the `133;A` mark (`_kz_osc_a`), for a
+byte order of `RemoteHost`, `CurrentDir`, OSC 7, `133;A`. They are not baked into `PROMPT`
+because `PROMPT` re-renders on every `reset-prompt` (keymap/overwrite toggles); OSC 7 is a
+mark producer, so re-emitting it on a redraw would drop duplicate triangles. Instead both
+`_kz_osc_ctx` and `_kz_osc_a` are set in precmd and cleared in `zle-line-init`, firing once
+per paint. Grouping the three reports and putting `A` last keeps `CurrentDir` before `A`
+(so the mark binds to the new cwd, as in iTerm2's script) while placing OSC 7 on the `A`
+line. Only `ShellIntegrationVersion` stays a once-per-shell precmd announcement.
 
 Byte-level verification (raw sniff, remote `false`, iTerm2 undetectable over the
-transport): the completion stream is now `133;D;1`, then the status row, then
-`1337;RemoteHost` + `1337;CurrentDir` + `133;A` + `\e]7;file://HOST/path`, then `133;B` —
-the full host/cwd handshake and both prompt-mark boundaries co-located on the `A` line,
-nothing before the status row, and `ShellIntegrationVersion` fired once earlier in the
-shell. The real-iTerm-UI confirmation (one blue triangle on the waiting prompt, none on
-`⏎ 1`) is the remaining check per the test plan, and can be done locally:
-the change now sends OSC 7 to local iTerm2 as well, so a single triangle locally proves the
-positional collapse holds. If it does not, revert this one change and fall back to the
+transport): the live prompt emits `1337;RemoteHost` + `1337;CurrentDir` +
+`\e]7;file://HOST/path` + `133;A` in that order, all after the status row, with
+`ShellIntegrationVersion` fired once earlier in the shell. The real-iTerm-UI confirmation
+(one blue triangle on the waiting prompt, none on `⏎ 1`) is the remaining check per the
+test plan, and can be done locally: the change sends OSC 7 to local iTerm2 as well, so a
+single triangle locally proves the positional collapse holds. If it does not, revert to the
 detection-based suppression above.

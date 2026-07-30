@@ -286,13 +286,18 @@ marks from
 `$_kz_osc_command_active` flag ensures a blank Enter emits a fresh prompt mark but
 not a spurious `D;0` command completion (and a companion `$_kz_osc_line_submitted`
 flag lets a line zsh rejects at parse time still get its `D` — see **Parse-reject
-marks** below); the whole per-prompt context bundle — `RemoteHost`, `CurrentDir`,
-the `133;A` mark, and OSC 7 (cwd) — is emitted as one zero-width group inside `_kz_osc_a`
-(not from precmd). Positioning it there, after the status row has printed, keeps OSC 7's
-directory/prompt mark (in iTerm2) on the `133;A` line where it collapses into the single
-prompt mark instead of dropping a second triangle on the status row, and keeps
-`RemoteHost`/`CurrentDir` adjacent to the mark exactly as iTerm2's own script emits them.
-The OSC 1337 pair plus the `ShellIntegrationVersion` handshake (announced once from
+marks** below); the per-prompt host/cwd reports — `RemoteHost`, `CurrentDir`, OSC 7 (cwd) —
+ride a dedicated zero-width `_kz_osc_ctx`, spliced immediately before the `133;A` mark
+(`_kz_osc_a`), so the byte order is `RemoteHost`, `CurrentDir`, OSC 7, `133;A`. Both vars are
+set in precmd and cleared in `zle-line-init` (with `_kz_osc_d`/`_kz_osc_b`), so each fires
+once per prompt and never on keymap redraws — essential because OSC 7 and `133;A` are prompt-
+mark producers in iTerm2, and re-emitting them on a `reset-prompt` would drop duplicate
+triangles (this is also why they are *not* baked into `PROMPT`, which re-renders on every
+redraw). Positioning the reports after the status row keeps OSC 7's directory mark on the
+`133;A` line where it collapses into the single prompt mark instead of dropping a second
+triangle on the status row, and keeps `RemoteHost`/`CurrentDir` adjacent to (and before) the
+mark exactly as iTerm2's own script emits them, so the mark binds to the new cwd.
+The OSC 1337 reports plus the `ShellIntegrationVersion` handshake (announced once from
 precmd) are sent to *every* terminal, exactly as iTerm2's own integration script does:
 iTerm2 acts on them (per-host history/dirs, profile switching, scp, and remote cwd, since
 it ignores an OSC 7 path whose host is not local), and every other terminal ignores the

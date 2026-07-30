@@ -888,7 +888,7 @@ function zle-keymap-select { _kz_keymap_update }
 function zle-line-init {
   # A/B have already marked the editable line on the first paint.
   # Keep line-init and later keymap redraws from creating duplicate command marks.
-  _kz_osc_d='' _kz_osc_a='' _kz_osc_b=''
+  _kz_osc_d='' _kz_osc_ctx='' _kz_osc_a='' _kz_osc_b=''
   _kz_keymap_update
 }
 # Toggling overwrite mode does not change keymaps, so zle-keymap-select does not fire.
@@ -904,9 +904,11 @@ function _kz_overwrite_toggle {
 # ============================================================================
 # This section owns the whole shell-integration state machine. Hook functions decide
 # *when* a boundary occurs; the small helpers below decide *which bytes* each terminal
-# receives. Keep prompt-rendered bytes in $_kz_osc_{d,a,b}: A/B must surround the
-# editable prompt, while non-transient D must appear after the live status row.
-typeset -g _kz_osc_d='' _kz_osc_a='' _kz_osc_b=''
+# receives. Keep prompt-rendered bytes in $_kz_osc_{d,ctx,a,b}: ctx (host/cwd) + A/B must
+# surround the editable prompt, while non-transient D must appear after the live status row.
+# All four are set in precmd and cleared in zle-line-init, so each fires once per prompt and
+# not on keymap redraws -- essential for A and OSC 7, which iTerm2 turns into prompt marks.
+typeset -g _kz_osc_d='' _kz_osc_ctx='' _kz_osc_a='' _kz_osc_b=''
 typeset -g _kz_osc_announced=0 _kz_osc_command_active=0 _kz_osc_line_submitted=0
 
 function _kz_osc_active {
@@ -920,7 +922,7 @@ function _kz_transient_enabled {
 }
 
 function _kz_osc_clear_prompt_boundaries {
-  _kz_osc_d='' _kz_osc_a='' _kz_osc_b=''
+  _kz_osc_d='' _kz_osc_ctx='' _kz_osc_a='' _kz_osc_b=''
 }
 
 # Announce shell integration once per shell. Following iTerm2's own integration script,
@@ -952,26 +954,32 @@ function _kz_osc_finish_command {
   _kz_osc_command_active=0
 }
 
-# Everything the prompt-start boundary emits, as one zero-width bundle on the A mark's own
-# line -- host, cwd, the 133;A mark, and OSC 7 -- rather than from precmd. Two reasons to
-# keep it here and not before the visible prompt:
+# The prompt-start bytes, split by concern and emitted once per paint (set here in precmd,
+# cleared in zle-line-init so keymap redraws do not re-fire them):
 #
-#  * Position. OSC 7 makes iTerm2 create a directory/prompt mark at the cursor; emitted
-#    from precmd that cursor sits on the status row, dropping a second blue triangle
-#    there. Rendered here, after the status row has printed, it lands on the 133;A line and
-#    collapses into the single prompt mark.
-#  * Adjacency. iTerm2's own script emits RemoteHost/CurrentDir immediately before its
-#    prompt mark; doing the same keeps the host/cwd tied to this prompt rather than to the
-#    status row that our layout prints in between.
+#  * _kz_osc_ctx -- host/cwd reporting: RemoteHost, CurrentDir, OSC 7. Not visible layout,
+#    so it lives here rather than baked in PROMPT (PROMPT re-renders on every reset-prompt;
+#    OSC 7 is a mark producer in iTerm2, so re-emitting it on redraws would drop duplicate
+#    triangles -- the same reason A rides this cleared mechanism).
+#  * _kz_osc_a / _kz_osc_b -- the 133;A / 133;B prompt-mark boundaries.
 #
-# The OSC 1337 host/cwd pair is what iTerm2 uses for per-host history/directories, profile
-# switching, scp, and remote cwd (it ignores an OSC 7 path whose host is not local). Like
-# iTerm2's script it is sent to every terminal -- others ignore the proprietary 1337 -- so
-# it needs no detection and survives ssh/et. OSC 7 (near-universal, only Alacritty ignores
-# it) covers cwd for terminals that do not read 1337 CurrentDir. %n/%M/%d expand at render
-# like the rest of PROMPT.
+# ctx precedes A in PROMPT, so the byte order is RemoteHost, CurrentDir, OSC 7, A. Two things
+# ride on that:
+#  * Position. Rendered after the status row has printed, OSC 7's cursor is on the 133;A line,
+#    so iTerm2's OSC-7 directory mark collapses onto the A mark instead of dropping a second
+#    triangle on the status row.
+#  * Adjacency. iTerm2's own script emits RemoteHost/CurrentDir immediately before its prompt
+#    mark; matching that keeps host/cwd bound to this prompt (and to the new cwd), not to the
+#    previous one.
+#
+# The OSC 1337 pair is what iTerm2 uses for per-host history/directories, profile switching,
+# scp, and remote cwd (it ignores an OSC 7 path whose host is not local). Like iTerm2's script
+# all three context reports go to every terminal -- others ignore the proprietary 1337 -- so
+# they need no detection and survive ssh/et. OSC 7 (near-universal, only Alacritty ignores it)
+# covers cwd for terminals that do not read 1337 CurrentDir. %n/%M/%d expand at render.
 function _kz_osc_prepare_prompt_boundaries {
-  _kz_osc_a=$'%{\e]1337;RemoteHost=%n@%M\a\e]1337;CurrentDir=%d\a\e]133;A\a\e]7;file://%M%d\a%}'
+  _kz_osc_ctx=$'%{\e]1337;RemoteHost=%n@%M\a\e]1337;CurrentDir=%d\a\e]7;file://%M%d\a%}'
+  _kz_osc_a=$'%{\e]133;A\a%}'
   _kz_osc_b=$'%{\e]133;B\a%}'
 }
 
@@ -1359,7 +1367,7 @@ function kz_prompt_setup {
   local _kz_prompt_prompt='${(e)${(e)KZ_PROMPT_PROMPT-$DEFAULT_KZ_PROMPT_PROMPT}}'
   local _kz_prompt_rprompt='${(e)${(e)KZ_PROMPT_RPROMPT-$DEFAULT_KZ_PROMPT_RPROMPT}}'
   RPROMPT="$_kz_prompt_rprompt"
-  PROMPT="\${_kz_prompt_status_live}\${_kz_osc_d}\${_kz_osc_a}$_kz_prompt_prompt\${_kz_osc_b}"
+  PROMPT="\${_kz_prompt_status_live}\${_kz_osc_d}\${_kz_osc_ctx}\${_kz_osc_a}$_kz_prompt_prompt\${_kz_osc_b}"
 
   # Transient prompt (collapsed past prompts), the TRANSIENT_ mirror of the live grid:
   #   KZ_PROMPT_TRANSIENT_PROMPT   — the collapsed left prompt   (like KZ_PROMPT_PROMPT)
