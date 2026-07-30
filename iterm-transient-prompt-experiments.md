@@ -188,8 +188,8 @@ experiments above. Useful next steps could include:
   expected to survive a ZLE in-place redraw;
 - an iTerm2 change that explicitly addresses `D` finalization or transient prompts.
 
-Until then, the safe state is the restored baseline. It has one known placement problem
-but does not contain any of the additional duplicate-mark regressions above.
+At that point, the safe state was the restored baseline. It had one known placement
+problem but did not contain any of the additional duplicate-mark regressions above.
 
 ## Source-level finding after these experiments
 
@@ -208,3 +208,19 @@ marks can occur when a shell sends OSC 7 and also has shell integration installe
 The next source-driven experiment therefore does not rearrange OSC 133. It suppresses
 OSC 7 only in iTerm2, where KronuZSH already emits `OSC 1337;CurrentDir` and
 `OSC 1337;RemoteHost`. Other terminals continue receiving OSC 7.
+
+## Successful post-OSC-7 retest
+
+Retested on 2026-07-29 after the OSC 7 suppression had shipped. The test restored
+`A`/`B` around the full live prompt while retaining fresh `A`/`B` around the collapsed
+transient redraw. This time the independent OSC 7 mark producer was absent.
+
+For `false`, the observed result was:
+
+1. The command stopped counting immediately after completion.
+2. Its marker was red and reported a running time of 0:00.036.
+3. The new waiting prompt had one blue triangle.
+4. The `⏎ 1` status line had no additional triangle.
+
+This is the intended result. The live `A` is also required semantically because iTerm2
+does not fully finalize `D;<status>` until the following `A`.

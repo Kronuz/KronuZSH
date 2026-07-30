@@ -238,10 +238,12 @@ in `kz_prompt_precmd` into private vars for pwd/venv (`_kz_prompt_pwd`,
 
 Current layout:
 `PROMPT = status err info context etctl git venv jobs \n time pwd caret`
-(plus normal OSC 133 `A`/`B` marks when transience is off). With transience on, the
-live prompt is unmarked; accepting a command or blank line keeps the dimmed previous
-status/duration by default, then emits `A`/`B` only around the pwd/caret prompt line.
-The status prefix therefore survives without acquiring a terminal mark;
+(plus OSC 133 `A`/`B` marks around the editable prompt). With transience on, the live
+prompt is marked so the `A` immediately following `D;<status>` finalizes the previous
+command's status and running time; accepting a command or blank line keeps the dimmed
+previous status/duration by default, then emits fresh `A`/`B` around the collapsed
+pwd/caret prompt line. The status prefix therefore survives without acquiring a
+terminal mark;
 `KZ_PROMPT_STATUS=0` makes it live-only. With
 transience off, one-shot `A`/`B` markers permanently bracket only the editable final
 prompt: status/duration are shown above it by default (and hidden when

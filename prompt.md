@@ -425,7 +425,9 @@ shell-integration escape sequences so the terminal can do more for you:
   handler also creates a prompt mark, which would duplicate the OSC 133 mark.
 - **OSC 133** (prompt/command marks `A`/`B`/`C`/`D;exit`): jump between prompts,
   show per-command success/failure, select command output. The `D;<exitcode>` mark
-  carries the real `$?`, so the terminal knows which commands failed.
+  carries the real `$?`, so the terminal knows which commands failed. Every waiting
+  prompt starts with `A`, which also makes iTerm2 finalize the preceding command's
+  status and running time immediately.
 - **OSC 1337** (iTerm2 only): reports host and directory through iTerm2's native
   integration, on top of the cross-terminal OSC 133 marks.
 

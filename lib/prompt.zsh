@@ -886,7 +886,7 @@ function _kz_keymap_update {
 }
 function zle-keymap-select { _kz_keymap_update }
 function zle-line-init {
-  # Non-transient A/B have already marked the editable line on the first paint.
+  # A/B have already marked the editable line on the first paint.
   # Keep line-init and later keymap redraws from creating duplicate command marks.
   _kz_osc_d='' _kz_osc_a='' _kz_osc_b=''
   _kz_keymap_update
@@ -943,9 +943,10 @@ function _kz_osc_report_context {
   fi
 }
 
-# Close the command whose C was emitted by preexec. Transient D is written now because
-# its following live prompt is deliberately unmarked. Static D is deferred into PROMPT
-# so the status row remains outside the completed command's output range.
+# Close the command whose C was emitted by preexec. Transient D is written now; the
+# following live prompt's A finalizes it immediately in terminals such as iTerm2.
+# Static D is deferred into PROMPT so the status row remains outside the completed
+# command's output range.
 function _kz_osc_finish_command {
   local ret=$1
   typeset -g _kz_prompt_last_exit=$ret
@@ -957,15 +958,12 @@ function _kz_osc_finish_command {
   _kz_osc_command_active=0
 }
 
-# A transient live prompt is a preview and is not recorded. Its A/B pair is added only
-# by the accept-line widget after the prompt collapses to its permanent history form.
+# Mark every live prompt. Besides providing a navigation mark while the shell waits,
+# the A immediately following a transient D makes iTerm2 finalize the completed
+# command's status and running time instead of leaving it open until the next command.
 function _kz_osc_prepare_prompt_boundaries {
-  if _kz_transient_enabled; then
-    _kz_osc_a='' _kz_osc_b=''
-  else
-    _kz_osc_a=$'%{\e]133;A\a%}'
-    _kz_osc_b=$'%{\e]133;B\a%}'
-  fi
+  _kz_osc_a=$'%{\e]133;A\a%}'
+  _kz_osc_b=$'%{\e]133;B\a%}'
 }
 
 function _kz_osc_preexec {
@@ -1073,8 +1071,8 @@ function _kz_transient_status_prefix {
   _kz_dim_string "$_kz_prompt_status"
 }
 
-# Add OSC 133 only to the collapsed prompt that will survive in scrollback. REPLY is
-# the complete temporary PROMPT value; the full live prompt remains untouched here.
+# Add fresh OSC 133 boundaries to the collapsed prompt that will survive in scrollback.
+# REPLY is the complete temporary PROMPT value; the live prompt has its own A/B pair.
 function _kz_transient_marked_prompt {
   local prompt=$1
   if _kz_osc_active; then

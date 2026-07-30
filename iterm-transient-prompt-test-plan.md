@@ -1,5 +1,10 @@
 # iTerm2 transient-prompt test plan
 
+Status: resolved on 2026-07-29. After suppressing iTerm2's OSC 7 prompt-mark side
+effect, the marked-live-prompt case produced one red completed-command mark, one blue
+waiting-prompt mark, no status-row mark, and immediate running-time finalization. See
+`iterm-transient-prompt-experiments.md` for the recorded result.
+
 This plan turns the transient-prompt marker problem into a reproducible matrix. Read
 `iterm-transient-prompt-experiments.md` first. That file records arrangements already
 tested and their observed failures.
