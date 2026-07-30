@@ -160,6 +160,33 @@ status placed there is compact and live-only: it shows while you decide the next
 and vanishes when it runs, never entering scrollback. See `skins/status-right.zsh`.
 `$kz[duration]` (the raw duration string) is available too for a custom split.
 
+### Preprompt recipes
+
+A few one-liners, each a `KZ_PROMPT_PPROMPT=...` you can drop in `~/.zshrc.local`.
+`${(pl:$COLUMNS::─:)}` is a full-width rule (pure parameter expansion, no subshell);
+`$kz[nl]` is a newline for a multi-line preprompt.
+
+```zsh
+# A full-width rule above every command: grey normally, red when the last one failed.
+# Separates commands in scrollback and makes failures easy to spot. (skins/preprompt-rule.zsh)
+KZ_PROMPT_PPROMPT='${${kz[status]:+${kz[FG.red]}}:-${kz[FG.darkgrey]}}${(pl:$COLUMNS::─:)}${kz[RESET]}'
+
+# A red rule ONLY when a command failed (nothing otherwise) — minimal failure marker.
+KZ_PROMPT_PPROMPT='${kz[status]:+${kz[FG.red]}${(pl:$COLUMNS::─:)}${kz[RESET]}}'
+
+# The full path on its own line above, so the prompt line stays short in deep trees.
+KZ_PROMPT_PPROMPT='${kz[FG.gray]}%~${kz[RESET]}'
+
+# A blank line above each prompt, for breathing room.
+KZ_PROMPT_PPROMPT=' '
+
+# Keep the status, and add a grey rule under it.
+KZ_PROMPT_PPROMPT='${kz[status]:+$kz[status]${kz[nl]}}${kz[FG.darkgrey]}${(pl:$COLUMNS::─:)}${kz[RESET]}'
+```
+
+Anything a prompt string can hold works, including `$(...)` command substitution (run each
+prompt, so keep it cheap) — e.g. `KZ_PROMPT_PPROMPT='${kz[status]} $(date +%H:%M)'`.
+
 ## Compatibility skins
 
 Names borrowed from another prompt are compatibility targets, not loose inspiration.
