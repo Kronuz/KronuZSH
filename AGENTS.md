@@ -238,25 +238,27 @@ in `kz_prompt_precmd` into private vars for pwd/venv (`_kz_prompt_pwd`,
 
 Current layout:
 `PROMPT = err info context etctl git venv jobs \n time pwd caret`
-(plus OSC 133 `A`/`B` marks around the editable prompt). The status line (exit code +
-duration) is **not** part of `PROMPT`: it is printed as ordinary output above the prompt,
-once per command in precmd (see the status segment below), so a reset-prompt redraw and
-the transient collapse never touch it. With transience on, the live
+(plus OSC 133 `A`/`B` marks around the editable prompt). Above `PROMPT` sits the
+**preprompt** (`KZ_PROMPT_PPROMPT`), a fourth deferred layout knob (alongside
+`PROMPT`/`RPROMPT`/`TRANSIENT_PROMPT`) that is printed as ordinary output above the prompt,
+once per command in precmd (`_kz_preprompt_print`, last in `kz_prompt_precmd`). Its default
+is `$kz[status]` (the exit code + duration line); `KZ_PROMPT_PPROMPT=''` prints nothing, and
+a skin/user can inject anything. Because it is output — not part of `PROMPT` — a reset-prompt
+redraw and the transient collapse never touch it. With transience on, the live
 prompt is marked so the `A` immediately following `D;<status>` finalizes the previous
 command's status and running time; accepting a command or blank line collapses the prompt
-to its `pwd`/caret and emits fresh `A`/`B` around it. The already-printed status line stays
-in scrollback on its own (full colour, not re-emitted and not erased); `KZ_PROMPT_STATUS=0`
-suppresses the status line entirely. With
+to its `pwd`/caret and emits fresh `A`/`B` around it. The already-printed preprompt stays
+in scrollback on its own (not re-emitted and not erased). With
 transience off, one-shot `A`/`B` markers permanently bracket only the editable final
-prompt: status/duration are shown above it by default (and hidden when
-`KZ_PROMPT_STATUS=0`), adjacent `D;<status>` / `A` follow the status and
+prompt: the preprompt is shown above it by default (and empty when
+`KZ_PROMPT_PPROMPT=''`), adjacent `D;<status>` / `A` follow the preprompt and
 precede the context row, and `B` ends the editable final line. `zle-line-init` clears
 all three before its same-layout repaint and later keymap redraws. This avoids
 extra/misplaced marks.
-`RPROMPT = overwrite vim emacs`. The **status** segment (`_kz_prompt_status`,
-built in `_kz_status_segment`) is the last command's exit code (`⏎<code>` when
-nonzero) and duration (when slow) on their own line above the info row, and renders
-nothing (no line) on a quick, clean command. Because it is emitted as output rather than a
+`RPROMPT = overwrite vim emacs`. The **status** segment (`_kz_status_segment`) computes the
+last command's exit code (`⏎<code>` when nonzero) and duration (when slow) into the public
+`$kz[status]` content key (empty on a quick, clean command); the preprompt prints it above
+the info row by default. Because the preprompt is emitted as output rather than a
 line of `PROMPT`, ZLE's prompt line count excludes it, so iTerm2's Clear Buffer (Cmd-K) —
 which erases everything above the prompt mark, including the status row — cannot desync the
 next redraw or resurrect the status when the following command runs. Its exit code comes from
@@ -348,16 +350,16 @@ final paint over fast-syntax-highlighting it wraps fsh's `_zsh_highlight` once (
 re-wraps the dispatcher): the wrapper runs fsh, then re-applies our style while the
 `_kz_muting` flag is set (set at accept, cleared in precmd). fsh rebuilds
 `region_highlight` unconditionally on line-finish, so this also covers a buffer fsh
-skipped, e.g. a paste). Status/duration are printed as output above the prompt when the
-command finishes, and simply stay in scrollback as the prompt collapses (full colour, never
-re-emitted). The status stays before the next `A`, so iTerm
+skipped, e.g. a paste). The preprompt (status by default) is printed as output above the
+prompt when the command finishes, and simply stays in scrollback as the prompt collapses
+(never re-emitted). It stays before the next `A`, so iTerm
 keeps the gutter triangle on the pwd/caret row; consequently, iTerm's “Select Output of
 Last Command” includes the status line because it bounds output by the next prompt mark
 rather than by `D`. Blank Enter emits a fresh `A`/`B`
 prompt boundary, but no `C`/`D`, so command navigation remains distinct.
-`KZ_PROMPT_STATUS=0` suppresses the status line in every mode (there is no longer a
-separate live-only sub-mode: emitting it as output means shown and kept are the same
-thing). The **jobs** segment is
+`KZ_PROMPT_PPROMPT=''` prints nothing above the prompt (the way to hide the default status
+line); there is no separate live-only sub-mode, since emitting the preprompt as output
+means shown and kept are the same thing. The **jobs** segment is
 prompt-native (`%(1j...)`); the
 **context** (SSH/container) badge is detected once at setup. All of these are gated
 off on dumb terminals.
@@ -425,7 +427,11 @@ path. A `KZ_PROMPT_GIT` override composes them declaratively
 (`${kz[git.branch]:+...}`), so a skin reshapes git with no hook of its own and it works
 under gitstatusd and the fallback alike. Inside a `${var:+...}` conditional, colour with
 `${kz[FG.name]}`, never a literal `%F{...}` (a bare `}` ends the conditional early).
-Other normalized content state includes `$kz[venv.name]`, `$kz[duration]`,
+Other normalized content state includes `$kz[status]` (the inline styled failed-exit /
+slow-command line, empty on a clean fast command; it is the preprompt's default content —
+`KZ_PROMPT_PPROMPT='$kz[status]'` — and a skin can drop it elsewhere, e.g. into
+`KZ_PROMPT_RPROMPT` with `KZ_PROMPT_PPROMPT=''` so it is not also printed above; see
+`skins/status-right.zsh`), `$kz[venv.name]`, `$kz[duration]`,
 `$kz[context.ssh]`, and `$kz[context.container]`. The context keys are fixed at
 setup; both may be `1` for an SSH session inside a container.
 Skins must consume these public keys rather than private `$_kz_*` engine state;

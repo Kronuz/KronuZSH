@@ -47,10 +47,11 @@ layering a small override on top of an existing skin.
 
 ## Writing one
 
-Three knobs, each a deferred `${...}` string re-evaluated every render:
+Four knobs, each a deferred `${...}` string re-evaluated every render:
 
 | Variable                         | What it is                                            |
 | -------------------------------- | ----------------------------------------------------- |
+| `KZ_PROMPT_PPROMPT`          | the preprompt, printed above the prompt (default `$kz[status]`; `''` prints nothing) |
 | `KZ_PROMPT_PROMPT`           | the live left prompt (one line, or two via `$kz[nl]`) |
 | `KZ_PROMPT_RPROMPT`          | the right prompt                                      |
 | `KZ_PROMPT_TRANSIENT_PROMPT` | the collapsed scrollback prompt (`''` disables it)    |
@@ -61,7 +62,8 @@ Compose them from the unified `$kz` array:
   `$kz[UNDERLINE]`, `$kz[STANDOUT]`, `$kz[RESET]`, and glyphs like `$kz[GLYPH.caret]`.
 - **lowercase keys are content**: segment handles like `$kz[git]`, `$kz[pwd]`,
   `$kz[caret]`, `$kz[nl]`, plus live git state like `$kz[git.branch]` and
-  `$kz[git.dirty]`, and session flags `$kz[context.ssh]` /
+  `$kz[git.dirty]`, the failed-exit / slow-command status `$kz[status]` and raw
+  duration `$kz[duration]`, and session flags `$kz[context.ssh]` /
   `$kz[context.container]`.
 
 Normal zsh prompt escapes (`%~`, `%n`, `%m`, `%c`) still work. PROMPT/RPROMPT are the
@@ -108,9 +110,10 @@ computes every prompt (from gitstatusd, or the direct-git fallback):
 | `$kz[git.ahead]` / `$kz[git.behind]` / `$kz[git.stashed]`                              | count, `''` when zero                      |
 | `$kz[git.remote]`                                                                      | `remote/branch`, `''` when none            |
 
-Other normalized state useful to skins includes `$kz[venv.name]`, `$kz[duration]`,
-`$kz[context.ssh]`, and `$kz[context.container]`. They are empty when inactive;
-both context flags can be set when an SSH session runs inside a container.
+Other normalized state useful to skins includes `$kz[status]` (the inline styled
+failed-exit / slow-command line, empty on a clean fast command), `$kz[venv.name]`,
+`$kz[duration]`, `$kz[context.ssh]`, and `$kz[context.container]`. They are empty when
+inactive; both context flags can be set when an SSH session runs inside a container.
 Bundled skins must consume these public keys rather than private `$_kz_*` engine
 state; `dev/check-skins.zsh` enforces that boundary.
 
@@ -126,6 +129,36 @@ KZ_PROMPT_GIT='${kz[git.branch]:+ ${kz[FG.blue]}git:(${kz[FG.red]}${kz[git.branc
 segment; `${kz[FG.blue]}` is a balanced `${...}` and survives. Use `${kz[BG.name]}`
 for powerline-style backgrounds. `robbyrussell.zsh`, `pure.zsh`, and `emoji.zsh`
 all follow the balanced foreground form.
+
+## The preprompt, and moving the status line
+
+`KZ_PROMPT_PPROMPT` is the **preprompt** — a fourth layout knob (with `KZ_PROMPT_PROMPT`,
+`KZ_PROMPT_RPROMPT`, and `KZ_PROMPT_TRANSIENT_PROMPT`) whose value is printed as output on
+its own row *above* the prompt, once per command. It is composed from `$kz[...]` like the
+others. Its default is the status line:
+
+```zsh
+KZ_PROMPT_PPROMPT='$kz[status]'   # the built-in default: exit code / duration above the prompt
+KZ_PROMPT_PPROMPT=''              # print nothing above the prompt
+KZ_PROMPT_PPROMPT='${kz[status]} $(date +%H:%M)'   # or inject anything else
+```
+
+Since it is output (not part of the prompt), it stays in scrollback as the prompt
+collapses, never acquires a terminal mark, and survives a screen clear like iTerm2's Cmd-K
+without reappearing.
+
+To move the status *elsewhere*, empty the preprompt and place `$kz[status]` where you want
+it — for example right-aligned on the caret line via `KZ_PROMPT_RPROMPT`:
+
+```zsh
+KZ_PROMPT_PPROMPT=''
+KZ_PROMPT_RPROMPT='${kz[status]:+$kz[status] }$kz[overwrite]$kz[vim]$kz[emacs]'
+```
+
+Because the right prompt is redrawn each prompt and dropped when the line collapses, a
+status placed there is compact and live-only: it shows while you decide the next command
+and vanishes when it runs, never entering scrollback. See `skins/status-right.zsh`.
+`$kz[duration]` (the raw duration string) is available too for a custom split.
 
 ## Compatibility skins
 

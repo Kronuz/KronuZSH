@@ -273,13 +273,21 @@ full layout still renders with zero escapes. It's re-evaluated every prompt, so
 
 When the last command **failed or was slow**, the prompt shows a line on top, above
 the info row, with its exit code (`⏎<code>`) and/or duration. On a quick, clean
-command that line is absent entirely. It is printed as ordinary output above the prompt,
-so when the next command's prompt collapses (with transient prompts enabled) the line
-simply stays in scrollback above it. Because it is not part of the prompt, it stays
+command that line is absent entirely. It is the default content of the **preprompt**
+(`KZ_PROMPT_PPROMPT`), printed as ordinary output above the prompt, so when the next
+command's prompt collapses (with transient prompts enabled) the line simply stays in
+scrollback above it. Because it is not part of the prompt, it stays
 outside the prompt's OSC 133 `A`/`B` region (so it acquires no terminal mark) and it
 survives correctly when you clear the screen (e.g. iTerm2's Cmd-K) — clearing removes it
-and it does not reappear when the next command runs. Set `KZ_PROMPT_STATUS=0` to hide the
-status line entirely, in both transient and static modes.
+and it does not reappear when the next command runs. Set `KZ_PROMPT_PPROMPT=''` to print
+nothing above the prompt.
+
+`KZ_PROMPT_PPROMPT` is a general knob: its value (composed from `$kz[...]` like
+`KZ_PROMPT_PROMPT`) is what gets printed above the prompt, so you can inject anything
+there. The status content is also exposed on its own as the `$kz[status]` segment (inline,
+styled, empty on a clean fast command), so a skin can place it elsewhere — for example
+right-aligned on the caret line via `KZ_PROMPT_RPROMPT` — by composing `$kz[status]` and
+setting `KZ_PROMPT_PPROMPT=''` so it is not also printed above. See `skins/status-right.zsh`.
 
 ### Command duration
 
@@ -370,7 +378,7 @@ styles below, and listed in full in the option reference):
 | -------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `KZ_PROMPT_TRANSIENT_PROMPT` | `pwd ❯` | The whole collapsed prompt string (by default the directory the command ran in, then a caret), built like `PROMPT` from deferred `${...}` segments. Set to `''` to disable transience entirely (past prompts stay full), or to any string for a custom collapsed prompt (which is itself restyled per `KZ_PROMPT_TRANSIENT_STYLE`). |
 | `KZ_PROMPT_TRANSIENT_CARET`  | `❯`     | Just the caret piece of the default collapsed line — symmetric to `KZ_PROMPT_CARET` for the live prompt. Set to an emoji or any string to change the caret without touching the rest. Ignored if you override the whole `KZ_PROMPT_TRANSIENT_PROMPT`.                                                                           |
-| `KZ_PROMPT_STATUS`           | `1`     | Show the failed exit status and/or slow-command duration on a line above the prompt (printed as output, so it stays in scrollback as the next command's prompt collapses, and survives a screen clear like Cmd-K without reappearing); `0`/`no`/`off`/`false` hides it in every mode.                                                                           |
+| `KZ_PROMPT_PPROMPT`           | `$kz[status]`     | The **preprompt**: a deferred `${...}` string (composed from `$kz[...]` like `PROMPT`) printed as output above the prompt, once per command. The default is the status line (exit code / duration); `''` prints nothing above the prompt; set it to anything to inject your own preprompt. Since it is output, it stays in scrollback as the prompt collapses and survives a screen clear (Cmd-K) without reappearing. |
 | `KZ_PROMPT_TRANSIENT_STYLE`  | `dim`   | How the collapsed line — the pwd, caret, and the just-run **command** — is restyled: `dim`, `mute`, or `keep`.                                                                                                                                                                                                                          |
 | `KZ_PROMPT_TRANSIENT_DIM`    | `0.7`   | For `dim`: darkness factor, `0` = black, `1` = unchanged. Lower is darker.                                                                                                                                                                                                                                                              |
 | `KZ_PROMPT_TRANSIENT_HL`     | `fg=8`  | For `mute`: the `region_highlight` spec to paint the command with (default = grey).                                                                                                                                                                                                                                                     |
@@ -567,7 +575,7 @@ fully enumerated in the linked table or directly in the description.
 | `KZ_PROMPT_IP_TTL`               | `60`             | Seconds the LAN-IP lookup is cached; lower it if prompt-time address changes must appear sooner.                                                                                                                                                                                                                                                                                                     |
 | `KZ_PROMPT_TRANSIENT_PROMPT`     | `pwd ❯`          | The whole collapsed past-prompt string (default: the run directory + caret), built like `PROMPT`; `''` disables transience.                                                                                                                                                                                                                                                                          |
 | `KZ_PROMPT_TRANSIENT_CARET`      | `❯`              | Just the caret piece of the default collapsed line (symmetric to `KZ_PROMPT_CARET`); set to an emoji or any string.                                                                                                                                                                                                                                                                              |
-| `KZ_PROMPT_STATUS`               | `1`              | Show the previous failed status and/or duration on a line above the prompt (printed as output, so it stays in scrollback as the next command collapses and survives a screen clear like Cmd-K); false values hide it in every mode.                                                                                                                                                                        |
+| `KZ_PROMPT_PPROMPT`               | `$kz[status]`              | The **preprompt** printed above the prompt (default the exit status / duration line), a deferred `${...}` string composed from `$kz[...]` like `PROMPT`. `''` prints nothing; any other value is injected above the prompt as output (so it stays in scrollback and survives a Cmd-K clear). |
 | `KZ_PROMPT_TRANSIENT_STYLE`      | `dim`            | Restyle of the collapsed line (pwd, caret, command): `dim`, `mute`, or `keep`.                                                                                                                                                                                                                                                                                                                       |
 | `KZ_PROMPT_TRANSIENT_DIM`        | `0.7`            | `dim` darkness factor (`0` black .. `1` unchanged).                                                                                                                                                                                                                                                                                                                                                  |
 | `KZ_PROMPT_TRANSIENT_HL`         | `fg=8`           | `mute` color, as a `region_highlight` spec.                                                                                                                                                                                                                                                                                                                                                          |

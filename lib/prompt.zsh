@@ -822,15 +822,14 @@ function _kz_duration_segment {
   kz[duration]="$_kz_prompt_duration"
 }
 
-# ---- status line (exit code + duration, on a line above the info row) ----
-# $_kz_prompt_last_exit is captured by the OSC precmd (it runs first). The line is emitted
-# as ordinary output above the prompt (see the print below), not as part of PROMPT, and
-# gated by KZ_PROMPT_STATUS in every mode.
-typeset -g _kz_prompt_status=''
+# ---- status line (exit code + duration) ----
+# $_kz_prompt_last_exit is captured by the OSC precmd (it runs first). This segment only
+# *computes* the inline status into the public $kz[status] content key; printing it above
+# the prompt is the job of the preprompt (KZ_PROMPT_PPROMPT), whose default is $kz[status].
 typeset -g _kz_prompt_last_exit=0
 
 function _kz_status_segment {
-  _kz_prompt_status=''
+  kz[status]=''
   # Only after a real command ran: a blank Enter leaves $? unchanged and must not
   # re-show the previous command's exit code.
   (( ${_kz_cmd_ran:-0} )) || return
@@ -851,18 +850,29 @@ function _kz_status_segment {
     fi
   fi
   [[ -n "$out" ]] || return
-  _kz_prompt_status="${out}%E"$'\n'
-  # Emit the status as ordinary output above the prompt, once here in precmd -- NOT as a
-  # line of PROMPT. Keeping it out of PROMPT means a reset-prompt redraw (and the transient
-  # collapse) never touch it: it is plain scrollback the instant it prints. That is what
-  # makes it survive iTerm2's Clear Buffer (Cmd-K), which erases everything above the prompt
-  # mark. The status sits above the mark, so Cmd-K clears it, and because nothing ever
-  # redraws it, it does not reappear when the next command runs. (While it was a line of
-  # PROMPT, the transient collapse re-emitted it, and ZLE's line count -- still including the
-  # cleared status row -- dropped it back onto a marked line, the spurious triangle.)
-  # Byte order is unchanged from when it lived at the front of PROMPT: precmd runs after the
-  # OSC precmd, so this still lands after the previous command's D and before the next A.
-  _kz_status_enabled && print -rnP -- "$_kz_prompt_status"
+  # Inline styled status (exit indicator + duration, no newline/%E). Public so a skin can
+  # place it anywhere -- above the prompt via KZ_PROMPT_PPROMPT (the default), right-aligned
+  # in KZ_PROMPT_RPROMPT, etc. Empty on a clean fast command.
+  kz[status]="$out"
+}
+
+# ---- preprompt (anything printed as output above the prompt) ----
+# A fourth deferred layout knob alongside PROMPT / RPROMPT / TRANSIENT_PROMPT, composed from
+# $kz[] and resolved with the same doubled ${(e)${(e)...}}. Its default is the status line
+# ($kz[status]); KZ_PROMPT_PPROMPT='' prints nothing, and a skin/user can inject anything
+# (a rule, a git summary, a timestamp) above the prompt.
+#
+# It is emitted as ordinary output here in precmd -- NOT as a line of PROMPT. That is
+# deliberate: as plain scrollback the instant it prints, a reset-prompt redraw and the
+# transient collapse never touch it, and ZLE's prompt line count excludes it, so iTerm2's
+# Clear Buffer (Cmd-K) -- which erases everything above the prompt mark -- cannot desync the
+# next redraw or resurrect it. It runs last in kz_prompt_precmd, after every segment has
+# populated its $kz[] keys and after the OSC precmd's D mark, so the bytes still land after
+# the previous command's D and before the next prompt's A.
+function _kz_preprompt_print {
+  local pp="${(e)${(e)KZ_PROMPT_PPROMPT-$DEFAULT_KZ_PROMPT_PPROMPT}}"
+  [[ -n "$pp" ]] || return
+  print -rnP -- "${pp}%E"$'\n'
 }
 
 # ============================================================================
@@ -1083,10 +1093,6 @@ function _kz_transient_rprompt {
   REPLY="${(e)${(e)KZ_PROMPT_TRANSIENT_RPROMPT-$DEFAULT_KZ_PROMPT_TRANSIENT_RPROMPT}}"
 }
 
-function _kz_status_enabled {
-  [[ "${KZ_PROMPT_STATUS:-1}" != (0|no|off|false) ]]
-}
-
 # Add fresh OSC 133 boundaries to the collapsed prompt that will survive in scrollback.
 # REPLY is the complete temporary PROMPT value; the live prompt has its own A/B pair.
 function _kz_transient_marked_prompt {
@@ -1187,6 +1193,9 @@ function kz_prompt_precmd {
   _kz_duration_segment
   _kz_status_segment
   _kz_git_segment
+  # Last, after every segment has populated its $kz[] keys: print the preprompt (default
+  # $kz[status]) as output above the prompt.
+  _kz_preprompt_print
 }
 
 # Register lifecycle hooks and editor widgets in one place. Ordering is semantic:
@@ -1345,17 +1354,19 @@ function kz_prompt_setup {
   kz[info]="$kz[user] at $kz[host]"
 
   SPROMPT='zsh: correct $kz[FG.red]%R%f to $kz[FG.green]%r%f [nyae]? '
-  # The visible layout is deferred and overridable end to end. KZ_PROMPT_PROMPT (the two
-  # prompt lines) and KZ_PROMPT_RPROMPT (the right prompt) compose the $kz[<segment>]
-  # array -- os err info context etctl git venv jobs nl time pwd caret transient_caret
-  # overwrite vim emacs -- plus any fcol[]/glyph[]/prompt escapes, so a skin can reorder,
-  # drop, or replace the whole thing (see skins/). The collapsed scrollback prompt is the
-  # third knob a full skin sets, KZ_PROMPT_TRANSIENT_PROMPT (default: pwd + caret). $kz[]
-  # is the palette (the composed segments); PROMPT/RPROMPT are the layout that arranges them,
-  # kept separate on purpose.
+  # The visible layout is deferred and overridable end to end. Four knobs compose the
+  # $kz[<segment>] array (os err info context etctl git venv jobs nl time pwd caret
+  # transient_caret overwrite vim emacs, plus content like status/duration) into the layout,
+  # each a deferred string resolved with the doubled ${(e)${(e)...}}: KZ_PROMPT_PPROMPT (the
+  # preprompt, printed as output above the prompt; default the status line), KZ_PROMPT_PROMPT
+  # (the two prompt lines), KZ_PROMPT_RPROMPT (the right prompt), and KZ_PROMPT_TRANSIENT_PROMPT
+  # (the collapsed scrollback prompt; default pwd + caret). A skin can reorder, drop, or
+  # replace any of them (see skins/). $kz[] is the palette (the composed segments); the four
+  # layout knobs arrange them, kept separate on purpose.
   # Because the layout is deferred (see the vars below), an override set in ~/.zshrc.local,
-  # after setup, takes effect at render with no rebuild. The OSC 133 A/B/D marks and the
-  # status line stay wrapped around it, so iTerm integration survives any skin.
+  # after setup, takes effect at render with no rebuild. The OSC 133 A/B/D marks stay wrapped
+  # around it, so iTerm integration survives any skin.
+  DEFAULT_KZ_PROMPT_PPROMPT='$kz[status]'
   DEFAULT_KZ_PROMPT_RPROMPT='$kz[overwrite]$kz[vim]$kz[emacs]'
   DEFAULT_KZ_PROMPT_PROMPT='$kz[err] $kz[info]$kz[context]$kz[etctl]$kz[git]$kz[venv]$kz[jobs]$kz[nl]$kz[time] $kz[pwd] $kz[caret] '
   # The chosen layout (a skin's KZ_PROMPT_PROMPT/RPROMPT or the default), deferred with the
