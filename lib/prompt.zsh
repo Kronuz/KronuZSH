@@ -112,7 +112,8 @@ typeset -gA _kz_col_base=(
 # The 16 ANSI colours, by palette name -> index. They default to symbolic %F{N} (above)
 # so they track the terminal theme, but each is overridable to a concrete colour via
 # $KZ_PROMPT_PALETTE_<NAME> (a #RRGGBB or a 0-255 index), applied to the public
-# $kz[FG.*] / $kz[BG.*] handles and fed to `dim`'s RGB in _kz_load_palette.
+# $kz[FG.*] / $kz[BG.*] / $kz[HL.*] handles and fed to `dim`'s RGB in
+# _kz_load_palette.
 typeset -gA _kz_basic=(
   black 0  red 1  green 2  yellow 3  blue 4  magenta 5  cyan 6  neutral 7
   muted 8  lightred 9  lightgreen 10  lightyellow 11  lightblue 12
@@ -250,11 +251,11 @@ function kz_prompt_colors {
   local _cn _pv
   local -A _col=("${(@kv)_kz_col_base}")
   # A re-source in an existing shell must remove the retired fixed-neutral names;
-  # otherwise their old public $kz[FG.*]/$kz[BG.*] keys would survive in the association
+  # otherwise their old public $kz[FG.*]/$kz[BG.*]/$kz[HL.*] keys would survive
   # even though fresh shells no longer publish them.
   local _old_neutral
   for _old_neutral in neutral_mid neutral_light neutral_brighter dimgray; do
-    unset "kz[FG.$_old_neutral]" "kz[BG.$_old_neutral]"
+    unset "kz[FG.$_old_neutral]" "kz[BG.$_old_neutral]" "kz[HL.$_old_neutral]"
   done
   for _k in ${(k)parameters[(I)KZ_PROMPT_PALETTE_*]}; do
     _pv="${(P)_k}"; _cn="${${_k#KZ_PROMPT_PALETTE_}:l}"
@@ -276,15 +277,19 @@ function kz_prompt_colors {
     fi
   done
 
-  # Public styling in $kz: FG./BG. wrap each code (no %F->%K string surgery); the attribute
-  # setters and RESET are the raw zsh escapes. All blank in no-colour, so ${kz[FG.green]} /
-  # ${kz[BG.green]} emit nothing and the layout still renders with zero escapes.
+  # Public styling in $kz: FG./BG. wrap each code for prompt text, while HL. exposes the
+  # same hue as a native region_highlight foreground spec for ZLE buffers. All are blank
+  # in no-colour mode, so prompt layouts and transient command styling react together.
   if (( ${_kz_nocolor:-0} )); then
-    for _cn in ${(k)_col}; do kz[FG.$_cn]='' kz[BG.$_cn]=''; done
+    for _cn in ${(k)_col}; do
+      kz[FG.$_cn]='' kz[BG.$_cn]='' kz[HL.$_cn]=''
+    done
     kz[RESET]='' kz[BOLD]='' kz[UNDERLINE]='' kz[STANDOUT]=''
   else
     for _cn in ${(k)_col}; do
-      kz[FG.$_cn]="%F{${_col[$_cn]}}" kz[BG.$_cn]="%K{${_col[$_cn]}}"
+      kz[FG.$_cn]="%F{${_col[$_cn]}}"
+      kz[BG.$_cn]="%K{${_col[$_cn]}}"
+      kz[HL.$_cn]="fg=${_col[$_cn]}"
     done
     kz[RESET]='%b%u%s%f%k' kz[BOLD]='%B' kz[UNDERLINE]='%U' kz[STANDOUT]='%S'
   fi
@@ -304,7 +309,6 @@ function kz_prompt_colors {
     duration   '$kz[FG.goldenrod]'
     ssh        '$kz[FG.mediumpurple]'
     container  '$kz[FG.deepskyblue]'
-    transmuted '$kz[FG.muted]'
     transient_caret '%B$kz[FG.neutral]'
     action     '$kz[FG.darkorange]'
     fallback   '$kz[FG.gold]'
@@ -1087,19 +1091,31 @@ function _kz_dim_rgb {
   printf -v REPLY '#%02x%02x%02x' r g b
 }
 
-# Resolve keep/mute/dim into $REPLY without changing prompt structure. The dim path
-# rewrites each %F{} span; mute replaces every foreground with the configured muted style.
+# Map a flat transient style to its shared palette hue. REPLY is empty for styles that
+# preserve or dim the original colors.
+function _kz_transient_flat_color {
+  case "$1" in
+    mute|gray|grey) REPLY=muted ;;
+    neutral)        REPLY=neutral ;;
+    *)              REPLY='' ;;
+  esac
+}
+
+# Resolve keep/mute/neutral/dim into $REPLY without changing prompt structure. The flat
+# paths replace every foreground with the matching live palette hue; dim rewrites each
+# %F{} span.
 function _kz_dim_string {
   emulate -L zsh
   local s=$1 style="${KZ_PROMPT_TRANSIENT_STYLE:-dim}"
   [[ "$style" == (keep|none|off) ]] && { REPLY="$s"; return }
-  local mute=0; [[ "$style" == (mute|grey|gray) ]] && mute=1
-  local muted_style="${(e)_kz_sem[transmuted]}"
+  _kz_transient_flat_color "$style"
+  local flat=$REPLY flat_style=''
+  [[ -n "$flat" ]] && flat_style="${kz[FG.$flat]}"
   local -a parts=("${(@ps:%F{:)s}")
   local out="${parts[1]}" p spec rest
   for p in "${(@)parts[2,-1]}"; do
     spec="${p%%\}*}"; rest="${p#*\}}"
-    if (( mute )); then out+="${muted_style}${rest}"
+    if [[ -n "$flat" ]]; then out+="${flat_style}${rest}"
     elif _kz_dim_rgb "$spec"; then out+="%F{$REPLY}$rest"
     else out+="%F{$spec}$rest"; fi
   done
@@ -1132,10 +1148,17 @@ function _kz_transient_marked_prompt {
 # Restyle the command's region_highlight in place (zsh has no faint attribute, so
 # `dim` recolours each fg toward black at truecolor precision).
 function _kz_transient_style {
-  case "${KZ_PROMPT_TRANSIENT_STYLE:-dim}" in
+  local style="${KZ_PROMPT_TRANSIENT_STYLE:-dim}"
+  case "$style" in
     keep|none|off) ;;
-    mute|grey|gray)
-      region_highlight=("0 ${#BUFFER} ${KZ_PROMPT_TRANSIENT_HL:-fg=8}") ;;
+    mute|gray|grey|neutral)
+      _kz_transient_flat_color "$style"
+      local spec="${kz[HL.$REPLY]}"
+      if [[ -n "$spec" ]]; then
+        region_highlight=("0 ${#BUFFER} ${spec}")
+      else
+        region_highlight=()
+      fi ;;
     *)
       setopt localoptions extendedglob
       local -a out p; local e REPLY
@@ -1208,9 +1231,10 @@ function kz_prompt_precmd {
   _kz_prompt_overwrite=''
   # Load the dim palette once, here rather than in setup, so any KZ_PROMPT_PALETTE_*
   # override / TTL / timeout from ~/.zshrc.local (sourced after setup) is in effect.
-  if (( ! ${_kz_pal_loaded:-0} )); then
+  if (( ! ${_kz_pal_loaded:-0} )) \
+      && [[ "${KZ_PROMPT_TRANSIENT_STYLE:-dim}" != (keep|none|off|mute|gray|grey|neutral) ]]; then
     _kz_pal_loaded=1
-    [[ "${KZ_PROMPT_TRANSIENT_STYLE:-dim}" != (keep|none|off|mute|grey|gray) ]] && _kz_load_palette
+    _kz_load_palette
   fi
   _kz_pwd_segment
   _kz_venv_segment

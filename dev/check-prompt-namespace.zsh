@@ -34,6 +34,24 @@ kz_prompt_colors
   print -u2 -r -- "public palette handle is wrong: ${kz[FG.ocean]-<unset>}"
   return 1
 }
+[[ ${kz[HL.ocean]} == 'fg=#123456' ]] || {
+  print -u2 -r -- "native highlight handle is wrong: ${kz[HL.ocean]-<unset>}"
+  return 1
+}
+
+# NO_COLOR must blank prompt and ZLE forms together, then restore both live.
+_kz_nocolor=1
+kz_prompt_colors
+[[ -z ${kz[FG.ocean]} && -z ${kz[HL.ocean]} ]] || {
+  print -u2 -r -- "NO_COLOR left a public palette handle active"
+  return 1
+}
+_kz_nocolor=0
+kz_prompt_colors
+[[ ${kz[FG.ocean]} == '%F{#123456}' && ${kz[HL.ocean]} == 'fg=#123456' ]] || {
+  print -u2 -r -- "live palette handles did not recover after NO_COLOR"
+  return 1
+}
 
 # Reset through the public skin command. Every present and future prompt override
 # must disappear, while settings outside the KZ_PROMPT_* namespace survive.

@@ -15,7 +15,7 @@ dependencies were replaced with small native pieces:
 | `python-info` (venv)        | `_kz_venv_segment` (`$VIRTUAL_ENV`) and `lib/python.zsh`                                         |
 | `editor-info` (keymap)      | `_kz_keymap_update` (zle hooks)                                                                 |
 | `prompt-pwd`                | `_kz_pwd_segment` (`${(%):-%~}`, with `KZ_PROMPT_PWD_STYLE` full/short/base/absolute)             |
-| `spectrum` (prompt colors)  | `$kz[FG.*]` / `$kz[BG.*]` wrap the private palette in `lib/prompt.zsh`                           |
+| `spectrum` (prompt colors)  | `$kz[FG.*]` / `$kz[BG.*]` / `$kz[HL.*]` expose the private palette in prompt/ZLE forms          |
 
 Dropped from the prezto version: the `async` worker (gitstatusd is the async
 engine), `pmodload`/`vcs_info`, and a stray debug `echo >> /tmp/prompt_kronuz` that
@@ -161,7 +161,9 @@ presentation keys in `$kz`:
   full 24-bit on a truecolor terminal. `KZ_PROMPT_PALETTE_<NAME>` defines or
   overrides any hue, not just the 16 ANSI basics, and feeds both display and `dim`'s RGB
   (see the transient section). The engine publishes each hue as `$kz[FG.<name>]` and
-  `$kz[BG.<name>]`; the mutable raw-code palette is function-local and never exposed.
+  `$kz[BG.<name>]` for prompt text, plus `$kz[HL.<name>]` as zsh's native
+  `region_highlight` foreground spec for ZLE buffers; the mutable raw-code palette is
+  function-local and never exposed.
   Theme-relative neutral colors use semantic names: `neutral` (ANSI 7), `muted` (ANSI 8),
   and `bright` (ANSI 15). Fixed truecolor neutrals support both spellings as exact aliases:
   `gray` (`#878787`), `darkgray` (`#afafaf`), and `lightgray` (`#c6c6c6`);
@@ -196,9 +198,10 @@ react live to `export TERM=dumb` / `NO_COLOR=1` and back): `_kz_dumb`
 (`$TERM` empty/`dumb`/`unknown`) and `_kz_nocolor` (dumb **or** `$NO_COLOR`,
 the [no-color.org](https://no-color.org) standard). When `_kz_nocolor`,
 `kz_prompt_colors` blanks the public presentation keys (`kz[FG.green]`,
-`kz[BG.green]`, ...) and the semantic defaults in `$_kz_sem`, so the **full layout renders
-with zero escapes** and a skin built on `${kz[FG.*]}` / `${kz[BG.*]}` is no-colour-safe
-for free. An explicit
+`kz[BG.green]`, `kz[HL.green]`, ...) and the semantic defaults in `$_kz_sem`, so the
+**full layout renders with zero escapes** and both prompt text and transient ZLE styling
+react live. A skin built on `${kz[FG.*]}` / `${kz[BG.*]}` is no-colour-safe for free.
+An explicit
 `KZ_PROMPT_COLOR_*` override still colours. When `_kz_dumb`,
 `kz_prompt_glyphs` forces the plain glyph
 set (PUA would be tofu). The keymap arrow is seeded in setup so a prompt char shows
@@ -347,8 +350,12 @@ terminal) else an OSC 4 query `_kz_query_palette` (budget
 complete 16-colour result is cached), then per-colour `$KZ_PROMPT_PALETTE_<NAME>`
 overrides win on top (never cached; if all 16 are set the query is skipped) — falling
 back to xterm defaults. The same overrides feed the private live palette and the
-`$kz[FG.*]` / `$kz[BG.*]` wrappers in `kz_prompt_colors`, so display and dim stay in sync),
-`mute` (gray), or `keep`. To win the
+`$kz[FG.*]` / `$kz[BG.*]` / `$kz[HL.*]` forms in `kz_prompt_colors`, so prompt display,
+flat ZLE styling, and dim stay in sync),
+`mute` (flat ANSI 8), `neutral` (flat ANSI 7), or `keep`. The flat styles consume the
+same live palette through `$kz[FG.<name>]` for the prompt and zsh-native
+`$kz[HL.<name>]` (`fg=<code>`) for the submitted command, so palette overrides and
+`NO_COLOR` affect both together. To win the
 final paint over fast-syntax-highlighting it wraps fsh's `_zsh_highlight` once (not a
 `zle-line-finish` hook — `add-zle-hook-widget zle-line-finish` recurses once fsh
 re-wraps the dispatcher): the wrapper runs fsh, then re-applies our style while the
@@ -454,7 +461,8 @@ prompt with no rebuild. Three knobs, each a `${...}` string re-evaluated every r
 non-`DEFAULT_` ones from `~/.zshrc.local` (sourced after `kz_prompt_setup`, so it
 takes effect at the next render). It composes the unified `$kz` array:
 
-- **UPPERCASE keys are presentation**: `$kz[FG.red]`, `$kz[BG.blue]`, `$kz[BOLD]`,
+- **UPPERCASE keys are presentation**: `$kz[FG.red]`, `$kz[BG.blue]`,
+  `$kz[HL.neutral]` (native ZLE `region_highlight` syntax), `$kz[BOLD]`,
   `$kz[UNDERLINE]`, `$kz[STANDOUT]`, `$kz[RESET]`, and glyphs like `$kz[GLYPH.caret]`.
 - **lowercase keys are content**: bare segment handles such as `$kz[git]`, `$kz[pwd]`,
   `$kz[caret]`, `$kz[nl]`, plus live git state such as `$kz[git.branch]`.
