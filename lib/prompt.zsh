@@ -1439,7 +1439,7 @@ function kz_prompt_setup {
   # each a deferred string resolved with the doubled ${(e)${(e)...}}: KZ_PROMPT_PPROMPT (the
   # preprompt, printed as output above the prompt; default the status line), KZ_PROMPT_PROMPT
   # (the two prompt lines), KZ_PROMPT_RPROMPT (the right prompt), and KZ_PROMPT_TRANSIENT_PROMPT
-  # (the collapsed scrollback prompt; default pwd + caret). A skin can reorder, drop, or
+  # (the collapsed scrollback prompt; default time + pwd + caret). A skin can reorder, drop, or
   # replace any of them (see skins/). $kz[] is the palette (the composed segments); the four
   # layout knobs arrange them, kept separate on purpose.
   # Because the layout is deferred (see the vars below), an override set in ~/.zshrc.local,
@@ -1460,11 +1460,12 @@ function kz_prompt_setup {
   #   KZ_PROMPT_TRANSIENT_PROMPT   — the collapsed left prompt   (like KZ_PROMPT_PROMPT)
   #   KZ_PROMPT_TRANSIENT_RPROMPT  — the collapsed right prompt  (like KZ_PROMPT_RPROMPT; empty by default)
   #   KZ_PROMPT_TRANSIENT_CARET    — just the caret/emoji piece  (like KZ_PROMPT_CARET)
-  # The default composes the pwd (live colour + KZ_PROMPT_PWD_STYLE) and the caret;
+  # The default retains the submission time, pwd (live colour + KZ_PROMPT_PWD_STYLE),
+  # and caret;
   # each line is resolved and restyled (dimmed/palette hue/original) per-accept. An explicit
   # KZ_PROMPT_TRANSIENT_PROMPT='' disables transience.
   DEFAULT_KZ_PROMPT_TRANSIENT_CARET='${_kz_sem[transient_caret]}${kz[GLYPH.caret]}${kz[RESET]}'
-  DEFAULT_KZ_PROMPT_TRANSIENT_PROMPT='$kz[pwd] $kz[transient_caret] '
+  DEFAULT_KZ_PROMPT_TRANSIENT_PROMPT='$kz[time] $kz[pwd] $kz[transient_caret] '
   DEFAULT_KZ_PROMPT_TRANSIENT_RPROMPT=''
   _kz_setup_transient_widgets
 }

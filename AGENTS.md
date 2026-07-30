@@ -333,8 +333,9 @@ command mark and its eventual `D;<status>` attached to the relocated prompt,
 restored in precmd; configured symmetrically to the live prompt — `KZ_PROMPT_TRANSIENT_PROMPT`
 is the whole string like `PROMPT`, `KZ_PROMPT_TRANSIENT_CARET` is just the caret piece
 like `KZ_PROMPT_CARET`, both deferred `${...}` strings re-evaluated per accept. By
-default it leaves the **pwd + caret** in scrollback so history shows where each command
-ran — reusing `$_kz_prompt_pwd` so it honors `KZ_PROMPT_PWD_STYLE`, in the live
+default it leaves the **submission time + pwd + caret** in scrollback so history shows
+when and where each command ran — reusing `$kz[time]` and `$_kz_prompt_pwd` so it honors
+`KZ_PROMPT_TIME` and `KZ_PROMPT_PWD_STYLE`, in the live
 `pwd` colour (so it matches the prompt and honours `KZ_PROMPT_COLOR_PWD`); the caret
 piece defaults to `transient_caret`. `''` disables transience. The whole resolved line — pwd,
 caret, and a custom `KZ_PROMPT_TRANSIENT_PROMPT` alike — is restyled by `_kz_dim_string`
