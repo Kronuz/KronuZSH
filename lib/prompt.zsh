@@ -293,25 +293,26 @@ function kz_prompt_colors {
     kz[RESET]='%b%u%s%f%k' kz[BOLD]='%B' kz[UNDERLINE]='%U' kz[STANDOUT]='%S'
   fi
 
+  _kz_sem=()
   local -A d=(
-    caret1     '%(!.%B$kz[FG.red].%B$kz[FG.red])'
-    caret2     '%(!.%B$kz[FG.red].%B$kz[FG.yellow])'
-    caret3     '%(!.$kz[FG.red].%B$kz[FG.green])'
-    status_err '$kz[FG.red]'
-    status_ok  '$kz[FG.green]'
+    caret_1     '%(!.%B$kz[FG.red].%B$kz[FG.red])'
+    caret_2     '%(!.%B$kz[FG.red].%B$kz[FG.yellow])'
+    caret_3     '%(!.$kz[FG.red].%B$kz[FG.green])'
+    status_failure '$kz[FG.red]'
+    status_success  '$kz[FG.green]'
     venv       '$kz[FG.white]'
     vim        '%B$kz[FG.green]'
     emacs      '%B$kz[FG.green]'
     etctl      '%B$kz[FG.magenta]'
-    overwrite  '$kz[FG.red]'
+    mode_overwrite '$kz[FG.red]'
     jobs       '$kz[FG.gold]'
-    duration   '$kz[FG.goldenrod]'
+    status_duration '$kz[FG.goldenrod]'
     ssh        '$kz[FG.mediumpurple]'
     container  '$kz[FG.deepskyblue]'
-    transient_caret '%B$kz[FG.neutral]'
+    caret_past '%B$kz[FG.neutral]'
     action     '$kz[FG.darkorange]'
     fallback   '$kz[FG.gold]'
-    added      '$kz[FG.darkorange]'
+    staged     '$kz[FG.darkorange]'
     ahead      '$kz[FG.chartreuse]'
     behind     '$kz[FG.deeppink]'
     dirty      '$kz[FG.brown]'
@@ -321,11 +322,11 @@ function kz_prompt_colors {
     commit     '$kz[FG.white]'
     modified   '$kz[FG.red]'
     stashed    '$kz[FG.lightsteelblue]'
-    unmerged   '$kz[FG.red]'
+    conflicted '$kz[FG.red]'
     untracked  '$kz[FG.muted]'
-    info       '$kz[FG.muted]'
+    label      '$kz[FG.muted]'
     loading    '$kz[FG.muted]'
-    sep        '$kz[FG.muted]'
+    separator  '$kz[FG.muted]'
     ip         '$kz[FG.muted]'
     time       '$kz[FG.muted]'
     host       '${${kz[context.container]:+${kz[FG.purple]}}:-${${kz[context.ssh]:+${kz[FG.green]}}:-${kz[FG.blue]}}}'
@@ -446,16 +447,19 @@ function kz_prompt_glyphs {
     )
   fi
   # Mode-independent marks: plain BMP, identical in both sets (still overridable).
-  g[dot]=$'\u25cf'        # ● command status dot
-  g[return]=$'\u23ce'     # ⏎ nonzero-exit marker
-  g[overwrite]=$'\u267a'  # ♺ overwrite (replace) mode
+  g[status_dot]=$'\u25cf'        # ● command status dot
+  g[exit]=$'\u23ce'     # ⏎ nonzero-exit marker
+  g[mode_overwrite]=$'\u267a'  # ♺ overwrite (replace) mode
   g[caret]=$'\u276f'      # ❯ prompt caret (insert keymap)
-  g[caret_alt]=$'\u276e'  # ❮ prompt caret (vicmd keymap)
+  g[caret_alternate]=$'\u276e'  # ❮ prompt caret (vicmd keymap)
   local name ov val padov padval sentinel='__KRONUZ_GLYPH_UNSET__'
   local -i c
-  # Rebuild from scratch: drop any set-specific glyph (e.g. the Nerd-only host_* icons)
-  # left over from a previous mode so it can't leak into the plain set.
+  # Rebuild from scratch so set-specific and renamed glyph keys cannot leak across a
+  # mode switch or re-source.
   _kz_glyph_pad=()
+  for name in ${(k)kz}; do
+    [[ "$name" == GLYPH.* ]] && unset "kz[$name]"
+  done
   for name in ${(k)g}; do
     ov="KZ_PROMPT_GLYPH_${name:u}"
     val="${(P)ov-$sentinel}"
@@ -481,6 +485,7 @@ function kz_prompt_glyphs {
   done
   # Legacy override: an explicit $_kz_os (set in ~/.zshrc.local) wins for the OS glyph.
   (( ${+_kz_os} )) && kz[GLYPH.os]="$_kz_os"
+  return 0
 }
 
 # ============================================================================
@@ -525,7 +530,7 @@ function _kz_git_fallback {
   branch="$($gitcmd symbolic-ref --short HEAD 2>/dev/null)" \
     || { detached=1; branch="$($gitcmd rev-parse --short HEAD 2>/dev/null)"; }
   [[ -z "$branch" ]] && { _kz_git_reset_state; return }
-  local sep="${(e)_kz_sem[sep]}" none="${(e)kz[RESET]}" info="${(e)_kz_sem[info]}"
+  local sep="${(e)_kz_sem[separator]}" none="${(e)kz[RESET]}" info="${(e)_kz_sem[label]}"
   local gly="$kz[GLYPH.branch]"
   $gitcmd symbolic-ref --quiet HEAD &>/dev/null || gly="$kz[GLYPH.commit]"
   local warning=''
@@ -541,7 +546,7 @@ function _kz_git_fallback {
   [[ -n "$($gitcmd ls-files --others --exclude-standard 2>/dev/null | head -1)" ]] && untracked=1
   if [[ -n "$staged$unstaged$untracked" ]]; then
     icons+="${(e)_kz_sem[dirty]}${kz[GLYPH.dirty]}${none}"
-    [[ -n "$staged" ]]    && icons+="${icons:+$isep}${(e)_kz_sem[added]}${kz[GLYPH.staged]}${none}"
+    [[ -n "$staged" ]]    && icons+="${icons:+$isep}${(e)_kz_sem[staged]}${kz[GLYPH.staged]}${none}"
     [[ -n "$unstaged" ]]  && icons+="${icons:+$isep}${(e)_kz_sem[modified]}${kz[GLYPH.modified]}${none}"
     [[ -n "$untracked" ]] && icons+="${icons:+$isep}${(e)_kz_sem[untracked]}${kz[GLYPH.untracked]}${none}"
   else
@@ -569,7 +574,7 @@ typeset -g _kz_git_last='' _kz_git_inflight=0
 # Render the git segment from the current VCS_STATUS_* into $_kz_prompt_git, caching
 # the result in $_kz_git_last so an in-flight prompt can show it while a query runs.
 function _kz_git_render {
-  local sep="${(e)_kz_sem[sep]}" none="${(e)kz[RESET]}" info="${(e)_kz_sem[info]}" s=''
+  local sep="${(e)_kz_sem[separator]}" none="${(e)kz[RESET]}" info="${(e)_kz_sem[label]}" s=''
   if [[ -n "$VCS_STATUS_LOCAL_BRANCH" ]]; then
     s+=" ${info}${kz[GLYPH.branch]}${none} ${(e)_kz_sem[branch]}${VCS_STATUS_LOCAL_BRANCH}${none}"
   elif [[ -n "$VCS_STATUS_TAG" ]]; then
@@ -628,11 +633,11 @@ function _kz_git_render {
   if (( split && ! dirty_unknown )); then
     local -i s_new=VCS_STATUS_NUM_STAGED_NEW s_del=VCS_STATUS_NUM_STAGED_DELETED
     local -i s_mod=VCS_STATUS_NUM_STAGED-s_new-s_del
-    (( s_new > 0 )) && icons+="${icons:+$isep}${(e)_kz_sem[added]}${kz[GLYPH.added]}${_kz_glyph_pad[added]}${s_new}${none}"
-    (( s_mod > 0 )) && icons+="${icons:+$isep}${(e)_kz_sem[added]}${kz[GLYPH.changed]}${_kz_glyph_pad[changed]}${s_mod}${none}"
-    (( s_del > 0 )) && icons+="${icons:+$isep}${(e)_kz_sem[added]}${kz[GLYPH.deleted]}${_kz_glyph_pad[deleted]}${s_del}${none}"
+    (( s_new > 0 )) && icons+="${icons:+$isep}${(e)_kz_sem[staged]}${kz[GLYPH.added]}${_kz_glyph_pad[added]}${s_new}${none}"
+    (( s_mod > 0 )) && icons+="${icons:+$isep}${(e)_kz_sem[staged]}${kz[GLYPH.changed]}${_kz_glyph_pad[changed]}${s_mod}${none}"
+    (( s_del > 0 )) && icons+="${icons:+$isep}${(e)_kz_sem[staged]}${kz[GLYPH.deleted]}${_kz_glyph_pad[deleted]}${s_del}${none}"
   else
-    (( VCS_STATUS_NUM_STAGED )) && icons+="${icons:+$isep}${(e)_kz_sem[added]}${kz[GLYPH.staged]}${_kz_glyph_pad[staged]}${VCS_STATUS_NUM_STAGED}${none}"
+    (( VCS_STATUS_NUM_STAGED )) && icons+="${icons:+$isep}${(e)_kz_sem[staged]}${kz[GLYPH.staged]}${_kz_glyph_pad[staged]}${VCS_STATUS_NUM_STAGED}${none}"
   fi
 
   if (( dirty_unknown )); then
@@ -645,7 +650,7 @@ function _kz_git_render {
     else
       (( VCS_STATUS_NUM_UNSTAGED )) && icons+="${icons:+$isep}${(e)_kz_sem[modified]}${kz[GLYPH.modified]}${_kz_glyph_pad[modified]}${VCS_STATUS_NUM_UNSTAGED}${none}"
     fi
-    (( VCS_STATUS_NUM_CONFLICTED )) && icons+="${icons:+$isep}${(e)_kz_sem[unmerged]}${kz[GLYPH.conflicted]}${_kz_glyph_pad[conflicted]}${VCS_STATUS_NUM_CONFLICTED}${none}"
+    (( VCS_STATUS_NUM_CONFLICTED )) && icons+="${icons:+$isep}${(e)_kz_sem[conflicted]}${kz[GLYPH.conflicted]}${_kz_glyph_pad[conflicted]}${VCS_STATUS_NUM_CONFLICTED}${none}"
     (( VCS_STATUS_NUM_UNTRACKED ))  && icons+="${icons:+$isep}${(e)_kz_sem[untracked]}${kz[GLYPH.untracked]}${_kz_glyph_pad[untracked]}${VCS_STATUS_NUM_UNTRACKED}${none}"
   fi
 
@@ -725,7 +730,7 @@ function _kz_venv_segment {
   kz[venv.name]=''
   if [[ -n "$VIRTUAL_ENV" ]]; then
     kz[venv.name]="$VIRTUAL_ENV:t"
-    _kz_prompt_venv=" ${(e)_kz_sem[info]}${kz[GLYPH.venv]}${(e)kz[RESET]} ${(e)_kz_sem[venv]}${VIRTUAL_ENV:t}${(e)kz[RESET]}"
+    _kz_prompt_venv=" ${(e)_kz_sem[label]}${kz[GLYPH.venv]}${(e)kz[RESET]} ${(e)_kz_sem[venv]}${VIRTUAL_ENV:t}${(e)kz[RESET]}"
   else
     _kz_prompt_venv=''
   fi
@@ -841,45 +846,46 @@ function _kz_duration_fmt {
   fi
 }
 function _kz_duration_segment {
-  _kz_prompt_duration='' kz[duration]=''
+  _kz_prompt_duration='' kz[status.duration]=''
   (( _kz_cmd_start )) || return
   local -F elapsed=$(( ${EPOCHREALTIME:-0} - _kz_cmd_start ))
   _kz_cmd_start=0
   (( elapsed >= ${KZ_PROMPT_CMD_DURATION_MIN:-3} )) || return
   _kz_prompt_duration="$(_kz_duration_fmt $elapsed)"
-  kz[duration]="$_kz_prompt_duration"
+  kz[status.duration]="$_kz_prompt_duration"
 }
 
 # ---- status line (exit code + duration) ----
 # $_kz_prompt_last_exit is captured by the OSC precmd (it runs first). This segment only
 # *computes* the inline status into the public $kz[status] content key; printing it above
-# the prompt is the job of the preprompt (KZ_PROMPT_PPROMPT), whose default is $kz[status].
+# the prompt is the job of the preprompt (KZ_PROMPT_PREPROMPT), whose default is $kz[status].
 typeset -g _kz_prompt_last_exit=0
 
 function _kz_status_segment {
-  kz[status]=''
+  kz[status]='' kz[status.exit]=''
   # Only after a real command ran: a blank Enter leaves $? unchanged and must not
   # re-show the previous command's exit code.
   (( ${_kz_cmd_ran:-0} )) || return
   _kz_cmd_ran=0
+  kz[status.exit]="${_kz_prompt_last_exit:-0}"
   local out='' body item sp
   if (( ${_kz_prompt_last_exit:-0} != 0 )); then
-    body="${(e)KZ_PROMPT_ERROR-$DEFAULT_KZ_PROMPT_ERROR}"
+    body="${(e)KZ_PROMPT_STATUS_EXIT-$DEFAULT_KZ_PROMPT_STATUS_EXIT}"
     if [[ -n "$body" ]]; then
-      item="${(e)_kz_sem[status_err]}${body}${(e)kz[RESET]}"
+      item="${(e)_kz_sem[status_failure]}${body}${(e)kz[RESET]}"
       out+="$item"
     fi
   fi
   if [[ -n "$_kz_prompt_duration" ]]; then
-    body="${(e)KZ_PROMPT_DURATION-$DEFAULT_KZ_PROMPT_DURATION}"
+    body="${(e)KZ_PROMPT_STATUS_DURATION-$DEFAULT_KZ_PROMPT_STATUS_DURATION}"
     if [[ -n "$body" ]]; then
-      sp="${out:+ }"; item="${(e)_kz_sem[duration]}${body}${(e)kz[RESET]}"
+      sp="${out:+ }"; item="${(e)_kz_sem[status_duration]}${body}${(e)kz[RESET]}"
       out+="${sp}${item}"
     fi
   fi
   [[ -n "$out" ]] || return
   # Inline styled status (exit indicator + duration, no newline/%E). Public so a skin can
-  # place it anywhere -- above the prompt via KZ_PROMPT_PPROMPT (the default), right-aligned
+  # place it anywhere -- above the prompt via KZ_PROMPT_PREPROMPT (the default), right-aligned
   # in KZ_PROMPT_RPROMPT, etc. Empty on a clean fast command.
   kz[status]="$out"
 }
@@ -887,7 +893,7 @@ function _kz_status_segment {
 # ---- preprompt (anything printed as output above the prompt) ----
 # A fourth deferred layout knob alongside PROMPT / RPROMPT / TRANSIENT_PROMPT, composed from
 # $kz[] and resolved with the same doubled ${(e)${(e)...}}. Its default is the status line
-# ($kz[status]); KZ_PROMPT_PPROMPT='' prints nothing, and a skin/user can inject anything
+# ($kz[status]); KZ_PROMPT_PREPROMPT='' prints nothing, and a skin/user can inject anything
 # (a rule, a git summary, a timestamp) above the prompt.
 #
 # It is emitted as ordinary output here in precmd -- NOT as a line of PROMPT. That is
@@ -898,7 +904,7 @@ function _kz_status_segment {
 # populated its $kz[] keys and after the OSC precmd's D mark, so the bytes still land after
 # the previous command's D and before the next prompt's A.
 function _kz_preprompt_print {
-  local pp="${(e)${(e)KZ_PROMPT_PPROMPT-$DEFAULT_KZ_PROMPT_PPROMPT}}"
+  local pp="${(e)${(e)KZ_PROMPT_PREPROMPT-$DEFAULT_KZ_PROMPT_PREPROMPT}}"
   [[ -n "$pp" ]] || return
   print -rnP -- "${pp}%E"$'\n'
 }
@@ -907,21 +913,21 @@ function _kz_preprompt_print {
 # Editor keymap indicator
 # ============================================================================
 
-# Update the vi/emacs keymap caret ($_kz_prompt_keymap) and overwrite mark
-# ($_kz_prompt_overwrite) from zle state, then redraw. The three public format parameters
+# Update the vi/emacs keymap caret ($_kz_prompt_caret) and overwrite mark
+# ($_kz_prompt_mode_overwrite) from zle state, then redraw. The three public format parameters
 # are evaluated here so palette/glyph changes remain live. Driven by the widgets below.
-typeset -g _kz_prompt_keymap='' _kz_prompt_overwrite=''
+typeset -g _kz_prompt_caret='' _kz_prompt_mode_overwrite=''
 function _kz_keymap_update {
   if [[ "$KEYMAP" == 'vicmd' ]]; then
-    _kz_prompt_keymap="${(e)KZ_PROMPT_KEYMAP_ALTERNATE-$DEFAULT_KZ_PROMPT_KEYMAP_ALTERNATE}"
+    _kz_prompt_caret="${(e)KZ_PROMPT_CARET_ALTERNATE-$DEFAULT_KZ_PROMPT_CARET_ALTERNATE}"
   else
-    _kz_prompt_keymap="${(e)KZ_PROMPT_KEYMAP_PRIMARY-$DEFAULT_KZ_PROMPT_KEYMAP_PRIMARY}"
+    _kz_prompt_caret="${(e)KZ_PROMPT_CARET_PRIMARY-$DEFAULT_KZ_PROMPT_CARET_PRIMARY}"
   fi
   if [[ "$ZLE_STATE" == *overwrite* ]]; then
-    _kz_prompt_keymap="${(e)KZ_PROMPT_KEYMAP_OVERWRITE-$DEFAULT_KZ_PROMPT_KEYMAP_OVERWRITE}"
-    _kz_prompt_overwrite=" ${(e)_kz_sem[overwrite]}${kz[GLYPH.overwrite]}${(e)kz[RESET]}"
+    _kz_prompt_caret="${(e)KZ_PROMPT_CARET_OVERWRITE-$DEFAULT_KZ_PROMPT_CARET_OVERWRITE}"
+    _kz_prompt_mode_overwrite=" ${(e)_kz_sem[mode_overwrite]}${kz[GLYPH.mode_overwrite]}${(e)kz[RESET]}"
   else
-    _kz_prompt_overwrite=''
+    _kz_prompt_mode_overwrite=''
   fi
   # reset-prompt redraws in place, which needs cursor addressing; skip it on dumb
   # terminals (it would reprint the multi-line prompt). The seed in setup means the
@@ -938,7 +944,7 @@ function zle-line-init {
 # Toggling overwrite mode does not change keymaps, so zle-keymap-select does not fire.
 # Wrap the standard widget, as Prezto does, so inherited and explicit bindings both
 # refresh the caret and RPROMPT after invoking the builtin.
-function _kz_overwrite_toggle {
+function _kz_mode_overwrite_toggle {
   zle .overwrite-mode
   _kz_keymap_update
 }
@@ -1248,8 +1254,8 @@ function kz_prompt_precmd {
   kz_prompt_glyphs
   # Resolve the initial/primary caret here, after ~/.zshrc.local has loaded. ZLE's
   # line-init/keymap-select widgets take over while the user is editing a command.
-  _kz_prompt_keymap="${(e)KZ_PROMPT_KEYMAP_PRIMARY-$DEFAULT_KZ_PROMPT_KEYMAP_PRIMARY}"
-  _kz_prompt_overwrite=''
+  _kz_prompt_caret="${(e)KZ_PROMPT_CARET_PRIMARY-$DEFAULT_KZ_PROMPT_CARET_PRIMARY}"
+  _kz_prompt_mode_overwrite=''
   # Load the dim palette once, here rather than in setup, so any KZ_PROMPT_PALETTE_*
   # override / TTL / timeout from ~/.zshrc.local (sourced after setup) is in effect.
   local _configured_transient_style="${KZ_PROMPT_TRANSIENT_STYLE:-original}"
@@ -1291,7 +1297,7 @@ function _kz_setup_lifecycle {
 
   zle -N zle-keymap-select
   zle -N zle-line-init
-  zle -N overwrite-mode _kz_overwrite_toggle
+  zle -N overwrite-mode _kz_mode_overwrite_toggle
   if [[ -n "${terminfo[kich1]-}" ]]; then
     bindkey -M emacs "$terminfo[kich1]" overwrite-mode
     bindkey -M viins "$terminfo[kich1]" overwrite-mode
@@ -1372,13 +1378,13 @@ function kz_prompt_setup {
 
   _kz_setup_lifecycle
 
-  DEFAULT_KZ_PROMPT_KEYMAP_PRIMARY='${_kz_sem[caret1]}${kz[GLYPH.caret]}${kz[RESET]}${_kz_sem[caret2]}${kz[GLYPH.caret]}${kz[RESET]}${_kz_sem[caret3]}${kz[GLYPH.caret]}${kz[RESET]}'
-  DEFAULT_KZ_PROMPT_KEYMAP_ALTERNATE='${_kz_sem[caret3]}${kz[GLYPH.caret_alt]}${kz[RESET]}${_kz_sem[caret2]}${kz[GLYPH.caret_alt]}${kz[RESET]}${_kz_sem[caret1]}${kz[GLYPH.caret_alt]}${kz[RESET]}'
-  DEFAULT_KZ_PROMPT_KEYMAP_OVERWRITE='${_kz_sem[overwrite]}${kz[GLYPH.caret]}${kz[GLYPH.caret]}${kz[GLYPH.caret]}${kz[RESET]}'
+  DEFAULT_KZ_PROMPT_CARET_PRIMARY='${_kz_sem[caret_1]}${kz[GLYPH.caret]}${kz[RESET]}${_kz_sem[caret_2]}${kz[GLYPH.caret]}${kz[RESET]}${_kz_sem[caret_3]}${kz[GLYPH.caret]}${kz[RESET]}'
+  DEFAULT_KZ_PROMPT_CARET_ALTERNATE='${_kz_sem[caret_3]}${kz[GLYPH.caret_alternate]}${kz[RESET]}${_kz_sem[caret_2]}${kz[GLYPH.caret_alternate]}${kz[RESET]}${_kz_sem[caret_1]}${kz[GLYPH.caret_alternate]}${kz[RESET]}'
+  DEFAULT_KZ_PROMPT_CARET_OVERWRITE='${_kz_sem[mode_overwrite]}${kz[GLYPH.caret]}${kz[GLYPH.caret]}${kz[GLYPH.caret]}${kz[RESET]}'
 
   # Seed the keymap caret so a prompt char shows even where zle-line-init never fires
   # (e.g. Emacs `M-x shell`). precmd resolves it again after ~/.zshrc.local loads.
-  _kz_prompt_keymap="${(e)DEFAULT_KZ_PROMPT_KEYMAP_PRIMARY}"
+  _kz_prompt_caret="${(e)DEFAULT_KZ_PROMPT_CARET_PRIMARY}"
 
   _kz_prompt_git=''
   _kz_prompt_pwd=''
@@ -1394,49 +1400,53 @@ function kz_prompt_setup {
   # $_kz_prompt_* / state vars the precmd computes.
   DEFAULT_KZ_PROMPT_OS='${kz[GLYPH.os]:+"${_kz_sem[host]}${kz[GLYPH.os]}${kz[RESET]} "}'
   DEFAULT_KZ_PROMPT_CONTEXT='${kz[context.container]:+" ${_kz_sem[container]}${kz[GLYPH.container]}${kz[RESET]}"}${kz[context.ssh]:+" ${_kz_sem[ssh]}${kz[GLYPH.ssh]}${kz[RESET]}"}'
-  DEFAULT_KZ_PROMPT_ERR='%(?.${_kz_sem[status_ok]}${kz[GLYPH.dot]}${kz[RESET]}.${_kz_sem[status_err]}${kz[GLYPH.dot]}${kz[RESET]})'
-  DEFAULT_KZ_PROMPT_ERROR='${kz[GLYPH.return]} ${_kz_prompt_last_exit}'
+  DEFAULT_KZ_PROMPT_STATUS_DOT='%(?.${_kz_sem[status_success]}${kz[GLYPH.status_dot]}${kz[RESET]}.${_kz_sem[status_failure]}${kz[GLYPH.status_dot]}${kz[RESET]})'
+  DEFAULT_KZ_PROMPT_STATUS_EXIT='${kz[GLYPH.exit]} ${_kz_prompt_last_exit}'
   DEFAULT_KZ_PROMPT_VIM='${VIM:+" ${_kz_sem[vim]}${kz[GLYPH.vim]}${kz[RESET]}"}'
   DEFAULT_KZ_PROMPT_EMACS='${INSIDE_EMACS:+" ${_kz_sem[emacs]}${kz[GLYPH.emacs]}${kz[RESET]}"}'
-  DEFAULT_KZ_PROMPT_ETCTL='${ETCTL_SESSION:+" ${_kz_sem[info]}etctl${kz[RESET]}:${_kz_sem[etctl]}${ETCTL_SESSION}${kz[RESET]}"}'
+  DEFAULT_KZ_PROMPT_ETCTL='${ETCTL_SESSION:+" ${_kz_sem[label]}etctl${kz[RESET]}:${_kz_sem[etctl]}${ETCTL_SESSION}${kz[RESET]}"}'
   DEFAULT_KZ_PROMPT_JOBS='%(1j. ${_kz_sem[jobs]}${kz[GLYPH.jobs]}${_kz_glyph_pad[jobs]}%j${kz[RESET]}.)'
-  DEFAULT_KZ_PROMPT_DURATION='${kz[GLYPH.duration]}${_kz_glyph_pad[duration]}${_kz_prompt_duration}'
+  DEFAULT_KZ_PROMPT_STATUS_DURATION='${kz[GLYPH.duration]}${_kz_glyph_pad[duration]}${_kz_prompt_duration}'
   DEFAULT_KZ_PROMPT_USER='%n'
   DEFAULT_KZ_PROMPT_HOST='%M'
   DEFAULT_KZ_PROMPT_IP='${_kz_prompt_ip}'
   DEFAULT_KZ_PROMPT_GIT='${_kz_prompt_git:+${(e)_kz_prompt_git}}'
   DEFAULT_KZ_PROMPT_GIT_SEP=' '
   DEFAULT_KZ_PROMPT_VENV='${(e)_kz_prompt_venv}'
-  DEFAULT_KZ_PROMPT_OVERWRITE='${(e)_kz_prompt_overwrite}'
-  DEFAULT_KZ_PROMPT_CARET='${(e)_kz_prompt_keymap}'
+  DEFAULT_KZ_PROMPT_MODE_OVERWRITE='${(e)_kz_prompt_mode_overwrite}'
+  DEFAULT_KZ_PROMPT_CARET='${(e)_kz_prompt_caret}'
   DEFAULT_KZ_PROMPT_TIME='[%*]'
   DEFAULT_KZ_PROMPT_PWD='${_kz_prompt_pwd:+${(e)_kz_prompt_pwd}}'
 
   # Compose the segments into $kz. The plain ones share one shape: a user override
   # ($KZ_PROMPT_<SEG>) or the default, both (e)-evaluated at render.
   typeset -gA kz
-  kz[nl]=$'%E\n'
+  local old_key
+  for old_key in nl transient_caret err info overwrite duration; do
+    unset "kz[$old_key]"
+  done
+  kz[NL]=$'%E\n'
   local seg
-  for seg in os err vim emacs etctl context jobs git venv caret; do
+  for seg in os status_dot vim emacs etctl context jobs git venv caret; do
     kz[$seg]="\${(e)KZ_PROMPT_${seg:u}:-\$DEFAULT_KZ_PROMPT_${seg:u}}"
   done
   # Unlike the older segments, an explicit empty value hides the overwrite marker.
-  kz[overwrite]='${(e)KZ_PROMPT_OVERWRITE-$DEFAULT_KZ_PROMPT_OVERWRITE}'
+  kz[mode_overwrite]='${(e)KZ_PROMPT_MODE_OVERWRITE-$DEFAULT_KZ_PROMPT_MODE_OVERWRITE}'
   # The rest wrap a segment in its own colour, or compose other segments.
   kz[user]='${_kz_sem[user]}${(e)KZ_PROMPT_USER:-$DEFAULT_KZ_PROMPT_USER}${kz[RESET]}'
   kz[time]='${_kz_sem[time]}${(e)KZ_PROMPT_TIME:-$DEFAULT_KZ_PROMPT_TIME}${kz[RESET]}'
   kz[pwd]='${_kz_sem[pwd]}${(e)KZ_PROMPT_PWD:-$DEFAULT_KZ_PROMPT_PWD}${kz[RESET]}'
-  # The transient caret, as a handle, so the transient layout composes it the way PROMPT
+  # The past caret, as a handle, so the transient layout composes it the way PROMPT
   # composes $kz[caret] -- no $DEFAULT_KZ_PROMPT_* leaks into a copyable skin.
-  kz[transient_caret]='${(e)KZ_PROMPT_TRANSIENT_CARET:-$DEFAULT_KZ_PROMPT_TRANSIENT_CARET}'
+  kz[caret_past]='${(e)KZ_PROMPT_CARET_PAST:-$DEFAULT_KZ_PROMPT_CARET_PAST}'
   kz[host]="$kz[os]\${_kz_sem[host]}\${(e)KZ_PROMPT_HOST:-\$DEFAULT_KZ_PROMPT_HOST}\${kz[RESET]} \${_kz_sem[ip]}(\${(e)KZ_PROMPT_IP:-\$DEFAULT_KZ_PROMPT_IP})\${kz[RESET]}"
-  kz[info]="$kz[user] at $kz[host]"
+  kz[identity]="$kz[user] at $kz[host]"
 
   SPROMPT='zsh: correct $kz[FG.red]%R%f to $kz[FG.green]%r%f [nyae]? '
   # The visible layout is deferred and overridable end to end. Four knobs compose the
-  # $kz[<segment>] array (os err info context etctl git venv jobs nl time pwd caret
-  # transient_caret overwrite vim emacs, plus content like status/duration) into the layout,
-  # each a deferred string resolved with the doubled ${(e)${(e)...}}: KZ_PROMPT_PPROMPT (the
+  # $kz[<segment>] array (os status_dot identity context etctl git venv jobs NL time pwd
+  # caret caret_past mode_overwrite vim emacs, plus status state/content) into the layout,
+  # each a deferred string resolved with the doubled ${(e)${(e)...}}: KZ_PROMPT_PREPROMPT (the
   # preprompt, printed as output above the prompt; default the status line), KZ_PROMPT_PROMPT
   # (the two prompt lines), KZ_PROMPT_RPROMPT (the right prompt), and KZ_PROMPT_TRANSIENT_PROMPT
   # (the collapsed scrollback prompt; default time + pwd + caret). A skin can reorder, drop, or
@@ -1445,9 +1455,9 @@ function kz_prompt_setup {
   # Because the layout is deferred (see the vars below), an override set in ~/.zshrc.local,
   # after setup, takes effect at render with no rebuild. The OSC 133 A/B/D marks stay wrapped
   # around it, so iTerm integration survives any skin.
-  DEFAULT_KZ_PROMPT_PPROMPT='$kz[status]'
-  DEFAULT_KZ_PROMPT_RPROMPT='$kz[overwrite]$kz[vim]$kz[emacs]'
-  DEFAULT_KZ_PROMPT_PROMPT='$kz[err] $kz[info]$kz[context]$kz[etctl]$kz[git]$kz[venv]$kz[jobs]$kz[nl]$kz[time] $kz[pwd] $kz[caret] '
+  DEFAULT_KZ_PROMPT_PREPROMPT='$kz[status]'
+  DEFAULT_KZ_PROMPT_RPROMPT='$kz[mode_overwrite]$kz[vim]$kz[emacs]'
+  DEFAULT_KZ_PROMPT_PROMPT='$kz[status_dot] $kz[identity]$kz[context]$kz[etctl]$kz[git]$kz[venv]$kz[jobs]$kz[NL]$kz[time] $kz[pwd] $kz[caret] '
   # The chosen layout (a skin's KZ_PROMPT_PROMPT/RPROMPT or the default), deferred with the
   # doubled ${(e)${(e)...}} so one PROMPT_SUBST pass resolves both levels: the layout, then
   # the $kz[...] segments it names. Named so PROMPT/RPROMPT below stay readable.
@@ -1459,13 +1469,13 @@ function kz_prompt_setup {
   # Transient prompt (collapsed past prompts), the TRANSIENT_ mirror of the live grid:
   #   KZ_PROMPT_TRANSIENT_PROMPT   — the collapsed left prompt   (like KZ_PROMPT_PROMPT)
   #   KZ_PROMPT_TRANSIENT_RPROMPT  — the collapsed right prompt  (like KZ_PROMPT_RPROMPT; empty by default)
-  #   KZ_PROMPT_TRANSIENT_CARET    — just the caret/emoji piece  (like KZ_PROMPT_CARET)
+  #   KZ_PROMPT_CARET_PAST         — just the caret/emoji piece (like KZ_PROMPT_CARET)
   # The default retains the submission time, pwd (live colour + KZ_PROMPT_PWD_STYLE),
   # and caret;
   # each line is resolved and restyled (dimmed/palette hue/original) per-accept. An explicit
   # KZ_PROMPT_TRANSIENT_PROMPT='' disables transience.
-  DEFAULT_KZ_PROMPT_TRANSIENT_CARET='${_kz_sem[transient_caret]}${kz[GLYPH.caret]}${kz[RESET]}'
-  DEFAULT_KZ_PROMPT_TRANSIENT_PROMPT='$kz[time] $kz[pwd] $kz[transient_caret] '
+  DEFAULT_KZ_PROMPT_CARET_PAST='${_kz_sem[caret_past]}${kz[GLYPH.caret]}${kz[RESET]}'
+  DEFAULT_KZ_PROMPT_TRANSIENT_PROMPT='$kz[time] $kz[pwd] $kz[caret_past] '
   DEFAULT_KZ_PROMPT_TRANSIENT_RPROMPT=''
   _kz_setup_transient_widgets
 }

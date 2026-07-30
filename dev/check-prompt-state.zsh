@@ -96,8 +96,20 @@ _kz_venv_segment
 
 _kz_cmd_start=$(( EPOCHREALTIME - 4 ))
 _kz_duration_segment
-[[ -n "${kz[duration]}" ]] || {
+[[ -n "${kz[status.duration]}" ]] || {
   print -u2 -r -- "duration was not exposed"
+  return 1
+}
+_kz_cmd_ran=1
+_kz_prompt_last_exit=7
+_kz_status_segment
+[[ "${kz[status.exit]}" == 7 ]] || {
+  print -u2 -r -- "status.exit was not exposed"
+  return 1
+}
+_kz_status_segment || true
+[[ -z "${kz[status.exit]}" ]] || {
+  print -u2 -r -- "status.exit survived a prompt with no command"
   return 1
 }
 

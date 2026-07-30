@@ -3,7 +3,7 @@
 # command failed. It makes scrollback scannable (each command is visibly separated) and
 # failures jump out — you can scroll back and spot the red rules.
 #
-# This is a showcase of KZ_PROMPT_PPROMPT, the preprompt knob: its value (composed from
+# This is a showcase of KZ_PROMPT_PREPROMPT, the preprompt knob: its value (composed from
 # $kz[...] like PROMPT) is printed as output on its own row above the prompt, once per
 # command. Here it replaces the default ($kz[status]) with a rule whose colour is chosen
 # by whether $kz[status] is set (i.e. the last command failed or was slow):
@@ -12,4 +12,4 @@
 # always spans the screen. It is pure parameter expansion (no subshell) and blanks safely
 # under NO_COLOR. Use $kz[FG.name] inside the ${..:+..}/${..:-..} conditionals, never a
 # literal %F{...} (a bare } would end the conditional early).
-KZ_PROMPT_PPROMPT='${${kz[status]:+${kz[FG.red]}}:-${kz[FG.muted]}}${(pl:$COLUMNS::─:)}${kz[RESET]}'
+KZ_PROMPT_PREPROMPT='${${kz[status]:+${kz[FG.red]}}:-${kz[FG.muted]}}${(pl:$COLUMNS::─:)}${kz[RESET]}'

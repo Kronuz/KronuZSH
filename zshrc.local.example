@@ -42,9 +42,10 @@ KZ_PROMPT_COLOR_HOST='$kz[FG.green]'
 # --- Prompt: glyphs ---
 # No Nerd Font? Switch to plain-Unicode glyphs (renders in any font):
 # KZ_PROMPT_NERD_FONT=0
-# Retune or hide ('') one glyph. Names: os branch tag commit remote action fallback clean dirty
-# stashed ahead behind staged modified conflicted untracked venv vim emacs jobs duration
-# ssh container dot return overwrite caret caret_alt.
+# Retune or hide ('') one glyph. Names: os branch tag commit remote host_github host_gitlab
+# host_bitbucket action fallback clean dirty stashed ahead behind push_ahead push_behind
+# staged modified added changed deleted conflicted untracked unknown loading venv vim emacs
+# jobs duration ssh container status_dot exit mode_overwrite caret caret_alternate.
 # KZ_PROMPT_GLYPH_MODIFIED='*'
 # KZ_PROMPT_GLYPH_OS=''            # hide the OS logo next to the hostname
 # Retune a glyph's trailing (right-hand) pad -- the space that stops a wide Nerd Font icon
@@ -59,12 +60,12 @@ KZ_PROMPT_COLOR_HOST='$kz[FG.green]'
 # Break the staged/unstaged counts into per-type marks (+ new / ~ changed / - deleted),
 # coloured by group. Off by default (one aggregate count per group):
 # KZ_PROMPT_GIT_SPLIT=1
-# Replace or hide the complete live keymap indicators (prompt strings may reference
+# Replace or hide the complete live caret variants (prompt strings may reference
 # $kz presentation keys and glyphs):
-# KZ_PROMPT_KEYMAP_PRIMARY='${kz[BOLD]}${kz[FG.red]}${kz[GLYPH.caret]}${kz[RESET]}'
-# KZ_PROMPT_KEYMAP_ALTERNATE='${kz[BOLD]}${kz[FG.red]}${kz[GLYPH.caret_alt]}${kz[RESET]}'
-# KZ_PROMPT_KEYMAP_OVERWRITE='${kz[FG.red]}>>>${kz[RESET]}'
-# KZ_PROMPT_OVERWRITE=''            # hide only the RPROMPT overwrite marker
+# KZ_PROMPT_CARET_PRIMARY='${kz[BOLD]}${kz[FG.red]}${kz[GLYPH.caret]}${kz[RESET]}'
+# KZ_PROMPT_CARET_ALTERNATE='${kz[BOLD]}${kz[FG.red]}${kz[GLYPH.caret_alternate]}${kz[RESET]}'
+# KZ_PROMPT_CARET_OVERWRITE='${kz[FG.red]}>>>${kz[RESET]}'
+# KZ_PROMPT_MODE_OVERWRITE=''            # hide only the RPROMPT overwrite marker
 
 # --- Prompt: behaviour ---
 # Shorten the working-directory path: full (default), short (shortest unique prefix,
@@ -76,14 +77,14 @@ KZ_PROMPT_PWD_STYLE=short
 # KZ_PROMPT_IP_TTL=300
 # Disable OSC 7/133 terminal metadata and iTerm2's OSC 1337 integration completely:
 # KZ_PROMPT_TERMINAL_INTEGRATION=0
-# Transient prompt: past prompts collapse to the run directory + a caret; '' turns it off.
+# Transient prompt: past prompts collapse to submission time + run directory + caret;
+# an explicit '' turns it off.
 # KZ_PROMPT_TRANSIENT_PROMPT=''
 # Swap just the collapsed caret for an emoji or any string (the rest stays the default):
-# KZ_PROMPT_TRANSIENT_CARET='🚀'
-# Set to 0 to discard ⏎/duration instead of keeping it in command history:
-# KZ_PROMPT_STATUS=0
-# How the whole collapsed line (pwd, caret, command) is restyled: dim (default), mute, keep.
-# KZ_PROMPT_TRANSIENT_STYLE=mute
+# KZ_PROMPT_CARET_PAST='🚀'
+# Restyle the whole collapsed line (time, pwd, caret, command): original (default),
+# dimmed, or any palette hue such as muted, neutral, or pink.
+# KZ_PROMPT_TRANSIENT_STYLE=muted
 
 # --- Python ---
 # Automatically activate the nearest .venv as you move through a project. The hook

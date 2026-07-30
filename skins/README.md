@@ -51,20 +51,21 @@ Four knobs, each a deferred `${...}` string re-evaluated every render:
 
 | Variable                         | What it is                                            |
 | -------------------------------- | ----------------------------------------------------- |
-| `KZ_PROMPT_PPROMPT`          | the preprompt, printed above the prompt (default `$kz[status]`; `''` prints nothing) |
-| `KZ_PROMPT_PROMPT`           | the live left prompt (one line, or two via `$kz[nl]`) |
-| `KZ_PROMPT_RPROMPT`          | the right prompt                                      |
-| `KZ_PROMPT_TRANSIENT_PROMPT` | the collapsed scrollback prompt (`''` disables it)    |
+| `KZ_PROMPT_PREPROMPT`        | the preprompt, printed above the prompt (default `$kz[status]`; `''` prints nothing) |
+| `KZ_PROMPT_PROMPT`           | the live left prompt (one line, or two via `$kz[NL]`)                              |
+| `KZ_PROMPT_RPROMPT`          | the right prompt                                                                   |
+| `KZ_PROMPT_TRANSIENT_PROMPT` | the collapsed scrollback prompt (`''` disables it)                                 |
 
 Compose them from the unified `$kz` array:
 
 - **UPPERCASE keys are presentation**: `$kz[FG.red]`, `$kz[BG.blue]`, `$kz[BOLD]`,
-  `$kz[UNDERLINE]`, `$kz[STANDOUT]`, `$kz[RESET]`, and glyphs like `$kz[GLYPH.caret]`.
+  `$kz[UNDERLINE]`, `$kz[STANDOUT]`, `$kz[RESET]`, `$kz[NL]`, and glyphs like
+  `$kz[GLYPH.caret]`.
 - **lowercase keys are content**: segment handles like `$kz[git]`, `$kz[pwd]`,
-  `$kz[caret]`, `$kz[nl]`, plus live git state like `$kz[git.branch]` and
+  `$kz[caret]`, `$kz[caret_past]`, plus live git state like `$kz[git.branch]` and
   `$kz[git.dirty]`, the failed-exit / slow-command status `$kz[status]` and raw
-  duration `$kz[duration]`, and session flags `$kz[context.ssh]` /
-  `$kz[context.container]`.
+  `$kz[status.exit]` / `$kz[status.duration]`, and session flags
+  `$kz[context.ssh]` / `$kz[context.container]`.
 
 Normal zsh prompt escapes (`%~`, `%n`, `%m`, `%c`) still work. PROMPT/RPROMPT are the
 layout that arranges these pieces.
@@ -111,9 +112,11 @@ computes every prompt (from gitstatusd, or the direct-git fallback):
 | `$kz[git.remote]`                                                                      | `remote/branch`, `''` when none            |
 
 Other normalized state useful to skins includes `$kz[status]` (the inline styled
-failed-exit / slow-command line, empty on a clean fast command), `$kz[venv.name]`,
-`$kz[duration]`, `$kz[context.ssh]`, and `$kz[context.container]`. They are empty when
-inactive; both context flags can be set when an SSH session runs inside a container.
+failed-exit / slow-command line, empty on a clean fast command),
+`$kz[status.exit]`, `$kz[status.duration]`, `$kz[venv.name]`, `$kz[context.ssh]`, and
+`$kz[context.container]`. They are empty when inactive, except `status.exit`, which
+contains `0` after a successful command; both context flags can be set when an SSH
+session runs inside a container.
 Bundled skins must consume these public keys rather than private `$_kz_*` engine
 state; `dev/check-skins.zsh` enforces that boundary.
 
@@ -132,15 +135,15 @@ all follow the balanced foreground form.
 
 ## The preprompt, and moving the status line
 
-`KZ_PROMPT_PPROMPT` is the **preprompt** — a fourth layout knob (with `KZ_PROMPT_PROMPT`,
+`KZ_PROMPT_PREPROMPT` is the **preprompt** — a fourth layout knob (with `KZ_PROMPT_PROMPT`,
 `KZ_PROMPT_RPROMPT`, and `KZ_PROMPT_TRANSIENT_PROMPT`) whose value is printed as output on
 its own row *above* the prompt, once per command. It is composed from `$kz[...]` like the
 others. Its default is the status line:
 
 ```zsh
-KZ_PROMPT_PPROMPT='$kz[status]'   # the built-in default: exit code / duration above the prompt
-KZ_PROMPT_PPROMPT=''              # print nothing above the prompt
-KZ_PROMPT_PPROMPT='${kz[status]} $(date +%H:%M)'   # or inject anything else
+KZ_PROMPT_PREPROMPT='$kz[status]'   # the built-in default: exit code / duration above the prompt
+KZ_PROMPT_PREPROMPT=''              # print nothing above the prompt
+KZ_PROMPT_PREPROMPT='${kz[status]} $(date +%H:%M)'   # or inject anything else
 ```
 
 Since it is output (not part of the prompt), it stays in scrollback as the prompt
@@ -151,41 +154,41 @@ To move the status *elsewhere*, empty the preprompt and place `$kz[status]` wher
 it — for example right-aligned on the caret line via `KZ_PROMPT_RPROMPT`:
 
 ```zsh
-KZ_PROMPT_PPROMPT=''
-KZ_PROMPT_RPROMPT='${kz[status]:+$kz[status] }$kz[overwrite]$kz[vim]$kz[emacs]'
+KZ_PROMPT_PREPROMPT=''
+KZ_PROMPT_RPROMPT='${kz[status]:+$kz[status] }$kz[mode_overwrite]$kz[vim]$kz[emacs]'
 ```
 
 Because the right prompt is redrawn each prompt and dropped when the line collapses, a
 status placed there is compact and live-only: it shows while you decide the next command
 and vanishes when it runs, never entering scrollback. See `skins/status-right.zsh`.
-`$kz[duration]` (the raw duration string) is available too for a custom split.
+`$kz[status.duration]` (the raw duration string) is available too for a custom split.
 
 ### Preprompt recipes
 
-A few one-liners, each a `KZ_PROMPT_PPROMPT=...` you can drop in `~/.zshrc.local`.
+A few one-liners, each a `KZ_PROMPT_PREPROMPT=...` you can drop in `~/.zshrc.local`.
 `${(pl:$COLUMNS::─:)}` is a full-width rule (pure parameter expansion, no subshell);
-`$kz[nl]` is a newline for a multi-line preprompt.
+`$kz[NL]` is a newline for a multi-line preprompt.
 
 ```zsh
 # A full-width rule above every command: muted normally, red when the last one failed.
 # Separates commands in scrollback and makes failures easy to spot. (skins/preprompt-rule.zsh)
-KZ_PROMPT_PPROMPT='${${kz[status]:+${kz[FG.red]}}:-${kz[FG.muted]}}${(pl:$COLUMNS::─:)}${kz[RESET]}'
+KZ_PROMPT_PREPROMPT='${${kz[status]:+${kz[FG.red]}}:-${kz[FG.muted]}}${(pl:$COLUMNS::─:)}${kz[RESET]}'
 
 # A red rule ONLY when a command failed (nothing otherwise) — minimal failure marker.
-KZ_PROMPT_PPROMPT='${kz[status]:+${kz[FG.red]}${(pl:$COLUMNS::─:)}${kz[RESET]}}'
+KZ_PROMPT_PREPROMPT='${kz[status]:+${kz[FG.red]}${(pl:$COLUMNS::─:)}${kz[RESET]}}'
 
 # The full path on its own line above, so the prompt line stays short in deep trees.
-KZ_PROMPT_PPROMPT='${kz[FG.gray]}%~${kz[RESET]}'
+KZ_PROMPT_PREPROMPT='${kz[FG.gray]}%~${kz[RESET]}'
 
 # A blank line above each prompt, for breathing room.
-KZ_PROMPT_PPROMPT=' '
+KZ_PROMPT_PREPROMPT=' '
 
 # Keep the status, and add a muted rule under it.
-KZ_PROMPT_PPROMPT='${kz[status]:+$kz[status]${kz[nl]}}${kz[FG.muted]}${(pl:$COLUMNS::─:)}${kz[RESET]}'
+KZ_PROMPT_PREPROMPT='${kz[status]:+$kz[status]${kz[NL]}}${kz[FG.muted]}${(pl:$COLUMNS::─:)}${kz[RESET]}'
 ```
 
 Anything a prompt string can hold works, including `$(...)` command substitution (run each
-prompt, so keep it cheap) — e.g. `KZ_PROMPT_PPROMPT='${kz[status]} $(date +%H:%M)'`.
+prompt, so keep it cheap) — e.g. `KZ_PROMPT_PREPROMPT='${kz[status]} $(date +%H:%M)'`.
 
 ## Compatibility skins
 

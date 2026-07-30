@@ -65,7 +65,7 @@ KZ_PROMPT_TRANSIENT_STYLE=neutral
 KZ_PROMPT_TRANSIENT_PROMPT=''
 
 # Swap just the collapsed caret for an emoji (the pwd stays; symmetric to the live caret):
-KZ_PROMPT_TRANSIENT_CARET='🚀'
+KZ_PROMPT_CARET_PAST='🚀'
 
 # Recolor a segment (any name from the color table below):
 KZ_PROMPT_COLOR_HOST='$kz[FG.chartreuse]'
@@ -99,14 +99,14 @@ into vi keybindings with `bindkey -v` in `~/.zshrc.local`: press `Esc` to enter 
 mode, then `i` (or another vi insertion command such as `a`) to return to primary
 vi-insert mode.
 
-The complete indicators can be replaced or hidden independently. Values are prompt
+The complete caret variants can be replaced or hidden independently. Values are prompt
 strings, so palette and glyph references remain deferred:
 
 ```zsh
-KZ_PROMPT_KEYMAP_PRIMARY='${kz[BOLD]}${kz[FG.red]}${kz[GLYPH.caret]}${kz[RESET]}'
-KZ_PROMPT_KEYMAP_ALTERNATE='${kz[BOLD]}${kz[FG.red]}${kz[GLYPH.caret_alt]}${kz[RESET]}'
-KZ_PROMPT_KEYMAP_OVERWRITE='${kz[FG.red]}>>>${kz[RESET]}' # overwrite caret
-KZ_PROMPT_OVERWRITE=''   # hide only the RPROMPT marker
+KZ_PROMPT_CARET_PRIMARY='${kz[BOLD]}${kz[FG.red]}${kz[GLYPH.caret]}${kz[RESET]}'
+KZ_PROMPT_CARET_ALTERNATE='${kz[BOLD]}${kz[FG.red]}${kz[GLYPH.caret_alternate]}${kz[RESET]}'
+KZ_PROMPT_CARET_OVERWRITE='${kz[FG.red]}>>>${kz[RESET]}' # overwrite caret
+KZ_PROMPT_MODE_OVERWRITE=''   # hide only the RPROMPT marker
 ```
 
 Direct assignments take effect on the next prompt or keymap transition; no export is
@@ -172,11 +172,11 @@ string to tune the spacing for your font (e.g. `KZ_PROMPT_GLYPH_PAD_UNTRACKED=''
 | `duration`       | (none) | `nf-fa-clock_o` U+F017         | last command duration                                |
 | `ssh`            |  ssh   | `nf-cod-remote` U+EB3A         | inside an SSH session                                |
 | `container`      |  box   | `nf-oct-container` U+F4B7      | inside a container                                   |
-| `dot`            |   ●    | ● U+25CF (same)                | command status dot                                   |
-| `return`         |   ⏎    | ⏎ U+23CE (same)                | nonzero-exit marker                                  |
-| `overwrite`      |   ♺    | ♺ U+267A (same)                | overwrite (replace) editing mode                     |
+| `status_dot`     |   ●    | ● U+25CF (same)                | command status dot                                   |
+| `exit`           |   ⏎    | ⏎ U+23CE (same)                | nonzero-exit marker                                  |
+| `mode_overwrite` |   ♺    | ♺ U+267A (same)                | overwrite (replace) editing mode                     |
 | `caret`          |   ❯    | ❯ U+276F (same)                | prompt caret (insert keymap)                         |
-| `caret_alt`      |   ❮    | ❮ U+276E (same)                | prompt caret (vicmd keymap)                          |
+| `caret_alternate` |  ❮    | ❮ U+276E (same)                | prompt caret (vicmd keymap)                          |
 
 Rows marked "(same)" use the same BMP mark in both sets (they render in any font);
 the rest are true Nerd Font icons in the default set and the Plain glyph otherwise.
@@ -223,7 +223,7 @@ evaluated, so you can reference a base-palette name or write a raw escape:
 KZ_PROMPT_COLOR_HOST='$kz[FG.chartreuse]'   # by palette name
 KZ_PROMPT_COLOR_TIME='%F{45}'             # by raw zsh color
 KZ_PROMPT_COLOR_BRANCH='%B$kz[FG.white]'    # %B = bold
-KZ_PROMPT_COLOR_TRANSCARET='$kz[FG.cyan]'   # collapsed caret
+KZ_PROMPT_COLOR_CARET_PAST='$kz[FG.cyan]'   # collapsed caret
 ```
 
 You can also define or override a **base hue** with `KZ_PROMPT_PALETTE_<NAME>` (a
@@ -252,28 +252,28 @@ The semantic names and their defaults:
 | `user`                       | bold white                    | username                                             |
 | `pwd`                        | aqua; medium spring green over SSH; violet in a container (red as root) | working directory |
 | `time`                       | dark gray                     | `[clock]`                                            |
-| `info`, `sep`                | dark gray                     | the "at" / separators                                |
-| `status_ok` / `status_err`   | green / red                   | the status dot and exit code                         |
+| `label`, `separator`         | dark gray                     | labels such as "at" and structural separators        |
+| `status_success` / `status_failure` | green / red             | the status dot and exit code                         |
 | `branch`, `remote`, `commit` | white                         | git ref names                                        |
 | `clean` / `dirty`            | forest green / brown          | worktree state icon                                  |
 | `ahead` / `behind`           | chartreuse / deep pink        | upstream distance                                    |
-| `added` / `action`           | dark orange                   | staged changes / in-progress operation               |
+| `staged` / `action`          | dark orange                   | staged changes / in-progress operation               |
 | `fallback`                   | gold                          | direct-git fallback warning                          |
-| `modified` / `unmerged`      | red                           | unstaged changes / conflicts                         |
+| `modified` / `conflicted`    | red                           | unstaged changes / conflicts                         |
 | `untracked`                  | dark gray                     | untracked count                                      |
 | `loading`                    | dark gray                     | in-flight async git query mark                       |
 | `stashed`                    | light steel blue              | stash count                                          |
 | `venv`                       | white                         | virtualenv name                                      |
 | `jobs`                       | gold                          | background-jobs count                                |
-| `duration`                   | goldenrod                     | command duration                                     |
+| `status_duration`            | goldenrod                     | command duration                                     |
 | `ssh` / `container`          | medium purple / deep sky blue | session badge                                        |
 | `etctl`                      | bold magenta                  | the `etctl:<name>` tag                               |
 | `vim` / `emacs`              | bold green                    | shell-running-inside-editor indicators               |
-| `overwrite`                  | red                           | overwrite-mode mark                                  |
-| `transient_caret`            | bold white                    | the collapsed transient caret                        |
-| `caret1/2/3`                 | red/yellow/green              | the three carets of `❯❯❯`                            |
+| `mode_overwrite`             | red                           | overwrite-mode mark                                  |
+| `caret_past`                 | bold neutral                  | the collapsed transient caret                        |
+| `caret_1/2/3`                | red/yellow/green              | the three carets of `❯❯❯`                            |
 
-(`caret1/2/3` are also swapped to all-red when running as root, via a `%(!..)`
+(`caret_1/2/3` are also swapped to all-red when running as root, via a `%(!..)`
 test, as are `pwd` and `user`.)
 
 ### No-color mode
@@ -290,20 +290,23 @@ full layout still renders with zero escapes. It's re-evaluated every prompt, so
 When the last command **failed or was slow**, the prompt shows a line on top, above
 the info row, with its exit code (`⏎<code>`) and/or duration. On a quick, clean
 command that line is absent entirely. It is the default content of the **preprompt**
-(`KZ_PROMPT_PPROMPT`), printed as ordinary output above the prompt, so when the next
+(`KZ_PROMPT_PREPROMPT`), printed as ordinary output above the prompt, so when the next
 command's prompt collapses (with transient prompts enabled) the line simply stays in
 scrollback above it. Because it is not part of the prompt, it stays
 outside the prompt's OSC 133 `A`/`B` region (so it acquires no terminal mark) and it
 survives correctly when you clear the screen (e.g. iTerm2's Cmd-K) — clearing removes it
-and it does not reappear when the next command runs. Set `KZ_PROMPT_PPROMPT=''` to print
+and it does not reappear when the next command runs. Set `KZ_PROMPT_PREPROMPT=''` to print
 nothing above the prompt.
 
-`KZ_PROMPT_PPROMPT` is a general knob: its value (composed from `$kz[...]` like
+`KZ_PROMPT_PREPROMPT` is a general knob: its value (composed from `$kz[...]` like
 `KZ_PROMPT_PROMPT`) is what gets printed above the prompt, so you can inject anything
 there. The status content is also exposed on its own as the `$kz[status]` segment (inline,
 styled, empty on a clean fast command), so a skin can place it elsewhere — for example
 right-aligned on the caret line via `KZ_PROMPT_RPROMPT` — by composing `$kz[status]` and
-setting `KZ_PROMPT_PPROMPT=''` so it is not also printed above. See `skins/status-right.zsh`.
+setting `KZ_PROMPT_PREPROMPT=''` so it is not also printed above. See `skins/status-right.zsh`.
+The raw state is namespaced alongside it: `$kz[status.exit]` is the last submitted
+command's exit code (including `0`), and `$kz[status.duration]` is the formatted duration
+when it crossed the display threshold. Both are empty when no command ran for this prompt.
 
 ### Command duration
 
@@ -369,7 +372,7 @@ there too) and uses the live `pwd` colour (so it matches the prompt and honours
 
 The collapsed line is built the same way as the live prompt, and is configured
 symmetrically: `KZ_PROMPT_TRANSIENT_PROMPT` is the whole string (like `PROMPT`) and
-`KZ_PROMPT_TRANSIENT_CARET` is just the caret piece (like `KZ_PROMPT_CARET` is
+`KZ_PROMPT_CARET_PAST` is just the caret piece (like `KZ_PROMPT_CARET` is
 the live caret), so you can swap the caret for an emoji without rebuilding the rest. Both
 take deferred `${...}` segments and are re-evaluated on every Enter, and the whole
 resolved line — pwd, caret, and your own `KZ_PROMPT_TRANSIENT_PROMPT` if you set one — is
@@ -393,8 +396,8 @@ styles below, and listed in full in the option reference):
 | Variable                         | Default | Effect                                                                                                                                                                                                                                                                                                                                  |
 | -------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `KZ_PROMPT_TRANSIENT_PROMPT` | `time pwd ❯` | The whole collapsed prompt string (by default the command submission time, directory, and caret), built like `PROMPT` from deferred `${...}` segments. Set to `''` to disable transience entirely (past prompts stay full), or to any string for a custom collapsed prompt (which is itself restyled per `KZ_PROMPT_TRANSIENT_STYLE`). |
-| `KZ_PROMPT_TRANSIENT_CARET`  | `❯`     | Just the caret piece of the default collapsed line — symmetric to `KZ_PROMPT_CARET` for the live prompt. Set to an emoji or any string to change the caret without touching the rest. Ignored if you override the whole `KZ_PROMPT_TRANSIENT_PROMPT`.                                                                           |
-| `KZ_PROMPT_PPROMPT`           | `$kz[status]`     | The **preprompt**: a deferred `${...}` string (composed from `$kz[...]` like `PROMPT`) printed as output above the prompt, once per command. The default is the status line (exit code / duration); `''` prints nothing above the prompt; set it to anything to inject your own preprompt. Since it is output, it stays in scrollback as the prompt collapses and survives a screen clear (Cmd-K) without reappearing. |
+| `KZ_PROMPT_CARET_PAST`  | `❯`     | Just the caret piece of the default collapsed line — symmetric to `KZ_PROMPT_CARET` for the live prompt. Set to an emoji or any string to change the caret without touching the rest. Ignored if you override the whole `KZ_PROMPT_TRANSIENT_PROMPT`.                                                                           |
+| `KZ_PROMPT_PREPROMPT`           | `$kz[status]`     | The **preprompt**: a deferred `${...}` string (composed from `$kz[...]` like `PROMPT`) printed as output above the prompt, once per command. The default is the status line (exit code / duration); `''` prints nothing above the prompt; set it to anything to inject your own preprompt. Since it is output, it stays in scrollback as the prompt collapses and survives a screen clear (Cmd-K) without reappearing. |
 | `KZ_PROMPT_TRANSIENT_STYLE`  | `original` | How the collapsed line — the pwd, caret, and the just-run **command** — is restyled: `original`, `dimmed`, or any palette hue (`muted`, `neutral`, `pink`, a custom name, ...). Unknown values report an error and fall back to `original`.                                                                                                  |
 | `KZ_PROMPT_TRANSIENT_DIM`    | `0.7`   | For `dimmed`: darkness factor, `0` = black, `1` = unchanged. Lower is darker.                                                                                                                                                                                                                                                           |
 
@@ -519,29 +522,29 @@ deferred so it is resolved whenever the prompt is drawn.
 
 | Segment option            | Built-in content                                                                     |
 | ------------------------- | ------------------------------------------------------------------------------------ |
-| `KZ_PROMPT_OS`        | OS glyph before the hostname                                                         |
-| `KZ_PROMPT_ERR`       | green/red status dot for the previous command                                        |
-| `KZ_PROMPT_ERROR`     | nonzero exit-code item on the conditional outcome line                               |
-| `KZ_PROMPT_DURATION`  | elapsed-time item on the conditional outcome line                                    |
-| `KZ_PROMPT_USER`      | username (`%n`)                                                                      |
-| `KZ_PROMPT_HOST`      | hostname (`%M`)                                                                      |
-| `KZ_PROMPT_IP`        | cached LAN address inside the hostname's parentheses                                 |
-| `KZ_PROMPT_TIME`      | current time (`[%*]`)                                                                |
-| `KZ_PROMPT_PWD`       | working directory generated according to `KZ_PROMPT_PWD_STYLE`                   |
-| `KZ_PROMPT_GIT`       | generated git status                                                                 |
-| `KZ_PROMPT_VENV`      | active Python virtualenv                                                             |
-| `KZ_PROMPT_JOBS`      | background-job glyph and count                                                       |
-| `KZ_PROMPT_CONTEXT`   | container and SSH badges                                                             |
-| `KZ_PROMPT_ETCTL`     | Eternal Terminal session label                                                       |
-| `KZ_PROMPT_VIM`       | right-prompt Vim indicator                                                           |
-| `KZ_PROMPT_EMACS`     | right-prompt Emacs indicator                                                         |
-| `KZ_PROMPT_OVERWRITE` | right-prompt overwrite indicator; `''` hides it                                      |
-| `KZ_PROMPT_CARET`     | complete live input caret; replacing it bypasses the primary/alternate keymap carets |
+| `KZ_PROMPT_OS`              | OS glyph before the hostname                                                         |
+| `KZ_PROMPT_STATUS_DOT`      | green/red status dot for the previous command                                        |
+| `KZ_PROMPT_STATUS_EXIT`     | nonzero exit-code item on the conditional outcome line                               |
+| `KZ_PROMPT_STATUS_DURATION` | elapsed-time item on the conditional outcome line                                    |
+| `KZ_PROMPT_USER`            | username (`%n`)                                                                      |
+| `KZ_PROMPT_HOST`            | hostname (`%M`)                                                                      |
+| `KZ_PROMPT_IP`              | cached LAN address inside the hostname's parentheses                                 |
+| `KZ_PROMPT_TIME`            | current time (`[%*]`)                                                                |
+| `KZ_PROMPT_PWD`             | working directory generated according to `KZ_PROMPT_PWD_STYLE`                     |
+| `KZ_PROMPT_GIT`             | generated git status                                                                 |
+| `KZ_PROMPT_VENV`            | active Python virtualenv                                                             |
+| `KZ_PROMPT_JOBS`            | background-job glyph and count                                                       |
+| `KZ_PROMPT_CONTEXT`         | container and SSH badges                                                             |
+| `KZ_PROMPT_ETCTL`           | Eternal Terminal session label                                                       |
+| `KZ_PROMPT_VIM`             | right-prompt Vim indicator                                                           |
+| `KZ_PROMPT_EMACS`           | right-prompt Emacs indicator                                                         |
+| `KZ_PROMPT_MODE_OVERWRITE`  | right-prompt overwrite indicator; `''` hides it                                      |
+| `KZ_PROMPT_CARET`           | complete live input caret; replacing it bypasses the primary/alternate keymap carets |
 
 The host display composes `KZ_PROMPT_OS`, `KZ_PROMPT_HOST`, and
 `KZ_PROMPT_IP`; recolor the hostname with `KZ_PROMPT_COLOR_HOST`. The outcome
 line itself owns the conditional layout:
-`KZ_PROMPT_ERROR` is used only for a nonzero exit, and `KZ_PROMPT_DURATION`
+`KZ_PROMPT_STATUS_EXIT` is used only for a nonzero exit, and `KZ_PROMPT_STATUS_DURATION`
 only after the duration threshold is reached. Their values control the contents of
 those items; the status line supplies their default colors, spacing, newline, and
 conditional layout. Set either to `''` to hide that item without disabling the other.
@@ -558,11 +561,11 @@ KZ_PROMPT_PWD='%1~'
 KZ_PROMPT_USER='dev:%n'
 
 # Replace the status dot with literal text, colored by the result:
-KZ_PROMPT_ERR='%(?.${kz[FG.green]}OK.${kz[FG.red]}ERR)${kz[RESET]}'
+KZ_PROMPT_STATUS_DOT='%(?.${kz[FG.green]}OK.${kz[FG.red]}ERR)${kz[RESET]}'
 
 # Spell out failures, or omit the duration glyph while keeping the formatted time:
-KZ_PROMPT_ERROR='exit ${_kz_prompt_last_exit}'
-KZ_PROMPT_DURATION='${_kz_prompt_duration}'
+KZ_PROMPT_STATUS_EXIT='exit ${_kz_prompt_last_exit}'
+KZ_PROMPT_STATUS_DURATION='${_kz_prompt_duration}'
 
 # Use one fixed caret and ignore editor-keymap changes:
 KZ_PROMPT_CARET='${kz[BOLD]}${kz[FG.green]}›${kz[RESET]}'
@@ -587,21 +590,21 @@ fully enumerated in the linked table or directly in the description.
 | `KZ_PROMPT_GIT_SPLIT`            | `0`              | `1`/`yes`/`on`/`true` breaks the single staged/unstaged counts into per-type marks — added `+`, changed `~`, deleted `-` — coloured by group (the staged and modified colours). Off shows one aggregate count per group.                                                                                                                                                                             |
 | `KZ_PROMPT_COLOR_<NAME>`         | per color        | Override one semantic color. All public names are in the [color table](#colors).                                                                                                                                                                                                                                                                                                                     |
 | `KZ_PROMPT_PALETTE_<NAME>`       | terminal palette | Define or override a base hue with `#RRGGBB` or a 0–255 index. Built-in names include `BLACK`, `RED`, `GREEN`, `YELLOW`, `BLUE`, `MAGENTA`, `CYAN`, `GRAY`, `DARKGRAY`, `LIGHTRED`, `LIGHTGREEN`, `LIGHTYELLOW`, `LIGHTBLUE`, `LIGHTMAGENTA`, `LIGHTCYAN`, `LIGHTGRAY`; custom names work too and become `$kz[FG.<name>]`, `$kz[BG.<name>]`, and native `$kz[HL.<name>]` ZLE specs. The corresponding `GREY` spellings remain compatibility aliases. This changes display colors, flat transient command colors, and the RGB used by `dimmed`. |
-| `KZ_PROMPT_<SEGMENT>`            | built in         | Replace one complete segment or outcome item. Names: `OS`, `ERR`, `ERROR`, `DURATION`, `USER`, `HOST`, `IP`, `TIME`, `PWD`, `GIT`, `VENV`, `JOBS`, `CONTEXT`, `ETCTL`, `VIM`, `EMACS`, `OVERWRITE`, `PROMPT`; see [Replacing a whole segment](#replacing-a-whole-segment).                                                                                                                           |
+| `KZ_PROMPT_<SEGMENT>`            | built in         | Replace one complete segment or outcome item. Names: `OS`, `STATUS_DOT`, `STATUS_EXIT`, `STATUS_DURATION`, `USER`, `HOST`, `IP`, `TIME`, `PWD`, `GIT`, `VENV`, `JOBS`, `CONTEXT`, `ETCTL`, `VIM`, `EMACS`, `MODE_OVERWRITE`, `CARET`; see [Replacing a whole segment](#replacing-a-whole-segment).                                                                                                      |
 | `KZ_PROMPT_PWD_STYLE`            | `full`           | Working-directory shortening: `full`, `short` (shortest unique prefix, `~/.c/K/i/bat`), `base` (current dir name), or `absolute` (`$HOME` expanded).                                                                                                                                                                                                                                                 |
 | `KZ_PROMPT_CMD_DURATION_MIN`     | `3`              | Seconds a command must run before its duration is shown. `0` = always.                                                                                                                                                                                                                                                                                                                               |
 | `KZ_PROMPT_IP_TTL`               | `60`             | Seconds the LAN-IP lookup is cached; lower it if prompt-time address changes must appear sooner.                                                                                                                                                                                                                                                                                                     |
 | `KZ_PROMPT_TRANSIENT_PROMPT`     | `time pwd ❯`     | The whole collapsed past-prompt string (default: submission time + run directory + caret), built like `PROMPT`; `''` disables transience.                                                                                                                                                                                                                                                            |
-| `KZ_PROMPT_TRANSIENT_CARET`      | `❯`              | Just the caret piece of the default collapsed line (symmetric to `KZ_PROMPT_CARET`); set to an emoji or any string.                                                                                                                                                                                                                                                                              |
-| `KZ_PROMPT_PPROMPT`               | `$kz[status]`              | The **preprompt** printed above the prompt (default the exit status / duration line), a deferred `${...}` string composed from `$kz[...]` like `PROMPT`. `''` prints nothing; any other value is injected above the prompt as output (so it stays in scrollback and survives a Cmd-K clear). |
+| `KZ_PROMPT_CARET_PAST`          | `❯`             | Just the caret piece of the default collapsed line (symmetric to `KZ_PROMPT_CARET`); set to an emoji or any string.                                                                                                                                                                                                                                                                                |
+| `KZ_PROMPT_PREPROMPT`           | `$kz[status]`   | The **preprompt** printed above the prompt (default the exit status / duration line), a deferred `${...}` string composed from `$kz[...]` like `PROMPT`. `''` prints nothing; any other value is injected above the prompt as output (so it stays in scrollback and survives a Cmd-K clear).                                                                                                           |
 | `KZ_PROMPT_TRANSIENT_STYLE`      | `original`       | Restyle of the collapsed line (pwd, caret, command): `original`, `dimmed`, or any palette hue (`muted`, `neutral`, `pink`, custom names, ...). Unknown values report an error and use `original`.                                                                                                                                                                                                      |
 | `KZ_PROMPT_TRANSIENT_DIM`        | `0.7`            | `dimmed` darkness factor (`0` black .. `1` unchanged).                                                                                                                                                                                                                                                                                                                                               |
 | `KZ_PROMPT_PALETTE_TTL`          | `86400`          | Seconds the queried palette is cached on disk (per terminal); `0` disables the cache.                                                                                                                                                                                                                                                                                                                |
 | `KZ_PROMPT_PALETTE_TIMEOUT`      | `0.6`            | Seconds to wait for the OSC 4 palette answer; bump it for a slow/remote terminal.                                                                                                                                                                                                                                                                                                                    |
 | `KZ_PROMPT_TERMINAL_INTEGRATION` | `1`              | `0`/`no`/`off`/`false` disables OSC 7 cwd reporting, OSC 133 command marks, and iTerm2 OSC 1337 metadata.                                                                                                                                                                                                                                                                                            |
-| `KZ_PROMPT_KEYMAP_PRIMARY`       | `❯❯❯`            | The live caret in the primary keymap (emacs / vi-insert), as a prompt string. `''` hides it.                                                                                                                                                                                                                                                                                                         |
-| `KZ_PROMPT_KEYMAP_ALTERNATE`     | `❮❮❮`            | The live caret in the vi-command keymap. `''` hides it.                                                                                                                                                                                                                                                                                                                                              |
-| `KZ_PROMPT_KEYMAP_OVERWRITE`     | red `❯❯❯`        | The complete live caret used in overwrite mode. It stays three cells wide by default.                                                                                                                                                                                                                                                                                                                |
+| `KZ_PROMPT_CARET_PRIMARY`       | `❯❯❯`            | The live caret in the primary keymap (emacs / vi-insert), as a prompt string. `''` hides it.                                                                                                                                                                                                                                                                                                         |
+| `KZ_PROMPT_CARET_ALTERNATE`     | `❮❮❮`            | The live caret in the vi-command keymap. `''` hides it.                                                                                                                                                                                                                                                                                                                                              |
+| `KZ_PROMPT_CARET_OVERWRITE`     | red `❯❯❯`        | The complete live caret used in overwrite mode. It stays three cells wide by default.                                                                                                                                                                                                                                                                                                                |
 | `COLORTERM`                          | (terminal)       | `24bit`/`truecolor` keeps the hex palette at 24-bit; otherwise colors degrade to 256/16 via `zsh/nearcolor`.                                                                                                                                                                                                                                                                                         |
 | `TERM`                               | (terminal)       | `dumb`/`unknown`/empty forces the plain-glyph set and no color (see no-color mode).                                                                                                                                                                                                                                                                                                                  |
 | `NO_COLOR`                           | (unset)          | Standard env var; when set, renders with no color escapes.                                                                                                                                                                                                                                                                                                                                           |

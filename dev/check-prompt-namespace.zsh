@@ -19,6 +19,33 @@ for name in col _col_base _ksem glyph_pad; do
   fi
 done
 
+# A re-source must remove the retired public and semantic names rather than leaving
+# accidental compatibility aliases in the shared associative arrays.
+kz[nl]=legacy kz[transient_caret]=legacy kz[err]=legacy kz[info]=legacy
+kz[overwrite]=legacy kz[duration]=legacy kz[GLYPH.dot]=legacy
+_kz_sem[added]=legacy
+_kz_colors_sig=''
+kz_prompt_colors
+_kz_glyphs_sig=''
+kz_prompt_glyphs
+KZ_PROMPT_TERMINAL_INTEGRATION=0
+kz_prompt_setup
+for name in nl transient_caret err info overwrite duration GLYPH.dot; do
+  (( ! ${+kz[$name]} )) || {
+    print -u2 -r -- "$name: retired public prompt key survived re-source"
+    return 1
+  }
+done
+(( ! ${+_kz_sem[added]} )) || {
+  print -u2 -r -- "added: retired semantic color survived re-source"
+  return 1
+}
+[[ -n ${kz[NL]} && -n ${kz[status_dot]} && -n ${kz[identity]} \
+   && -n ${kz[caret_past]} ]] || {
+  print -u2 -r -- "new public prompt namespace was not populated"
+  return 1
+}
+
 # An old raw-palette reference must disappear cleanly, never print its hex code.
 KZ_PROMPT_COLOR_HOST='$col[aqua]'
 kz_prompt_colors
