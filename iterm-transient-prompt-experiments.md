@@ -224,3 +224,57 @@ For `false`, the observed result was:
 
 This is the intended result. The live `A` is also required semantically because iTerm2
 does not fully finalize `D;<status>` until the following `A`.
+
+## Remote regression, and the positional fix that replaced OSC 7 suppression
+
+On 2026-07-30 the duplicate mark returned, but only over a remote connection
+(iTerm2 -> Eternal Terminal -> dev VM). A raw sniff of the remote prompt showed OSC 7
+present, OSC 1337 absent, and the generic `\e]133;C\a` (not iTerm's `C;\r`): on the
+remote `_kz_is_iterm` was 0. The cause is the transport, not the shell — `et` (7.0.0)
+forwards no environment, so `LC_TERMINAL`/`TERM_PROGRAM` never reach the remote and
+`_kz_osc_detect_iterm` cannot recognise the far-end iTerm2. The OSC 7 suppression above
+was keyed entirely on that detection, so it never triggered remotely and OSC 7 flowed to
+the real iTerm2 again.
+
+Rather than widen the (inherently fragile) detection, the fix removes the dependency on it
+by acting on the *position* of OSC 7 instead of suppressing it. OSC 7 had been emitted from
+`precmd`, before the visible status row printed, so its cursor sat on the status line and
+that is where iTerm2's mark landed. It now rides inside `_kz_osc_a`, immediately after the
+`133;A` byte, so it is emitted only once the status row has already printed and the cursor
+is on the `A` line. Whatever iTerm2 version does with OSC 7 — create a mark at the cursor
+(3.7.0beta7) or nothing at all (the mark producer is absent from the current source, whose
+OSC 7 path only tracks the directory) — the result is the same single prompt mark on the
+`A` line, because a mark on the `A` line and the `A` mark are the same line. OSC 7 is
+therefore emitted unconditionally (it is near-universal, only Alacritty ignores it, and a
+local terminal ignores a remote `file://HOST/PATH`), and OSC 7 covers cwd for terminals
+that do not read iTerm2's OSC 1337 `CurrentDir`.
+
+The same "emit, don't detect" principle then applies to the OSC 1337 handshake itself.
+iTerm2's own integration script (`iterm2.com/shell_integration/zsh`) gates *only* the
+`133;C;\r` on `TERM_PROGRAM=iTerm.app`; it sends `ShellIntegrationVersion`, `RemoteHost`,
+and `CurrentDir` to every terminal, because a non-iTerm terminal simply ignores the
+proprietary OSC 1337. KronuZSH now does the same: those three are emitted unconditionally,
+which restores full iTerm2 fidelity *over ssh/et* (per-host history/dirs, profile
+switching, scp, and remote cwd — iTerm2 ignores an OSC 7 path whose host is not local, so
+`CurrentDir` is what carries the remote directory) without any detection. `%n@%M` resolves
+to the same `user@FQDN` iTerm2's own `$USER@$(hostname -f)` would, on the remote host too,
+so the recorded host is correct across the connection. The `_kz_is_iterm` variable is
+removed entirely; the sole remaining terminal gate is an inline
+`TERM_PROGRAM==iTerm.app || LC_TERMINAL==iTerm2` check in `_kz_osc_preexec` for the
+CR-terminated command form (`LC_TERMINAL` kept because it survives ssh forwarding).
+
+For consistency the whole per-prompt context — `RemoteHost`, `CurrentDir`, `133;A`, OSC 7 —
+now rides in one zero-width bundle inside `_kz_osc_a`, on the mark's own line, rather than
+splitting OSC 1337 into precmd and OSC 7 into the boundary. Only `ShellIntegrationVersion`
+stays a once-per-shell precmd announcement.
+
+Byte-level verification (raw sniff, remote `false`, iTerm2 undetectable over the
+transport): the completion stream is now `133;D;1`, then the status row, then
+`1337;RemoteHost` + `1337;CurrentDir` + `133;A` + `\e]7;file://HOST/path`, then `133;B` —
+the full host/cwd handshake and both prompt-mark boundaries co-located on the `A` line,
+nothing before the status row, and `ShellIntegrationVersion` fired once earlier in the
+shell. The real-iTerm-UI confirmation (one blue triangle on the waiting prompt, none on
+`⏎ 1`) is the remaining check per the test plan, and can be done locally:
+the change now sends OSC 7 to local iTerm2 as well, so a single triangle locally proves the
+positional collapse holds. If it does not, revert this one change and fall back to the
+detection-based suppression above.

@@ -907,7 +907,7 @@ function _kz_overwrite_toggle {
 # receives. Keep prompt-rendered bytes in $_kz_osc_{d,a,b}: A/B must surround the
 # editable prompt, while non-transient D must appear after the live status row.
 typeset -g _kz_osc_d='' _kz_osc_a='' _kz_osc_b=''
-typeset -g _kz_is_iterm=0 _kz_osc_command_active=0 _kz_osc_line_submitted=0
+typeset -g _kz_osc_announced=0 _kz_osc_command_active=0 _kz_osc_line_submitted=0
 
 function _kz_osc_active {
   [[ "${KZ_PROMPT_TERMINAL_INTEGRATION:-1}" != (0|no|off|false) \
@@ -923,24 +923,18 @@ function _kz_osc_clear_prompt_boundaries {
   _kz_osc_d='' _kz_osc_a='' _kz_osc_b=''
 }
 
-# Detection is deferred until precmd so ~/.zshrc.local can disable integration after
-# prompt setup. The announcement is once per shell; $_kz_is_iterm then selects all
-# later iTerm-specific protocol forms.
-function _kz_osc_detect_iterm {
-  (( _kz_is_iterm )) && return
-  [[ "$LC_TERMINAL" == iTerm2 || "$TERM_PROGRAM" == iTerm.app ]] || return
-  _kz_is_iterm=1
+# Announce shell integration once per shell. Following iTerm2's own integration script,
+# the OSC 1337 handshake (and the host/cwd reports below) are sent to *every* terminal:
+# iTerm2 acts on them, and every other terminal ignores the proprietary OSC 1337. That is
+# deliberate -- it means the integration keeps working across ssh/et, where LC_TERMINAL/
+# TERM_PROGRAM are stripped and iTerm2 cannot be detected at all. The one thing that still
+# needs a local iTerm2 check is the CR-terminated command form (see _kz_osc_preexec),
+# because a bare CR is a real control byte other terminals should not receive; that check
+# lives inline there. Deferred to precmd so ~/.zshrc.local can still disable integration.
+function _kz_osc_announce {
+  (( _kz_osc_announced )) && return
+  _kz_osc_announced=1
   print -n '\e]1337;ShellIntegrationVersion=14;shell=zsh\a'
-}
-
-# Report the same cwd through one protocol only. iTerm2's OSC 7 implementation creates
-# a prompt mark, so combining it with OSC 133 produces a duplicate blue triangle.
-function _kz_osc_report_context {
-  if (( _kz_is_iterm )); then
-    print -Pn "\e]1337;RemoteHost=${USER}@%M\a\e]1337;CurrentDir=%d\a"
-  else
-    print -Pn '\e]7;file://%M%d\a'
-  fi
 }
 
 # Close the command whose C was emitted by preexec. Transient D is written now; the
@@ -958,21 +952,39 @@ function _kz_osc_finish_command {
   _kz_osc_command_active=0
 }
 
-# Mark every live prompt. Besides providing a navigation mark while the shell waits,
-# the A immediately following a transient D makes iTerm2 finalize the completed
-# command's status and running time instead of leaving it open until the next command.
+# Everything the prompt-start boundary emits, as one zero-width bundle on the A mark's own
+# line -- host, cwd, the 133;A mark, and OSC 7 -- rather than from precmd. Two reasons to
+# keep it here and not before the visible prompt:
+#
+#  * Position. OSC 7 makes iTerm2 create a directory/prompt mark at the cursor; emitted
+#    from precmd that cursor sits on the status row, dropping a second blue triangle
+#    there. Rendered here, after the status row has printed, it lands on the 133;A line and
+#    collapses into the single prompt mark.
+#  * Adjacency. iTerm2's own script emits RemoteHost/CurrentDir immediately before its
+#    prompt mark; doing the same keeps the host/cwd tied to this prompt rather than to the
+#    status row that our layout prints in between.
+#
+# The OSC 1337 host/cwd pair is what iTerm2 uses for per-host history/directories, profile
+# switching, scp, and remote cwd (it ignores an OSC 7 path whose host is not local). Like
+# iTerm2's script it is sent to every terminal -- others ignore the proprietary 1337 -- so
+# it needs no detection and survives ssh/et. OSC 7 (near-universal, only Alacritty ignores
+# it) covers cwd for terminals that do not read 1337 CurrentDir. %n/%M/%d expand at render
+# like the rest of PROMPT.
 function _kz_osc_prepare_prompt_boundaries {
-  _kz_osc_a=$'%{\e]133;A\a%}'
+  _kz_osc_a=$'%{\e]1337;RemoteHost=%n@%M\a\e]1337;CurrentDir=%d\a\e]133;A\a\e]7;file://%M%d\a%}'
   _kz_osc_b=$'%{\e]133;B\a%}'
 }
 
 function _kz_osc_preexec {
   _kz_osc_active || return
   _kz_osc_command_active=1
-  # Match iTerm2's own Zsh integration exactly there; the carriage return keeps the
-  # command boundary correct for its screen-scraping command capture. Other terminals
-  # receive the parameter-free OSC 133 form from the shared protocol.
-  if (( _kz_is_iterm )); then
+  # The only iTerm-gated bytes left: iTerm2's own zsh integration sends 133;C;\r (the CR
+  # aligns its screen-scraped command output to column 0) but only when the terminal is
+  # iTerm2, and 133;C otherwise. A bare CR is a real control byte other terminals need not
+  # receive, so mirror that check inline -- everything else (OSC 1337 host/dir/version) is
+  # ungated. LC_TERMINAL is kept alongside TERM_PROGRAM because it survives ssh env
+  # forwarding, so iTerm2-over-ssh still gets the aligned form.
+  if [[ "$TERM_PROGRAM" == iTerm.app || "$LC_TERMINAL" == iTerm2 ]]; then
     print -n '\e]133;C;\r\a'
   else
     print -n '\e]133;C\a'
@@ -990,7 +1002,7 @@ function _kz_osc_precmd {
     return
   fi
   _kz_osc_d=''
-  _kz_osc_detect_iterm
+  _kz_osc_announce
   if (( _kz_osc_command_active )); then
     # A command ran: close the C region preexec opened, with the real exit status.
     _kz_osc_finish_command "$ret"
@@ -1002,7 +1014,6 @@ function _kz_osc_precmd {
     # which submitted no command -- neither should invent a D.)
     _kz_osc_finish_command "$ret"
   fi
-  _kz_osc_report_context
   _kz_osc_prepare_prompt_boundaries
 }
 

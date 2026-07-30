@@ -279,17 +279,33 @@ remaining visible and control byte with `cmp`.
 Beyond the deferred segments, a few features hook the line lifecycle:
 **command duration** (`preexec` stamps `$EPOCHREALTIME`, precmd formats the delta
 into `_kz_prompt_duration` when it tops `KZ_PROMPT_CMD_DURATION_MIN`),
-**terminal integration** (OSC 7 cwd on non-iTerm terminals + cross-terminal OSC 133
+**terminal integration** (universal OSC 7 cwd + cross-terminal OSC 133
 marks from
 `_kz_osc_precmd` / `_kz_osc_preexec`, with the OSC precmd ordered first in
 `precmd_functions` so the `D` mark carries the real `$?`; a separate
 `$_kz_osc_command_active` flag ensures a blank Enter emits a fresh prompt mark but
 not a spurious `D;0` command completion (and a companion `$_kz_osc_line_submitted`
 flag lets a line zsh rejects at parse time still get its `D` — see **Parse-reject
-marks** below); in iTerm2, `$_kz_is_iterm`, it emits the
-proprietary OSC 1337 ShellIntegrationVersion / RemoteHost / CurrentDir instead of OSC 7
-because iTerm's OSC 7 handler creates a second prompt mark; all protocols are gated by
-`KZ_PROMPT_TERMINAL_INTEGRATION`, and iTerm detection/announcement happens on the
+marks** below); the whole per-prompt context bundle — `RemoteHost`, `CurrentDir`,
+the `133;A` mark, and OSC 7 (cwd) — is emitted as one zero-width group inside `_kz_osc_a`
+(not from precmd). Positioning it there, after the status row has printed, keeps OSC 7's
+directory/prompt mark (in iTerm2) on the `133;A` line where it collapses into the single
+prompt mark instead of dropping a second triangle on the status row, and keeps
+`RemoteHost`/`CurrentDir` adjacent to the mark exactly as iTerm2's own script emits them.
+The OSC 1337 pair plus the `ShellIntegrationVersion` handshake (announced once from
+precmd) are sent to *every* terminal, exactly as iTerm2's own integration script does:
+iTerm2 acts on them (per-host history/dirs, profile switching, scp, and remote cwd, since
+it ignores an OSC 7 path whose host is not local), and every other terminal ignores the
+proprietary OSC 1337. That is deliberate — it means the integration keeps working across
+ssh/et, where the transport strips `LC_TERMINAL`/`TERM_PROGRAM` and iTerm2 cannot be
+detected at all (`%n@%M` still resolves to the remote `user@FQDN` iTerm2 expects). OSC 7 is
+near-universal (only Alacritty ignores it) and covers cwd for terminals that do not read
+1337 `CurrentDir`. The only byte still gated on the terminal is the CR-terminated
+`133;C;\r` command form — an inline `TERM_PROGRAM==iTerm.app || LC_TERMINAL==iTerm2` check
+in `_kz_osc_preexec` (a bare CR is a real control byte other terminals should not get;
+`LC_TERMINAL` is kept because it survives ssh forwarding), degrading to plain `133;C`
+elsewhere. All protocols are gated by
+`KZ_PROMPT_TERMINAL_INTEGRATION`, and the announcement happens once on the
 first enabled precmd so `~/.zshrc.local` can opt out), and the **transient prompt** (an accept-line
 widget on `^M`/`^J` that swaps `$PROMPT` to the resolved
 `${(e)KZ_PROMPT_TRANSIENT_PROMPT-$DEFAULT_KZ_PROMPT_TRANSIENT_PROMPT}` and `reset-prompt`s,
