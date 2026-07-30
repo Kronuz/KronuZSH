@@ -823,18 +823,18 @@ function _kz_duration_segment {
 }
 
 # ---- status line (exit code + duration, on a line above the info row) ----
-# $_kz_prompt_last_exit is captured by the OSC precmd (it runs first). The line
-# is shown on the live prompt when transience is enabled. By default, accepting the
-# next command keeps that line in history outside the next command's OSC 133 A/B region.
-# In non-transient mode, the same status option controls whether the line is shown.
-typeset -g _kz_prompt_status='' _kz_prompt_status_live=''
+# $_kz_prompt_last_exit is captured by the OSC precmd (it runs first). The line is emitted
+# as ordinary output above the prompt (see the print below), not as part of PROMPT, and
+# gated by KZ_PROMPT_STATUS in every mode.
+typeset -g _kz_prompt_status=''
 typeset -g _kz_prompt_last_exit=0
 
 function _kz_status_segment {
-  _kz_prompt_status='' _kz_prompt_status_live=''
+  _kz_prompt_status=''
   # Only after a real command ran: a blank Enter leaves $? unchanged and must not
-  # re-show (and, via the transient copy, re-keep) the previous command's exit code.
+  # re-show the previous command's exit code.
   (( ${_kz_cmd_ran:-0} )) || return
+  _kz_cmd_ran=0
   local out='' body item sp
   if (( ${_kz_prompt_last_exit:-0} != 0 )); then
     body="${(e)KZ_PROMPT_ERROR-$DEFAULT_KZ_PROMPT_ERROR}"
@@ -850,13 +850,19 @@ function _kz_status_segment {
       out+="${sp}${item}"
     fi
   fi
-  if [[ -n "$out" ]]; then
-    _kz_prompt_status="${out}%E"$'\n'
-    if _kz_transient_enabled || _kz_status_enabled; then
-      _kz_prompt_status_live=$_kz_prompt_status
-    fi
-  fi
-  _kz_cmd_ran=0
+  [[ -n "$out" ]] || return
+  _kz_prompt_status="${out}%E"$'\n'
+  # Emit the status as ordinary output above the prompt, once here in precmd -- NOT as a
+  # line of PROMPT. Keeping it out of PROMPT means a reset-prompt redraw (and the transient
+  # collapse) never touch it: it is plain scrollback the instant it prints. That is what
+  # makes it survive iTerm2's Clear Buffer (Cmd-K), which erases everything above the prompt
+  # mark. The status sits above the mark, so Cmd-K clears it, and because nothing ever
+  # redraws it, it does not reappear when the next command runs. (While it was a line of
+  # PROMPT, the transient collapse re-emitted it, and ZLE's line count -- still including the
+  # cleared status row -- dropped it back onto a marked line, the spurious triangle.)
+  # Byte order is unchanged from when it lived at the front of PROMPT: precmd runs after the
+  # OSC precmd, so this still lands after the previous command's D and before the next A.
+  _kz_status_enabled && print -rnP -- "$_kz_prompt_status"
 }
 
 # ============================================================================
@@ -1081,15 +1087,6 @@ function _kz_status_enabled {
   [[ "${KZ_PROMPT_STATUS:-1}" != (0|no|off|false) ]]
 }
 
-# Preserve the previous result above the collapsed prompt. It must remain outside OSC
-# A/B: putting A before this prefix moves the next command's gutter mark onto ⏎/time.
-function _kz_transient_status_prefix {
-  REPLY=''
-  _kz_status_enabled || return
-  [[ -n "$_kz_prompt_status" ]] || return
-  _kz_dim_string "$_kz_prompt_status"
-}
-
 # Add fresh OSC 133 boundaries to the collapsed prompt that will survive in scrollback.
 # REPLY is the complete temporary PROMPT value; the live prompt has its own A/B pair.
 function _kz_transient_marked_prompt {
@@ -1133,15 +1130,15 @@ function _kz_transient_accept {
   local tp=$REPLY
   if (( ! ${_kz_dumb:-0} )) && [[ -n "$tp" ]]; then
     _kz_prompt_full=$PROMPT _kz_rprompt_full=$RPROMPT
-    _kz_transient_status_prefix
-    local status_prefix=$REPLY
     _kz_dim_string "$tp"; tp="$REPLY"     # restyle the whole line (dim/mute/keep)
     _kz_transient_rprompt; local rp=$REPLY
     [[ -n "$rp" ]] && { _kz_dim_string "$rp"; rp=$REPLY }   # restyle the right side the same way
     # A/B also delimit a blank prompt, so iTerm can navigate it independently. Since
     # no command runs, preexec emits no C and precmd emits no D for that blank entry.
+    # The status row (if any) was already printed as output above this prompt in precmd, so
+    # it stays in scrollback on its own -- the collapse neither re-emits nor erases it.
     _kz_transient_marked_prompt "$tp"
-    PROMPT="${status_prefix}${REPLY}" RPROMPT="$rp"
+    PROMPT="${REPLY}" RPROMPT="$rp"
     POSTDISPLAY=''
     [[ "${KZ_PROMPT_TRANSIENT_STYLE:-dim}" != (keep|none|off) ]] && _kz_muting=1
     zle .reset-prompt
@@ -1367,7 +1364,7 @@ function kz_prompt_setup {
   local _kz_prompt_prompt='${(e)${(e)KZ_PROMPT_PROMPT-$DEFAULT_KZ_PROMPT_PROMPT}}'
   local _kz_prompt_rprompt='${(e)${(e)KZ_PROMPT_RPROMPT-$DEFAULT_KZ_PROMPT_RPROMPT}}'
   RPROMPT="$_kz_prompt_rprompt"
-  PROMPT="\${_kz_prompt_status_live}\${_kz_osc_d}\${_kz_osc_ctx}\${_kz_osc_a}$_kz_prompt_prompt\${_kz_osc_b}"
+  PROMPT="\${_kz_osc_d}\${_kz_osc_ctx}\${_kz_osc_a}$_kz_prompt_prompt\${_kz_osc_b}"
 
   # Transient prompt (collapsed past prompts), the TRANSIENT_ mirror of the live grid:
   #   KZ_PROMPT_TRANSIENT_PROMPT   — the collapsed left prompt   (like KZ_PROMPT_PROMPT)

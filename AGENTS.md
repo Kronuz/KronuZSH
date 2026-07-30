@@ -237,14 +237,16 @@ in `kz_prompt_precmd` into private vars for pwd/venv (`_kz_prompt_pwd`,
 `_kz_prompt_venv`) and into `$kz[git.*]` for git state.
 
 Current layout:
-`PROMPT = status err info context etctl git venv jobs \n time pwd caret`
-(plus OSC 133 `A`/`B` marks around the editable prompt). With transience on, the live
+`PROMPT = err info context etctl git venv jobs \n time pwd caret`
+(plus OSC 133 `A`/`B` marks around the editable prompt). The status line (exit code +
+duration) is **not** part of `PROMPT`: it is printed as ordinary output above the prompt,
+once per command in precmd (see the status segment below), so a reset-prompt redraw and
+the transient collapse never touch it. With transience on, the live
 prompt is marked so the `A` immediately following `D;<status>` finalizes the previous
-command's status and running time; accepting a command or blank line keeps the dimmed
-previous status/duration by default, then emits fresh `A`/`B` around the collapsed
-pwd/caret prompt line. The status prefix therefore survives without acquiring a
-terminal mark;
-`KZ_PROMPT_STATUS=0` makes it live-only. With
+command's status and running time; accepting a command or blank line collapses the prompt
+to its `pwd`/caret and emits fresh `A`/`B` around it. The already-printed status line stays
+in scrollback on its own (full colour, not re-emitted and not erased); `KZ_PROMPT_STATUS=0`
+suppresses the status line entirely. With
 transience off, one-shot `A`/`B` markers permanently bracket only the editable final
 prompt: status/duration are shown above it by default (and hidden when
 `KZ_PROMPT_STATUS=0`), adjacent `D;<status>` / `A` follow the status and
@@ -254,7 +256,10 @@ extra/misplaced marks.
 `RPROMPT = overwrite vim emacs`. The **status** segment (`_kz_prompt_status`,
 built in `_kz_status_segment`) is the last command's exit code (`⏎<code>` when
 nonzero) and duration (when slow) on their own line above the info row, and renders
-nothing (no line) on a quick, clean command. Its exit code comes from
+nothing (no line) on a quick, clean command. Because it is emitted as output rather than a
+line of `PROMPT`, ZLE's prompt line count excludes it, so iTerm2's Clear Buffer (Cmd-K) —
+which erases everything above the prompt mark, including the status row — cannot desync the
+next redraw or resurrect the status when the following command runs. Its exit code comes from
 `_kz_prompt_last_exit`, captured first thing in `_kz_osc_precmd` (which runs first
 among the precmd hooks). `err` is the always-on `●` success/failure dot.
 
@@ -343,14 +348,16 @@ final paint over fast-syntax-highlighting it wraps fsh's `_zsh_highlight` once (
 re-wraps the dispatcher): the wrapper runs fsh, then re-applies our style while the
 `_kz_muting` flag is set (set at accept, cleared in precmd). fsh rebuilds
 `region_highlight` unconditionally on line-finish, so this also covers a buffer fsh
-skipped, e.g. a paste). Status/duration are shown live, then preserved above the
-collapsed history prompt by default. The status stays before the next `A`, so iTerm
+skipped, e.g. a paste). Status/duration are printed as output above the prompt when the
+command finishes, and simply stay in scrollback as the prompt collapses (full colour, never
+re-emitted). The status stays before the next `A`, so iTerm
 keeps the gutter triangle on the pwd/caret row; consequently, iTerm's “Select Output of
 Last Command” includes the status line because it bounds output by the next prompt mark
-rather than by `D`. Blank Enter also preserves the status and emits a fresh `A`/`B`
+rather than by `D`. Blank Enter emits a fresh `A`/`B`
 prompt boundary, but no `C`/`D`, so command navigation remains distinct.
-`KZ_PROMPT_STATUS=0` restores the old live-only behavior when transience
-is active, and hides the status when transience is disabled. The **jobs** segment is
+`KZ_PROMPT_STATUS=0` suppresses the status line in every mode (there is no longer a
+separate live-only sub-mode: emitting it as output means shown and kept are the same
+thing). The **jobs** segment is
 prompt-native (`%(1j...)`); the
 **context** (SSH/container) badge is detected once at setup. All of these are gated
 off on dumb terminals.
