@@ -38,6 +38,21 @@ kz_prompt_colors
   print -u2 -r -- "native highlight handle is wrong: ${kz[HL.ocean]-<unset>}"
   return 1
 }
+BUFFER=abc
+KZ_PROMPT_TRANSIENT_STYLE=ocean
+_kz_transient_style
+[[ ${region_highlight[*]} == '0 3 fg=#123456' ]] || {
+  print -u2 -r -- "custom palette transient style is wrong: ${region_highlight[*]}"
+  return 1
+}
+if _kz_resolve_transient_style mute; then
+  print -u2 -r -- "legacy transient style unexpectedly remained valid"
+  return 1
+fi
+[[ $REPLY == dimmed ]] || {
+  print -u2 -r -- "invalid transient style did not fall back to dimmed"
+  return 1
+}
 
 # NO_COLOR must blank prompt and ZLE forms together, then restore both live.
 _kz_nocolor=1
@@ -46,10 +61,21 @@ kz_prompt_colors
   print -u2 -r -- "NO_COLOR left a public palette handle active"
   return 1
 }
+_kz_transient_style
+(( ${#region_highlight} == 0 )) || {
+  print -u2 -r -- "NO_COLOR left transient command highlighting active"
+  return 1
+}
 _kz_nocolor=0
 kz_prompt_colors
 [[ ${kz[FG.ocean]} == '%F{#123456}' && ${kz[HL.ocean]} == 'fg=#123456' ]] || {
   print -u2 -r -- "live palette handles did not recover after NO_COLOR"
+  return 1
+}
+unset KZ_PROMPT_PALETTE_OCEAN
+kz_prompt_colors
+(( ! ${+kz[FG.ocean]} && ! ${+kz[BG.ocean]} && ! ${+kz[HL.ocean]} )) || {
+  print -u2 -r -- "removed custom palette hue left public handles behind"
   return 1
 }
 

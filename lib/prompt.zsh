@@ -112,7 +112,7 @@ typeset -gA _kz_col_base=(
 # The 16 ANSI colours, by palette name -> index. They default to symbolic %F{N} (above)
 # so they track the terminal theme, but each is overridable to a concrete colour via
 # $KZ_PROMPT_PALETTE_<NAME> (a #RRGGBB or a 0-255 index), applied to the public
-# $kz[FG.*] / $kz[BG.*] / $kz[HL.*] handles and fed to `dim`'s RGB in
+# $kz[FG.*] / $kz[BG.*] / $kz[HL.*] handles and fed to `dimmed`'s RGB in
 # _kz_load_palette.
 typeset -gA _kz_basic=(
   black 0  red 1  green 2  yellow 3  blue 4  magenta 5  cyan 6  neutral 7
@@ -147,7 +147,7 @@ function _kz_color_rgb {
   fi
 }
 
-# Query the terminal's 16 ANSI colours (OSC 4) into $_kz_pal, so `dim` darkens the
+# Query the terminal's 16 ANSI colours (OSC 4) into $_kz_pal, so `dimmed` darkens the
 # real theme rather than a guessed table. A no-op (leaving the xterm-default fallback in
 # place) without a tty, or on tmux/screen/dumb. The budget ($KZ_PROMPT_PALETTE_TIMEOUT,
 # default 0.6s) is generous so the round-trip survives a slow link (e.g. a remote shell
@@ -180,7 +180,7 @@ function _kz_query_palette {
   done
 }
 
-# Populate $_kz_pal (RGB of the 16 ANSI colours) for `dim`. The base layer is the
+# Populate $_kz_pal (RGB of the 16 ANSI colours) for `dimmed`. The base layer is the
 # terminal's real colours, from a fresh on-disk cache (kept $KZ_PROMPT_PALETTE_TTL
 # seconds, default a day, per terminal; TTL=0 disables it) or a one-off OSC 4 query.
 # Per-colour $KZ_PROMPT_PALETTE_<NAME> overrides then win on top (never cached); if
@@ -250,13 +250,6 @@ function kz_prompt_colors {
   # which may redefine a built-in hue or define a brand-new one (a #RRGGBB or 0-255 index).
   local _cn _pv
   local -A _col=("${(@kv)_kz_col_base}")
-  # A re-source in an existing shell must remove the retired fixed-neutral names;
-  # otherwise their old public $kz[FG.*]/$kz[BG.*]/$kz[HL.*] keys would survive
-  # even though fresh shells no longer publish them.
-  local _old_neutral
-  for _old_neutral in neutral_mid neutral_light neutral_brighter dimgray; do
-    unset "kz[FG.$_old_neutral]" "kz[BG.$_old_neutral]" "kz[HL.$_old_neutral]"
-  done
   for _k in ${(k)parameters[(I)KZ_PROMPT_PALETTE_*]}; do
     _pv="${(P)_k}"; _cn="${${_k#KZ_PROMPT_PALETTE_}:l}"
     [[ -n "$_pv" ]] && _col[$_cn]="$_pv"
@@ -275,6 +268,12 @@ function kz_prompt_colors {
     elif [[ -n "${(P)_uk_grey}" ]]; then
       _col[$_gray_name]=${_col[$_grey_name]}
     fi
+  done
+
+  # Rebuild rather than overwrite so removing a custom palette variable live removes its
+  # public handles too; this also cleans retired names when re-sourcing an existing shell.
+  for _k in ${(k)kz}; do
+    [[ "$_k" == FG.* || "$_k" == BG.* || "$_k" == HL.* ]] && unset "kz[$_k]"
   done
 
   # Public styling in $kz: FG./BG. wrap each code for prompt text, while HL. exposes the
@@ -1075,8 +1074,9 @@ function _kz_osc_precmd {
 # ============================================================================
 # On accept-line, $PROMPT collapses to a minimal caret so scrollback keeps only a
 # caret + the command for past prompts (restored before the next prompt). The
-# accepted command is restyled per $KZ_PROMPT_TRANSIENT_STYLE: dim (same hues,
-# darker), mute (one muted span), or keep. Off on dumb and when $KZ_PROMPT_TRANSIENT_PROMPT=''.
+# accepted command is restyled per $KZ_PROMPT_TRANSIENT_STYLE: dimmed (same hues,
+# darker), any palette hue (one flat span), or original. Off on dumb and when
+# $KZ_PROMPT_TRANSIENT_PROMPT=''.
 typeset -g _kz_prompt_full='' _kz_rprompt_full='' _kz_muting=0
 
 # Transient styling is shared by prompt strings and ZLE command highlights. Keep the
@@ -1091,23 +1091,39 @@ function _kz_dim_rgb {
   printf -v REPLY '#%02x%02x%02x' r g b
 }
 
-# Map a flat transient style to its shared palette hue. REPLY is empty for styles that
-# preserve or dim the original colors.
-function _kz_transient_flat_color {
-  case "$1" in
-    mute|gray|grey) REPLY=muted ;;
-    neutral)        REPLY=neutral ;;
-    *)              REPLY='' ;;
-  esac
+# Resolve an algorithm or palette hue. Unknown names fall back to dimmed with a failure
+# status so precmd can report the bad configuration without breaking the prompt.
+function _kz_resolve_transient_style {
+  local style=${1:-dimmed}
+  if [[ "$style" == (dimmed|original) ]] \
+      || (( ${+kz[FG.$style]} && ${+kz[HL.$style]} )); then
+    REPLY=$style
+    return 0
+  fi
+  REPLY=dimmed
+  return 1
 }
 
-# Resolve keep/mute/neutral/dim into $REPLY without changing prompt structure. The flat
-# paths replace every foreground with the matching live palette hue; dim rewrites each
+# Resolve a transient style that names a palette hue. REPLY is empty for algorithms and
+# unknown names.
+function _kz_transient_flat_color {
+  local color=$1
+  if (( ${+kz[FG.$color]} && ${+kz[HL.$color]} )); then
+    REPLY=$color
+  else
+    REPLY=''
+  fi
+}
+
+# Resolve original/dimmed/a-palette-hue into $REPLY without changing prompt structure.
+# A hue replaces every foreground with its live palette value; dimmed rewrites each
 # %F{} span.
 function _kz_dim_string {
   emulate -L zsh
-  local s=$1 style="${KZ_PROMPT_TRANSIENT_STYLE:-dim}"
-  [[ "$style" == (keep|none|off) ]] && { REPLY="$s"; return }
+  local s=$1
+  _kz_resolve_transient_style "${KZ_PROMPT_TRANSIENT_STYLE:-dimmed}" || true
+  local style=$REPLY
+  [[ "$style" == original ]] && { REPLY="$s"; return }
   _kz_transient_flat_color "$style"
   local flat=$REPLY flat_style=''
   [[ -n "$flat" ]] && flat_style="${kz[FG.$flat]}"
@@ -1146,20 +1162,23 @@ function _kz_transient_marked_prompt {
 }
 
 # Restyle the command's region_highlight in place (zsh has no faint attribute, so
-# `dim` recolours each fg toward black at truecolor precision).
+# `dimmed` recolours each fg toward black at truecolor precision).
 function _kz_transient_style {
-  local style="${KZ_PROMPT_TRANSIENT_STYLE:-dim}"
+  _kz_resolve_transient_style "${KZ_PROMPT_TRANSIENT_STYLE:-dimmed}" || true
+  local style=$REPLY
   case "$style" in
-    keep|none|off) ;;
-    mute|gray|grey|neutral)
-      _kz_transient_flat_color "$style"
-      local spec="${kz[HL.$REPLY]}"
-      if [[ -n "$spec" ]]; then
-        region_highlight=("0 ${#BUFFER} ${spec}")
-      else
-        region_highlight=()
-      fi ;;
+    original) ;;
     *)
+      _kz_transient_flat_color "$style"
+      if [[ -n "$REPLY" ]]; then
+        local spec="${kz[HL.$REPLY]}"
+        if [[ -n "$spec" ]]; then
+          region_highlight=("0 ${#BUFFER} ${spec}")
+        else
+          region_highlight=()
+        fi
+        return
+      fi
       setopt localoptions extendedglob
       local -a out p; local e REPLY
       for e in "${region_highlight[@]}"; do
@@ -1184,7 +1203,7 @@ function _kz_transient_accept {
   local tp=$REPLY
   if (( ! ${_kz_dumb:-0} )) && [[ -n "$tp" ]]; then
     _kz_prompt_full=$PROMPT _kz_rprompt_full=$RPROMPT
-    _kz_dim_string "$tp"; tp="$REPLY"     # restyle the whole line (dim/mute/keep)
+    _kz_dim_string "$tp"; tp="$REPLY"     # restyle the whole line
     _kz_transient_rprompt; local rp=$REPLY
     [[ -n "$rp" ]] && { _kz_dim_string "$rp"; rp=$REPLY }   # restyle the right side the same way
     # A/B also delimit a blank prompt, so iTerm can navigate it independently. Since
@@ -1194,7 +1213,8 @@ function _kz_transient_accept {
     _kz_transient_marked_prompt "$tp"
     PROMPT="${REPLY}" RPROMPT="$rp"
     POSTDISPLAY=''
-    [[ "${KZ_PROMPT_TRANSIENT_STYLE:-dim}" != (keep|none|off) ]] && _kz_muting=1
+    _kz_resolve_transient_style "${KZ_PROMPT_TRANSIENT_STYLE:-dimmed}" || true
+    [[ "$REPLY" != original ]] && _kz_muting=1
     zle .reset-prompt
     zle .accept-line
     return
@@ -1213,6 +1233,7 @@ function _kz_transient_restore {
 # ============================================================================
 
 typeset -g _kz_dumb=0 _kz_nocolor=0 _kz_pal_loaded=0
+typeset -g _kz_invalid_transient_style=''
 function kz_prompt_precmd {
   setopt LOCAL_OPTIONS
   unsetopt XTRACE KSH_ARRAYS
@@ -1231,8 +1252,17 @@ function kz_prompt_precmd {
   _kz_prompt_overwrite=''
   # Load the dim palette once, here rather than in setup, so any KZ_PROMPT_PALETTE_*
   # override / TTL / timeout from ~/.zshrc.local (sourced after setup) is in effect.
+  local _configured_transient_style="${KZ_PROMPT_TRANSIENT_STYLE:-dimmed}"
+  if _kz_resolve_transient_style "$_configured_transient_style"; then
+    _kz_invalid_transient_style=''
+  elif [[ "$_kz_invalid_transient_style" != "$_configured_transient_style" ]]; then
+    print -u2 -r -- "KronuZSH: unknown KZ_PROMPT_TRANSIENT_STYLE='${_configured_transient_style}'; using 'dimmed'"
+    _kz_invalid_transient_style=$_configured_transient_style
+  fi
+  local _transient_style=$REPLY
+  _kz_transient_flat_color "$_transient_style"
   if (( ! ${_kz_pal_loaded:-0} )) \
-      && [[ "${KZ_PROMPT_TRANSIENT_STYLE:-dim}" != (keep|none|off|mute|gray|grey|neutral) ]]; then
+      && [[ "$_transient_style" != original ]] && [[ -z "$REPLY" ]]; then
     _kz_pal_loaded=1
     _kz_load_palette
   fi
@@ -1431,7 +1461,7 @@ function kz_prompt_setup {
   #   KZ_PROMPT_TRANSIENT_RPROMPT  — the collapsed right prompt  (like KZ_PROMPT_RPROMPT; empty by default)
   #   KZ_PROMPT_TRANSIENT_CARET    — just the caret/emoji piece  (like KZ_PROMPT_CARET)
   # The default composes the pwd (live colour + KZ_PROMPT_PWD_STYLE) and the caret;
-  # each line is resolved and restyled (dim/mute/keep) per-accept. An explicit
+  # each line is resolved and restyled (dimmed/palette hue/original) per-accept. An explicit
   # KZ_PROMPT_TRANSIENT_PROMPT='' disables transience.
   DEFAULT_KZ_PROMPT_TRANSIENT_CARET='${_kz_sem[transient_caret]}${kz[GLYPH.caret]}${kz[RESET]}'
   DEFAULT_KZ_PROMPT_TRANSIENT_PROMPT='$kz[pwd] $kz[transient_caret] '

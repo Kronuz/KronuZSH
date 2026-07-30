@@ -159,7 +159,7 @@ presentation keys in `$kz`:
   `red='1'` and `darkorange='#d75f00'` (no `%F` / `%K`). The ANSI 0..15 colors stay indexes so they
   track the terminal's theme; the 16..255 colors are **hex** `#RRGGBB` so they render at
   full 24-bit on a truecolor terminal. `KZ_PROMPT_PALETTE_<NAME>` defines or
-  overrides any hue, not just the 16 ANSI basics, and feeds both display and `dim`'s RGB
+  overrides any hue, not just the 16 ANSI basics, and feeds both display and `dimmed`'s RGB
   (see the transient section). The engine publishes each hue as `$kz[FG.<name>]` and
   `$kz[BG.<name>]` for prompt text, plus `$kz[HL.<name>]` as zsh's native
   `region_highlight` foreground spec for ZLE buffers; the mutable raw-code palette is
@@ -339,7 +339,7 @@ ran — reusing `$_kz_prompt_pwd` so it honors `KZ_PROMPT_PWD_STYLE`, in the liv
 piece defaults to `transient_caret`. `''` disables transience. The whole resolved line — pwd,
 caret, and a custom `KZ_PROMPT_TRANSIENT_PROMPT` alike — is restyled by `_kz_dim_string`
 (the general string dimmer; `_kz_dim_col` is a thin by-name wrapper) along with the
-just-run command, per `KZ_PROMPT_TRANSIENT_STYLE` — `dim` (darken each fg to truecolor
+just-run command, per `KZ_PROMPT_TRANSIENT_STYLE` — `dimmed` (darken each fg to truecolor
 hex, since zsh
 `region_highlight` has no faint attribute; the 16 ANSI colours' RGB are loaded into
 `$_kz_pal` by `_kz_load_palette`, run once from the **first precmd** (not setup,
@@ -352,8 +352,10 @@ overrides win on top (never cached; if all 16 are set the query is skipped) — 
 back to xterm defaults. The same overrides feed the private live palette and the
 `$kz[FG.*]` / `$kz[BG.*]` / `$kz[HL.*]` forms in `kz_prompt_colors`, so prompt display,
 flat ZLE styling, and dim stay in sync),
-`mute` (flat ANSI 8), `neutral` (flat ANSI 7), or `keep`. The flat styles consume the
-same live palette through `$kz[FG.<name>]` for the prompt and zsh-native
+any palette hue as a flat style (`muted`/ANSI 8, `neutral`/ANSI 7, `pink`, or a custom
+name), or `original`. Unknown values are reported once and fall back to `dimmed`.
+Flat styles consume the same
+live palette through `$kz[FG.<name>]` for the prompt and zsh-native
 `$kz[HL.<name>]` (`fg=<code>`) for the submitted command, so palette overrides and
 `NO_COLOR` affect both together. To win the
 final paint over fast-syntax-highlighting it wraps fsh's `_zsh_highlight` once (not a
