@@ -127,7 +127,7 @@ symlinks the theme into vivid's config dir (when vivid is installed) so you can.
   | --- | --- | --- |
   | red (1) | `#da4939` | broken links, prompt errors |
   | green (2) | `#a5c261` | executables, prompt success |
-  | blue (4) | `#6e9cbe` | directories, local host and pwd |
+  | blue (4) | `#6e9cbe` | directories, mount points, local host and pwd |
   | cyan (6) | `#70c2ba` | symlinks |
   | gray / ANSI white (7) | `#c8c6c5` | ordinary files |
   | dark gray (8) | `#7a7775` | pipes, sockets, subdued prompt text |

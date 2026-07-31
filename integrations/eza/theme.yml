@@ -1,7 +1,8 @@
 # Kronuz palette for eza, derived from the Kronuz color scheme
 # (github.com/Kronuz/KronuzTheme). This file themes eza's UI columns
-# (filekinds, perms, size, owner, dates, git) in calm, varied tones. Nothing
-# bold. NOTE: eza reads $LS_COLORS and it OVERRIDES the `filekinds` colours below
+# (filekinds, perms, size, owner, dates, git) in calm, varied tones. Style
+# attributes inherit eza's defaults; this theme primarily changes colours.
+# NOTE: eza reads $LS_COLORS and it OVERRIDES the `filekinds` colours below
 # for the *filename* (precedence: $EZA_COLORS > $LS_COLORS > this file). So the
 # filekinds here are kept in lock-step with the `core:` block of the vivid theme
 # integrations/vivid/kronuz.yml (which generates $LS_COLORS); change one, change the
@@ -14,16 +15,16 @@
 colourful: true
 
 filekinds:
-  normal: {foreground: White, is_bold: false}          # slot 7
-  directory: {foreground: Blue, is_bold: false}       # slot 4
-  symlink: {foreground: Cyan, is_bold: false}         # slot 6
-  executable: {foreground: Green, is_bold: false}     # slot 2
-  pipe: {foreground: DarkGray, is_bold: false}        # slot 8
-  block_device: {foreground: LightYellow, is_bold: false} # slot 11
-  char_device: {foreground: LightYellow, is_bold: false}  # slot 11
-  socket: {foreground: DarkGray, is_bold: false}      # slot 8
+  normal: {foreground: White}                         # slot 7
+  directory: {foreground: Blue}                       # slot 4
+  symlink: {foreground: Cyan}                         # slot 6
+  executable: {foreground: Green}                     # slot 2
+  pipe: {foreground: DarkGray}                        # slot 8
+  block_device: {foreground: LightYellow}             # slot 11
+  char_device: {foreground: LightYellow}              # slot 11
+  socket: {foreground: DarkGray}                      # slot 8
   special: {foreground: '#caa473'}
-  mount_point: {foreground: '#6089b4'}
+  mount_point: {foreground: Blue}                     # slot 4
 
 perms:
   user_read: {foreground: '#c8c6c5'}
@@ -65,7 +66,7 @@ users:
 links:
   normal: {foreground: '#7ea4cc'}
   # eza applies this to the --links count; LS_COLORS `mh` colors filenames where supported.
-  multi_link_file: {foreground: LightCyan, background: Default, is_bold: false} # slot 14
+  multi_link_file: {foreground: LightCyan, background: Default} # slot 14
 
 git:
   new: {foreground: '#219186'}            # teal
@@ -85,5 +86,5 @@ octal: {foreground: '#7a7775'}
 flags: {foreground: '#7a7775'}
 symlink_path: {foreground: '#676867'}
 control_char: {foreground: '#da4939'}
-broken_symlink: {foreground: Red, is_bold: false}     # slot 1
+broken_symlink: {foreground: Red}                     # slot 1
 broken_path_overlay: {foreground: '#676867'}
