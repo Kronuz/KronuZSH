@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Preview a KronuZSH prompt skin and verify its terminal integration.
 
-A skin is a snippet that sets KZ_PROMPT_PROMPT / KZ_PROMPT_RPROMPT /
-KZ_PROMPT_TRANSIENT_PROMPT (see ../skins). This renders one in a throwaway,
+A skin is a snippet that sets KZ_PROMPT_PREPROMPT / KZ_PROMPT_PROMPT /
+KZ_PROMPT_RPROMPT / KZ_PROMPT_TRANSIENT_PROMPT (see ../skins). This renders one in a throwaway,
 fully isolated shell (its own HOME, ZDOTDIR and demo git repo), then:
 
-  * prints the live PROMPT, the right prompt (RPROMPT) and the collapsed transient
-    prompt, both as raw ANSI (--raw) and as a stripped, readable preview, and
+  * prints the preprompt, live PROMPT, right prompt (RPROMPT), and collapsed transient
+    prompt as raw ANSI (--raw) and as stripped, readable previews, and
   * asserts the OSC 133 A/B/C/D shell-integration marks and iTerm's OSC 1337
     still survive the skin. A skin that breaks them exits non-zero.
 
@@ -220,7 +220,7 @@ def render(
         must_wait(ready, "ZLE readiness after command", timeout=3.0, frm=frm)
         raw_cycle = bytes(buf)
 
-        # 4. Render the four layers. Inline $'\x01LABEL\x02' markers bound each printed
+        # 4. Render the five layers. Inline $'\x01LABEL\x02' markers bound each printed
         #    body; the echoed command (ZLE stays active) holds only the literal `$'...'`.
         def grab(label: str, expr: str) -> None:
             frm = len(buf)
@@ -233,6 +233,10 @@ def render(
             )
             must_wait(ready, f"ZLE readiness after {label}", timeout=3.0, frm=end)
 
+        grab(
+            "PREPROMPT",
+            "${(e)${(e)KZ_PROMPT_PREPROMPT-$DEFAULT_KZ_PROMPT_PREPROMPT}}",
+        )
         grab("PROMPT", "${(e)${(e)KZ_PROMPT_PROMPT-$DEFAULT_KZ_PROMPT_PROMPT}}")
         grab("RPROMPT", "${(e)${(e)KZ_PROMPT_RPROMPT-$DEFAULT_KZ_PROMPT_RPROMPT}}")
         grab(
@@ -261,7 +265,8 @@ def render(
         return (m.group(1) if m else b"").replace(b"\r", b"").strip(b"\n")
 
     layers = {
-        label: between(label) for label in ("PROMPT", "RPROMPT", "TRANS", "TRANS-R")
+        label: between(label)
+        for label in ("PREPROMPT", "PROMPT", "RPROMPT", "TRANS", "TRANS-R")
     }
     osc = {mk: (b"\x1b]" + mk.encode()) in raw_cycle for mk in OSC_MARKS}
     return layers, osc
@@ -297,7 +302,7 @@ def main() -> int:
             layers, osc = render(skin, home, repo_dir, fallback=args.fallback)
             name = os.path.basename(skin) if skin else "DEFAULT layout"
             print(f"\n=== {name} ===")
-            for label in ("PROMPT", "RPROMPT", "TRANS", "TRANS-R"):
+            for label in ("PREPROMPT", "PROMPT", "RPROMPT", "TRANS", "TRANS-R"):
                 v = layers[label]
                 preview = strip(v).replace("\n", " \u23ce ") or "(empty)"
                 print(f"  {label:<7} {preview}")

@@ -150,6 +150,12 @@ Since it is output (not part of the prompt), it stays in scrollback as the promp
 collapses, never acquires a terminal mark, and survives a screen clear like iTerm2's Cmd-K
 without reappearing.
 
+Put rows that describe the **completed command** (an exit banner or duration) and
+scrollback separators in `KZ_PROMPT_PREPROMPT`, not at the start of
+`KZ_PROMPT_PROMPT`. Keep live context that must redraw while editing (path, Git state,
+environment, jobs) in `KZ_PROMPT_PROMPT`; compact status cues intentionally placed in the
+caret or right prompt can stay there.
+
 To move the status *elsewhere*, empty the preprompt and place `$kz[status]` where you want
 it — for example right-aligned on the caret line via `KZ_PROMPT_RPROMPT`:
 

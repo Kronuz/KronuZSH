@@ -253,7 +253,11 @@ def main() -> None:
             out.write(
                 line(
                     "KRONUZSH",
-                    normalize_dynamic(layers["PROMPT"]),
+                    normalize_dynamic(
+                        layers["PREPROMPT"]
+                        + (b"\n" if layers["PREPROMPT"] else b"")
+                        + layers["PROMPT"]
+                    ),
                     normalize_dynamic(layers["RPROMPT"]),
                 )
                 + b"\n"
