@@ -38,6 +38,12 @@ caches, or submodules. Backups mirror their original paths under
 put inactive backups beside live configuration because plugin and skill
 discovery can mistake them for active content.
 
+Install compiles every shipped startup source, plugin entry point, integration,
+and skin through `zcompile.zsh`. Wordcode stays adjacent as `FILE.zwc`; zsh uses it
+only while it is newer and valid, so a source update falls back to text until the
+next install refresh. Generated `fzf` and `zoxide` initialization lives under
+`${XDG_CACHE_HOME:-$HOME/.cache}/kronuzsh/generated/` and is compiled in the same pass.
+
 - `runcoms/zshenv` (all shells): env. `runcoms/zprofile` (login): sources
   `~/.profile` for cross-shell env. `runcoms/zshrc` (interactive): the entry that
   sources the `lib/` modules below. `runcoms/zlogin`: bg-compiles the compdump.

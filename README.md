@@ -107,6 +107,14 @@ replaces, and inits the plugin submodules. It's idempotent; `./install.sh
 --uninstall` restores the backups. Symlinks mean editing `~/.zshrc` edits the
 tracked `runcoms/zshrc` directly, and `$KRONUZSH` self-resolves through them.
 
+The installer also compiles the startup modules, plugins, integrations, and skins
+into adjacent [`.zwc` wordcode](https://zsh.sourceforge.io/Doc/Release/Shell-Builtin-Commands.html#index-zcompile).
+Zsh selects a current compiled file itself and falls back to text whenever the source
+is newer or the cache is invalid. The generated
+`fzf` and `zoxide` initialization is cached before compilation, which removes two
+process launches from every new interactive shell. Re-run `./install.sh` after
+updating KronuZSH or either tool to refresh the caches immediately.
+
 Backups live under
 `${XDG_STATE_HOME:-$HOME/.local/state}/kronuzsh/backups/<timestamp>/home/`
 instead of beside active configuration, so backup directories cannot be mistaken
@@ -237,6 +245,7 @@ editions. The wiring is in `integrations/init.zsh` (per-shell) and
 
 ```
 install.sh         idempotent symlink installer (--uninstall restores backups)
+zcompile.zsh       validates and refreshes install-time zsh wordcode
 runcoms/
   zshenv           environment, all shells   (~/.zshenv)
   zprofile         login: sources ~/.profile (~/.zprofile)
@@ -266,6 +275,9 @@ integrations/      optional external tools, one self-contained dir per tool (see
 zshrc.local.example  machine-local template (copy to ~/.zshrc.local)
 plugins/           vendored plugins (git submodules)
 ```
+
+The startup changes and rejected deferral experiment are measured in
+[`dev/startup-performance.md`](dev/startup-performance.md).
 
 Topic docs: **[prompt.md](prompt.md)** (the full prompt manual: every segment and
 option), **[integrations.md](integrations.md)** (the external-tool catalog) and

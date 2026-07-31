@@ -29,6 +29,7 @@ jobs:
         shell: zsh {0}
         run: |
           files=(
+            zcompile.zsh
             runcoms/*
             lib/*.zsh
             skins/*.zsh
@@ -37,6 +38,7 @@ jobs:
             zshrc.local.example
           )
           for file in $files; do
+            [[ $file == *.zwc ]] && continue
             zsh -n "$file"
           done
 
@@ -47,13 +49,20 @@ jobs:
             install.sh \
             install.lib.sh \
             integrations/setup.sh \
-            integrations/*/setup.sh
+            integrations/*/setup.sh \
+            dev/check-generated-integrations.sh
           do
             bash -n "$file"
           done
 
       - name: Check integration structure
         run: bash dev/check-integrations.sh
+
+      - name: Check zcompile cache lifecycle
+        run: zsh dev/check-zcompile.zsh
+
+      - name: Check generated integration caches
+        run: bash dev/check-generated-integrations.sh
 
       - name: Check automatic Python virtualenvs
         run: zsh dev/check-auto-venv.zsh
@@ -85,4 +94,5 @@ jobs:
             install.sh \
             install.lib.sh \
             integrations/setup.sh \
-            integrations/*/setup.sh
+            integrations/*/setup.sh \
+            dev/check-generated-integrations.sh

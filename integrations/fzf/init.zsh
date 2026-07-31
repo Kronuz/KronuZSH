@@ -13,5 +13,11 @@ if (( $+commands[fzf] )); then
   [[ -n $_kz_bat ]] && \
     export FZF_CTRL_T_OPTS="--preview '$_kz_bat -n --color=always --line-range :200 {}'"
   unset _kz_bat
-  source <(fzf --zsh)
+  _kz_fzf_init="${XDG_CACHE_HOME:-$HOME/.cache}/kronuzsh/generated/fzf.zsh"
+  if [[ -r $_kz_fzf_init ]]; then
+    source "$_kz_fzf_init"
+  else
+    source <(fzf --zsh)
+  fi
+  unset _kz_fzf_init
 fi

@@ -2,14 +2,13 @@
 # fast-syntax-highlighting: compile the bundled Kronuz theme into the plugin's active
 # theme cache. The plugin and zsh must both be available.
 
-_kz_setup_fsh() {
+_kz_setup_fast_syntax_highlighting() {
   command -v zsh >/dev/null 2>&1 || return 0
 
-  local here plugin cache
+  local here plugin work_dir cache
 
   here="$(kz_script_dir "${BASH_SOURCE[0]:-$0}")"
   plugin="$here/../../plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
-  cache="$(dirname "$plugin")/current_theme.zsh"
 
   [ -r "$plugin" ] || return 0
 
@@ -18,11 +17,16 @@ _kz_setup_fsh() {
     return 0
   fi
 
-  if zsh -fc "source '$plugin'; fast-theme '$here/Kronuz.ini' -q" >/dev/null 2>&1; then
+  if work_dir="$(zsh -fc '
+    source "$1"
+    fast-theme "$2" -q
+    print -r -- "$FAST_WORK_DIR"
+  ' -- "$plugin" "$here/Kronuz.ini" 2>/dev/null)"; then
+    cache="$work_dir/current_theme.zsh"
     kz_ok "fast-syntax-highlighting" "Kronuz theme applied"
     kz_manage_file "syntax theme cache" "$cache"
   fi
 }
 
-_kz_setup_fsh
-unset -f _kz_setup_fsh
+_kz_setup_fast_syntax_highlighting
+unset -f _kz_setup_fast_syntax_highlighting

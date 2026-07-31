@@ -54,7 +54,8 @@ The one with no classic equivalent and the highest payoff. The modern
 `fzf --zsh` integration binds **Ctrl-T** (insert a file path), **Ctrl-R**
 (fuzzy-search history, replacing the plain incremental search), and **Alt-C**
 (cd into a chosen directory). It also powers `**<Tab>` completion. Colored from
-the Kronuz palette; previews files with bat when bat is present.
+the Kronuz palette; previews files with bat when bat is present. Install caches and
+compiles the generated zsh integration, with `fzf --zsh` as the runtime fallback.
 
 ### [fd](https://github.com/sharkdp/fd) — a friendlier `find`
 
@@ -65,7 +66,8 @@ binary as `fdfind` (a name clash); init.zsh accepts either name.
 ### [zoxide](https://github.com/ajeetdsouza/zoxide) — a `cd` that learns
 
 Tracks your most-visited directories so `z proj` jumps straight there; `zi` picks
-interactively. The real `cd` and `AUTO_CD` are left untouched.
+interactively. The real `cd` and `AUTO_CD` are left untouched. Install caches and
+compiles `zoxide init zsh`, with runtime generation as the fallback.
 
 ### [bat](https://github.com/sharkdp/bat) — a `cat` with syntax highlighting
 

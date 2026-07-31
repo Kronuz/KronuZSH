@@ -23,14 +23,17 @@ preserve the deferred expansion described in `prompt.md` and `AGENTS.md`.
 Run the same syntax checks as CI:
 
 ```sh
-for file in runcoms/* lib/*.zsh integrations/*.zsh integrations/*/*.zsh zshrc.local.example; do
+for file in zcompile.zsh runcoms/* lib/*.zsh integrations/*.zsh integrations/*/*.zsh zshrc.local.example; do
+  case $file in *.zwc) continue ;; esac
   zsh -n "$file" || exit
 done
-for file in install.sh install.lib.sh integrations/setup.sh integrations/*/setup.sh; do
+for file in install.sh install.lib.sh integrations/setup.sh integrations/*/setup.sh dev/check-generated-integrations.sh; do
   bash -n "$file" || exit
 done
-shellcheck --external-sources install.sh install.lib.sh integrations/setup.sh integrations/*/setup.sh
+shellcheck --external-sources install.sh install.lib.sh integrations/setup.sh integrations/*/setup.sh dev/check-generated-integrations.sh
 bash dev/check-integrations.sh
+zsh dev/check-zcompile.zsh
+bash dev/check-generated-integrations.sh
 zsh dev/check-auto-venv.zsh
 ```
 

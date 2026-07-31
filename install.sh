@@ -63,6 +63,66 @@ recommend_tools() {
   fi
 }
 
+# Compile every zsh script reached by normal startup, plus skins loaded on demand and
+# generated integration code. The .zwc files sit beside their source, so zsh selects
+# them natively and automatically falls back to newer text after a git update.
+compile_zsh_sources() {
+  if ! command -v zsh >/dev/null 2>&1; then
+    kz_skip "zsh wordcode" "zsh unavailable"
+    return 0
+  fi
+
+  local generated_dir result compiled current failed source existing seen
+  local -a candidates sources=()
+  generated_dir="${XDG_CACHE_HOME:-$HOME/.cache}/kronuzsh/generated"
+  candidates=(
+    "$here"/runcoms/*
+    "$here"/lib/*.zsh
+    "$here"/skins/*.zsh
+    "$here"/integrations/init.zsh
+    "$here"/integrations/*/init.zsh
+    "$here"/plugins/gitstatus/gitstatus.plugin.zsh
+    "$here"/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+    "$here"/plugins/zsh-history-substring-search/zsh-history-substring-search.zsh
+    "$here"/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh
+    "$here"/plugins/fast-syntax-highlighting/fast-highlight
+    "$here"/plugins/fast-syntax-highlighting/fast-string-highlight
+    "$generated_dir"/*.zsh
+    "${FAST_WORK_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/fast-syntax-highlighting}"/current_theme.zsh
+    "${FAST_WORK_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/fast-syntax-highlighting}"/secondary_theme.zsh
+    "${FAST_WORK_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/fast-syntax-highlighting}"/theme_overlay.zsh
+    "${XDG_CACHE_HOME:-$HOME/.cache}/fsh"/current_theme.zsh
+    "${XDG_CACHE_HOME:-$HOME/.cache}/fsh"/secondary_theme.zsh
+    "${XDG_CACHE_HOME:-$HOME/.cache}/fsh"/theme_overlay.zsh
+    "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump"
+  )
+  for source in "${candidates[@]}"; do
+    case "$source" in *.zwc) continue ;; esac
+    if [ ! -r "$source" ] || [ ! -f "$source" ]; then
+      continue
+    fi
+    seen=
+    for existing in "${sources[@]}"; do
+      if [ "$existing" = "$source" ]; then seen=1; break; fi
+    done
+    [ -z "$seen" ] && sources+=("$source")
+  done
+
+  kz_head "Shell bytecode" "⚡"
+  if [ -n "$KRONUZ_DRY_RUN" ]; then
+    kz_info "would compile ${#sources[@]} zsh source files"
+    return 0
+  fi
+
+  if result="$(zsh "$here/zcompile.zsh" "${sources[@]}")"; then
+    read -r compiled current failed <<< "$result"
+    kz_ok "zsh wordcode" "${#sources[@]} files ready ($compiled refreshed, $current current)"
+  else
+    read -r compiled current failed <<< "${result:-0 0 1}"
+    kz_skip "zsh wordcode" "$failed files could not be compiled; text fallback remains active"
+  fi
+}
+
 install() {
   kz_title "KronuZSH"
 
@@ -99,6 +159,8 @@ install() {
   # in integrations/setup.sh (prints its own "Tool integrations" heading), guarded +
   # idempotent. shellcheck source=integrations/setup.sh
   source "$here/integrations/setup.sh"
+
+  compile_zsh_sources
 
   recommend_tools
 
