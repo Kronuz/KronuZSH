@@ -48,7 +48,7 @@ KRONUZSH     ▲[0m[24m[27m[39m[49m [34m~/project[0m[34m[24m[34m[27m
 
 === gitster ===
 ORIGINAL    [32m➜[39m ~/project main [32m✓[39m 
-KRONUZSH    [32m➜ [0m[32m[24m[32m[27m[32m[39m[49m~/project [38;2;255;255;255mmain 0123456 [33m✗[0m[38;2;0;0;3m[24m[38;2;0;0;3m[27m[38;2;0;0;3m[39m[49m 
+KRONUZSH    [32m➜ [0m[32m[24m[32m[27m[32m[39m[49m~/project [97mmain 0123456 [33m✗[0m[33m[24m[33m[27m[33m[39m[49m 
 
 === zim-minimal ===
 ORIGINAL    [32mλ[39m     RPROMPT ~/project main ✓
@@ -86,8 +86,8 @@ KRONUZSH    [36mkronuz@kronuz[0m[36m[24m[36m[27m[36m[39m[49m [33m~/pro
 === kiwi ===
 ORIGINAL    [1m[32m┌[[36mkiwish-4.2[32m]-([37m~/project[32m)-[[39m[37mgit:[1m[37m[37mmain[1m[37m[32m]-
 └> [39m[0m
-KRONUZSH    [1m[32m┌[[36mkiwish-4.2[32m]-([38;2;255;255;255m~/project[32m)-[[38;2;255;255;255mgit:[1m[38;2;255;255;255mmain[1m[38;2;255;255;255m[32m]-[K
-└> [0m[38;2;0;0;2m[24m[38;2;0;0;2m[27m[38;2;0;0;2m[39m[49m
+KRONUZSH    [1m[32m┌[[36mkiwish-4.2[32m]-([97m~/project[32m)-[[97mgit:[1m[97mmain[1m[97m[32m]-[K
+└> [0m[32m[24m[32m[27m[32m[39m[49m
 
 === lambda-mod ===
 ORIGINAL    
@@ -95,7 +95,7 @@ ORIGINAL
 [1m[36m→[39m[0m     RPROMPT  [1m[37m[[34m0123456[37m][39m[0m
 KRONUZSH    [K
 [1m[32mλ[0m[32m[24m[32m[27m[32m[39m[49m [1m[33mkronuz[0m[33m[24m[33m[27m[33m[39m[49m [35m[~/project][0m[35m[24m[35m[27m[35m[39m[49m at [34m main[0m[34m[24m[34m[27m[34m[39m[49m [1m[32m+[1m[32m[34m![1m[34m[36m?[0m[36m[24m[36m[27m[36m[39m[49m[K
-[1m[36m→[0m[36m[24m[36m[27m[36m[39m[49m     RPROMPT  [1m[38;2;255;255;255m[[34m0123456[38;2;255;255;255m][0m[38;2;255;255;255m[24m[38;2;255;255;255m[27m[38;2;255;255;255m[39m[49m
+[1m[36m→[0m[36m[24m[36m[27m[36m[39m[49m     RPROMPT  [1m[97m[[34m0123456[97m][0m[97m[24m[97m[27m[97m[39m[49m
 
 === lukerandall ===
 ORIGINAL    [1m[32mkronuz@kronuz[39m[0m [1m[34m~/project[39m[0m [33m(main % + *)[39m [1m»[0m 
