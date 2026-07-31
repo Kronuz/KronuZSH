@@ -60,8 +60,8 @@ KZ_PROMPT_NERD_FONT=0
 KZ_PROMPT_CMD_DURATION_MIN=1
 
 # Past commands collapse to a timestamp, path, and caret with their original colors.
-# Flatten them to ANSI 7 instead, or turn the whole transient behavior off:
-KZ_PROMPT_TRANSIENT_STYLE=neutral
+# Flatten them to ANSI 8 instead, or turn the whole transient behavior off:
+KZ_PROMPT_TRANSIENT_STYLE=darkgray
 KZ_PROMPT_TRANSIENT_PROMPT=''
 
 # Swap just the collapsed caret for an emoji (the pwd stays; symmetric to the live caret):
@@ -201,20 +201,16 @@ Color is fully automatic. There are two layers:
    can't do truecolor.
 2. A **semantic layer** that maps each part of the prompt to a base color.
 
-Neutral names are explicit about whether they follow the terminal theme or use a fixed
-truecolor:
+The conventional ANSI neutral names follow the terminal theme:
 
 | Name(s) | Value |
 | --- | --- |
-| `neutral` / `muted` / `bright` | ANSI 7 / 8 / 15 (theme-relative) |
-| `gray` | `#878787` |
-| `darkgray` | `#afafaf` |
+| `gray` / `darkgray` / `white` | ANSI 7 / 8 / 15 |
 | `lightgray` | `#c6c6c6` |
 
-There is no `dimgray`; use `black`. The British `grey`, `darkgrey`, and `lightgrey`
-spellings remain compatibility aliases. Overriding either spelling with
-`KZ_PROMPT_PALETTE_<NAME>` updates both aliases; if both spellings are set, the canonical
-American `GRAY` form wins.
+There are no `grey` or `dimgray` aliases; use the American names or `black`.
+The retired `neutral`, `muted`, `bright`, `kronuzblue`, and British `grey` names are
+reserved and ignored rather than recreated as custom hues.
 
 Override any semantic color with `KZ_PROMPT_COLOR_<NAME>`. The value is
 evaluated, so you can reference a base-palette name or write a raw escape:
@@ -228,7 +224,7 @@ KZ_PROMPT_COLOR_CARET_PAST='$kz[FG.cyan]'   # collapsed caret
 
 You can also define or override a **base hue** with `KZ_PROMPT_PALETTE_<NAME>` (a
 `#RRGGBB` or a 0-255 index). Built-ins include `RED`, `BLUE`, `LIGHTGREEN`, and the
-rest of the 16 ANSI names, and custom names are valid too. This pins that hue across
+rest of the 16 ANSI names, and non-retired custom names are valid too. This pins that hue across
 the whole prompt (everything built on it) and tells `dimmed` its real RGB, which is the
 clean way to match a terminal whose palette can't be queried (see
 [Transient prompt](#transient-prompt)):
@@ -250,7 +246,7 @@ The semantic names and their defaults:
 | `host`                       | blue; green over SSH; purple in a container | hostname and session context               |
 | `ip`                         | dark gray                     | LAN IP next to the host                              |
 | `user`                       | bold white                    | username                                             |
-| `pwd`                        | aqua; medium spring green over SSH; violet in a container (red as root) | working directory |
+| `pwd`                        | blue; medium spring green over SSH; violet in a container (red as root) | working directory |
 | `time`                       | dark gray                     | `[clock]`                                            |
 | `label`, `separator`         | dark gray                     | labels such as "at" and structural separators        |
 | `status_success` / `status_failure` | green / red             | the status dot and exit code                         |
@@ -270,7 +266,7 @@ The semantic names and their defaults:
 | `etctl`                      | bold magenta                  | the `etctl:<name>` tag                               |
 | `vim` / `emacs`              | bold green                    | shell-running-inside-editor indicators               |
 | `mode_overwrite`             | red                           | overwrite-mode mark                                  |
-| `caret_past`                 | bold neutral                  | the collapsed transient caret                        |
+| `caret_past`                 | bold gray                     | the collapsed transient caret                        |
 | `caret_1/2/3`                | red/yellow/green              | the three carets of `❯❯❯`                            |
 
 (`caret_1/2/3` are also swapped to all-red when running as root, via a `%(!..)`
@@ -398,7 +394,7 @@ styles below, and listed in full in the option reference):
 | `KZ_PROMPT_TRANSIENT_PROMPT` | `time pwd ❯` | The whole collapsed prompt string (by default the command submission time, directory, and caret), built like `PROMPT` from deferred `${...}` segments. Set to `''` to disable transience entirely (past prompts stay full), or to any string for a custom collapsed prompt (which is itself restyled per `KZ_PROMPT_TRANSIENT_STYLE`). |
 | `KZ_PROMPT_CARET_PAST`  | `❯`     | Just the caret piece of the default collapsed line — symmetric to `KZ_PROMPT_CARET` for the live prompt. Set to an emoji or any string to change the caret without touching the rest. Ignored if you override the whole `KZ_PROMPT_TRANSIENT_PROMPT`.                                                                           |
 | `KZ_PROMPT_PREPROMPT`           | `$kz[status]`     | The **preprompt**: a deferred `${...}` string (composed from `$kz[...]` like `PROMPT`) printed as output above the prompt, once per command. The default is the status line (exit code / duration); `''` prints nothing above the prompt; set it to anything to inject your own preprompt. Since it is output, it stays in scrollback as the prompt collapses and survives a screen clear (Cmd-K) without reappearing. |
-| `KZ_PROMPT_TRANSIENT_STYLE`  | `original` | How the collapsed line — the pwd, caret, and the just-run **command** — is restyled: `original`, `dimmed`, or any palette hue (`muted`, `neutral`, `pink`, a custom name, ...). Unknown values report an error and fall back to `original`.                                                                                                  |
+| `KZ_PROMPT_TRANSIENT_STYLE`  | `original` | How the collapsed line — the pwd, caret, and the just-run **command** — is restyled: `original`, `dimmed`, or any palette hue (`darkgray`, `gray`, `pink`, a custom name, ...). Unknown values report an error and fall back to `original`.                                                                                                  |
 | `KZ_PROMPT_TRANSIENT_DIM`    | `0.7`   | For `dimmed`: darkness factor, `0` = black, `1` = unchanged. Lower is darker.                                                                                                                                                                                                                                                           |
 
 The style modes:
@@ -417,18 +413,18 @@ The style modes:
 
   ```zsh
   # iTerm "Snazzy" — your terminal's 16 ANSI colors as #RRGGBB.
-  KZ_PROMPT_PALETTE_BLACK='#000000'    KZ_PROMPT_PALETTE_MUTED='#686868'
+  KZ_PROMPT_PALETTE_BLACK='#000000'    KZ_PROMPT_PALETTE_DARKGRAY='#686868'
   KZ_PROMPT_PALETTE_RED='#ff5c57'      KZ_PROMPT_PALETTE_LIGHTRED='#ff5c57'
   KZ_PROMPT_PALETTE_GREEN='#5af78e'    KZ_PROMPT_PALETTE_LIGHTGREEN='#5af78e'
   KZ_PROMPT_PALETTE_YELLOW='#f3f99d'   KZ_PROMPT_PALETTE_LIGHTYELLOW='#f3f99d'
   KZ_PROMPT_PALETTE_BLUE='#57c7ff'     KZ_PROMPT_PALETTE_LIGHTBLUE='#57c7ff'
   KZ_PROMPT_PALETTE_MAGENTA='#ff6ac1'  KZ_PROMPT_PALETTE_LIGHTMAGENTA='#ff6ac1'
   KZ_PROMPT_PALETTE_CYAN='#9aedfe'     KZ_PROMPT_PALETTE_LIGHTCYAN='#9aedfe'
-  KZ_PROMPT_PALETTE_NEUTRAL='#f1f1f0'  KZ_PROMPT_PALETTE_BRIGHT='#eff0eb'
+  KZ_PROMPT_PALETTE_GRAY='#f1f1f0'     KZ_PROMPT_PALETTE_WHITE='#eff0eb'
   ```
 - **Any palette hue** repaints the collapsed prompt and command with that one flat
-  color. `muted` (ANSI 8) and `neutral` (ANSI 7) are the natural subdued choices,
-  but `pink`, `red`, `gray`, or a custom hue such as `ocean` work identically. A live
+  color. `darkgray` (ANSI 8) and `gray` (ANSI 7) are the natural subdued choices,
+  but `pink`, `red`, or a custom hue such as `ocean` work identically. A live
   `KZ_PROMPT_PALETTE_<NAME>` override updates both the
   prompt escape and zsh's native `region_highlight` spec.
 - **`original`** leaves the syntax colors untouched.
@@ -589,7 +585,7 @@ fully enumerated in the linked table or directly in the description.
 | `KZ_PROMPT_GIT_SEP`              | `' '` (space)    | String inserted between the git detail indicators (stash / staged / modified / untracked / ahead-behind …). Set to `'·'`, `':'`, `$'\u00a0'`, or any string; `''` packs them with no separator.                                                                                                                                                                                                      |
 | `KZ_PROMPT_GIT_SPLIT`            | `0`              | `1`/`yes`/`on`/`true` breaks the single staged/unstaged counts into per-type marks — added `+`, changed `~`, deleted `-` — coloured by group (the staged and modified colours). Off shows one aggregate count per group.                                                                                                                                                                             |
 | `KZ_PROMPT_COLOR_<NAME>`         | per color        | Override one semantic color. All public names are in the [color table](#colors).                                                                                                                                                                                                                                                                                                                     |
-| `KZ_PROMPT_PALETTE_<NAME>`       | terminal palette | Define or override a base hue with `#RRGGBB` or a 0–255 index. Built-in names include `BLACK`, `RED`, `GREEN`, `YELLOW`, `BLUE`, `MAGENTA`, `CYAN`, `GRAY`, `DARKGRAY`, `LIGHTRED`, `LIGHTGREEN`, `LIGHTYELLOW`, `LIGHTBLUE`, `LIGHTMAGENTA`, `LIGHTCYAN`, `LIGHTGRAY`; custom names work too and become `$kz[FG.<name>]`, `$kz[BG.<name>]`, and native `$kz[HL.<name>]` ZLE specs. The corresponding `GREY` spellings remain compatibility aliases. This changes display colors, flat transient command colors, and the RGB used by `dimmed`. |
+| `KZ_PROMPT_PALETTE_<NAME>`       | terminal palette | Define or override a base hue with `#RRGGBB` or a 0–255 index. Built-in names include `BLACK`, `RED`, `GREEN`, `YELLOW`, `BLUE`, `MAGENTA`, `CYAN`, `GRAY`, `DARKGRAY`, `LIGHTRED`, `LIGHTGREEN`, `LIGHTYELLOW`, `LIGHTBLUE`, `LIGHTMAGENTA`, `LIGHTCYAN`, `WHITE`, and fixed `LIGHTGRAY`; non-retired custom names work too and become `$kz[FG.<name>]`, `$kz[BG.<name>]`, and native `$kz[HL.<name>]` ZLE specs. This changes display colors, flat transient command colors, and the RGB used by `dimmed`. |
 | `KZ_PROMPT_<SEGMENT>`            | built in         | Replace one complete segment or outcome item. Names: `OS`, `STATUS_DOT`, `STATUS_EXIT`, `STATUS_DURATION`, `USER`, `HOST`, `IP`, `TIME`, `PWD`, `GIT`, `VENV`, `JOBS`, `CONTEXT`, `ETCTL`, `VIM`, `EMACS`, `MODE_OVERWRITE`, `CARET`; see [Replacing a whole segment](#replacing-a-whole-segment).                                                                                                      |
 | `KZ_PROMPT_PWD_STYLE`            | `full`           | Working-directory shortening: `full`, `short` (shortest unique prefix, `~/.c/K/i/bat`), `base` (current dir name), or `absolute` (`$HOME` expanded).                                                                                                                                                                                                                                                 |
 | `KZ_PROMPT_CMD_DURATION_MIN`     | `3`              | Seconds a command must run before its duration is shown. `0` = always.                                                                                                                                                                                                                                                                                                                               |
@@ -597,7 +593,7 @@ fully enumerated in the linked table or directly in the description.
 | `KZ_PROMPT_TRANSIENT_PROMPT`     | `time pwd ❯`     | The whole collapsed past-prompt string (default: submission time + run directory + caret), built like `PROMPT`; `''` disables transience.                                                                                                                                                                                                                                                            |
 | `KZ_PROMPT_CARET_PAST`          | `❯`             | Just the caret piece of the default collapsed line (symmetric to `KZ_PROMPT_CARET`); set to an emoji or any string.                                                                                                                                                                                                                                                                                |
 | `KZ_PROMPT_PREPROMPT`           | `$kz[status]`   | The **preprompt** printed above the prompt (default the exit status / duration line), a deferred `${...}` string composed from `$kz[...]` like `PROMPT`. `''` prints nothing; any other value is injected above the prompt as output (so it stays in scrollback and survives a Cmd-K clear).                                                                                                           |
-| `KZ_PROMPT_TRANSIENT_STYLE`      | `original`       | Restyle of the collapsed line (pwd, caret, command): `original`, `dimmed`, or any palette hue (`muted`, `neutral`, `pink`, custom names, ...). Unknown values report an error and use `original`.                                                                                                                                                                                                      |
+| `KZ_PROMPT_TRANSIENT_STYLE`      | `original`       | Restyle of the collapsed line (pwd, caret, command): `original`, `dimmed`, or any palette hue (`darkgray`, `gray`, `pink`, custom names, ...). Unknown values report an error and use `original`.                                                                                                                                                                                                      |
 | `KZ_PROMPT_TRANSIENT_DIM`        | `0.7`            | `dimmed` darkness factor (`0` black .. `1` unchanged).                                                                                                                                                                                                                                                                                                                                               |
 | `KZ_PROMPT_PALETTE_TTL`          | `86400`          | Seconds the queried palette is cached on disk (per terminal); `0` disables the cache.                                                                                                                                                                                                                                                                                                                |
 | `KZ_PROMPT_PALETTE_TIMEOUT`      | `0.6`            | Seconds to wait for the OSC 4 palette answer; bump it for a slow/remote terminal.                                                                                                                                                                                                                                                                                                                    |

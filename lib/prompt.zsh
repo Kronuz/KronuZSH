@@ -46,8 +46,7 @@ unset col _col_base _ksem glyph_pad
 typeset -gA _kz_col_base=(
   black                '0'        red                  '1'
   lightgreen           '10'       olive                '#878700'
-  darkkhaki            '#87875f'  gray                 '#878787'
-  grey                 '#878787'
+  darkkhaki            '#87875f'
   lavender             '#8787af'  mediumpurple         '#8787d7'
   mediumslateblue      '#8787ff'  darkolivegreen       '#87af5f'
   darkseagreen         '#87af87'  powderblue           '#87afaf'
@@ -67,10 +66,9 @@ typeset -gA _kz_col_base=(
   burlywood            '#af875f'  rosybrown            '#af8787'
   plum                 '#af87af'  lightcyan            '14'
   violet               '#af87d7'  khaki                '#afaf5f'
-  palegoldenrod        '#afaf87'  darkgray             '#afafaf'
-  darkgrey             '#afafaf'
+  palegoldenrod        '#afaf87'
   slategray            '#afafd7'  lightsteelblue       '#afafff'
-  yellowgreen          '#afd75f'  bright               '15'
+  yellowgreen          '#afd75f'
   honeydew             '#afd7af'  paleturquoise        '#afd7d7'
   greenyellow          '#afff5f'
   tomato               '#d70000'  deeppink             '#d7005f'
@@ -90,9 +88,9 @@ typeset -gA _kz_col_base=(
   pink                 '#ffafd7'  darkgreen            '#005f00'
   navajowhite          '#ffd7af'  peachpuff            '#ffd7d7'
   teal                 '#005f5f'  lightgoldenrodyellow '#ffffd7'
-  white                '#ffffff'  darkcyan             '#005f87'
+  darkcyan             '#005f87'
   deepskyblue          '#005faf'  silver               '#bcbcbc'
-  lightgray            '#c6c6c6'  lightgrey            '#c6c6c6'
+  lightgray            '#c6c6c6'
   gainsboro            '#d0d0d0'
   dodgerblue           '#005fd7'  yellow               '3'
   darkturquoise        '#0087af'  mediumspringgreen    '#00af5f'
@@ -103,11 +101,11 @@ typeset -gA _kz_col_base=(
   lightslategray       '#5f5f87'  darkslateblue        '#5f5faf'
   slateblue            '#5f5fd7'  darkslategray        '#5f8787'
   steelblue            '#5f87d7'  royalblue            '#5f87ff'
-  neutral              '7'        mediumseagreen       '#5fd787'
-  muted                '8'        mediumturquoise      '#5fd7d7'
+  gray                 '7'        mediumseagreen       '#5fd787'
+  darkgray             '8'        mediumturquoise      '#5fd7d7'
   forestgreen          '#5fff5f'  turquoise            '#5fffd7'
   lightred             '9'        blueviolet           '#8700ff'
-  brown                '#875f00'
+  white                '15'       brown                '#875f00'
 )
 # The 16 ANSI colours, by palette name -> index. They default to symbolic %F{N} (above)
 # so they track the terminal theme, but each is overridable to a concrete colour via
@@ -115,9 +113,9 @@ typeset -gA _kz_col_base=(
 # $kz[FG.*] / $kz[BG.*] / $kz[HL.*] handles and fed to `dimmed`'s RGB in
 # _kz_load_palette.
 typeset -gA _kz_basic=(
-  black 0  red 1  green 2  yellow 3  blue 4  magenta 5  cyan 6  neutral 7
-  muted 8  lightred 9  lightgreen 10  lightyellow 11  lightblue 12
-  lightmagenta 13  lightcyan 14  bright 15
+  black 0  red 1  green 2  yellow 3  blue 4  magenta 5  cyan 6  gray 7
+  darkgray 8  lightred 9  lightgreen 10  lightyellow 11  lightblue 12
+  lightmagenta 13  lightcyan 14  white 15
 )
 
 # Resolve a colour to (r g b), into $reply: a #rrggbb hex, a 0-255 index, or a basic
@@ -129,7 +127,11 @@ function _kz_color_rgb {
   if [[ $v = (#i)'#'[0-9a-f](#c6) ]]; then
     reply=( $(( 16#${v[2,3]} )) $(( 16#${v[4,5]} )) $(( 16#${v[6,7]} )) ); return
   fi
-  local -A nm=(black 0 red 1 green 2 yellow 3 blue 4 magenta 5 cyan 6 white 7)
+  local -A nm=(
+    black 0 red 1 green 2 yellow 3 blue 4 magenta 5 cyan 6 gray 7 darkgray 8
+    lightred 9 lightgreen 10 lightyellow 11 lightblue 12 lightmagenta 13
+    lightcyan 14 white 15
+  )
   [[ -n ${nm[$v]-} ]] && v=${nm[$v]}
   [[ $v = <0-255> ]] || return
   local -i n=$v
@@ -247,29 +249,17 @@ function kz_prompt_colors {
   _kz_colors_sig="$_sig"
 
   # Live neutral code palette: the immutable base plus any KZ_PROMPT_PALETTE_<NAME>,
-  # which may redefine a built-in hue or define a brand-new one (a #RRGGBB or 0-255 index).
+  # which may redefine a built-in hue or define a brand-new non-retired one
+  # (a #RRGGBB or 0-255 index).
   local _cn _pv
+  local -A _retired=(
+    neutral 1 muted 1 bright 1 kronuzblue 1 grey 1 darkgrey 1 lightgrey 1
+  )
   local -A _col=("${(@kv)_kz_col_base}")
   for _k in ${(k)parameters[(I)KZ_PROMPT_PALETTE_*]}; do
     _pv="${(P)_k}"; _cn="${${_k#KZ_PROMPT_PALETTE_}:l}"
-    [[ -n "$_pv" ]] && _col[$_cn]="$_pv"
+    [[ -n "$_pv" ]] && (( ! ${+_retired[$_cn]} )) && _col[$_cn]="$_pv"
   done
-  # Keep the British spellings as compatibility aliases under overrides too, not merely
-  # equal defaults. Either spelling updates both public keys; if both are explicitly set,
-  # the canonical American GRAY spelling wins deterministically.
-  local _us_gray _uk_grey _gray_name _grey_name
-  for _cn in '' dark light; do
-    _gray_name="${_cn}gray"
-    _grey_name="${_cn}grey"
-    _us_gray="KZ_PROMPT_PALETTE_${_gray_name:u}"
-    _uk_grey="KZ_PROMPT_PALETTE_${_grey_name:u}"
-    if [[ -n "${(P)_us_gray}" ]]; then
-      _col[$_grey_name]=${_col[$_gray_name]}
-    elif [[ -n "${(P)_uk_grey}" ]]; then
-      _col[$_gray_name]=${_col[$_grey_name]}
-    fi
-  done
-
   # Rebuild rather than overwrite so removing a custom palette variable live removes its
   # public handles too; this also cleans retired names when re-sourcing an existing shell.
   for _k in ${(k)kz}; do
@@ -309,7 +299,7 @@ function kz_prompt_colors {
     status_duration '$kz[FG.goldenrod]'
     ssh        '$kz[FG.mediumpurple]'
     container  '$kz[FG.deepskyblue]'
-    caret_past '%B$kz[FG.neutral]'
+    caret_past '%B$kz[FG.gray]'
     action     '$kz[FG.darkorange]'
     fallback   '$kz[FG.gold]'
     staged     '$kz[FG.darkorange]'
@@ -323,14 +313,14 @@ function kz_prompt_colors {
     modified   '$kz[FG.red]'
     stashed    '$kz[FG.lightsteelblue]'
     conflicted '$kz[FG.red]'
-    untracked  '$kz[FG.muted]'
-    label      '$kz[FG.muted]'
-    loading    '$kz[FG.muted]'
-    separator  '$kz[FG.muted]'
-    ip         '$kz[FG.muted]'
-    time       '$kz[FG.muted]'
+    untracked  '$kz[FG.darkgray]'
+    label      '$kz[FG.darkgray]'
+    loading    '$kz[FG.darkgray]'
+    separator  '$kz[FG.darkgray]'
+    ip         '$kz[FG.darkgray]'
+    time       '$kz[FG.darkgray]'
     host       '${${kz[context.container]:+${kz[FG.purple]}}:-${${kz[context.ssh]:+${kz[FG.green]}}:-${kz[FG.blue]}}}'
-    pwd        '%(!.${kz[FG.tomato]}.${${kz[context.container]:+${kz[FG.violet]}}:-${${kz[context.ssh]:+${kz[FG.mediumspringgreen]}}:-${kz[FG.aqua]}}})'
+    pwd        '%(!.${kz[FG.tomato]}.${${kz[context.container]:+${kz[FG.violet]}}:-${${kz[context.ssh]:+${kz[FG.mediumspringgreen]}}:-${kz[FG.blue]}}})'
     user       '%(!.%B$kz[FG.tomato].%B$kz[FG.white])'
   )
   local name ov raw def

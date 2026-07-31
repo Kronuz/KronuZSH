@@ -23,6 +23,16 @@ done
 # accidental compatibility aliases in the shared associative arrays.
 kz[nl]=legacy kz[transient_caret]=legacy kz[err]=legacy kz[info]=legacy
 kz[overwrite]=legacy kz[duration]=legacy kz[GLYPH.dot]=legacy
+kz[FG.neutral]=legacy kz[FG.muted]=legacy kz[FG.bright]=legacy
+kz[FG.kronuzblue]=legacy kz[FG.grey]=legacy kz[FG.darkgrey]=legacy
+kz[FG.lightgrey]=legacy
+KZ_PROMPT_PALETTE_NEUTRAL='#111111'
+KZ_PROMPT_PALETTE_MUTED='#222222'
+KZ_PROMPT_PALETTE_BRIGHT='#333333'
+KZ_PROMPT_PALETTE_KRONUZBLUE='#444444'
+KZ_PROMPT_PALETTE_GREY='#555555'
+KZ_PROMPT_PALETTE_DARKGREY='#666666'
+KZ_PROMPT_PALETTE_LIGHTGREY='#777777'
 _kz_sem[added]=legacy
 _kz_colors_sig=''
 kz_prompt_colors
@@ -36,6 +46,18 @@ for name in nl transient_caret err info overwrite duration GLYPH.dot; do
     return 1
   }
 done
+for name in FG.neutral FG.muted FG.bright FG.kronuzblue FG.grey FG.darkgrey FG.lightgrey; do
+  (( ! ${+kz[$name]} )) || {
+    print -u2 -r -- "$name: retired palette key survived re-source"
+    return 1
+  }
+done
+[[ ${kz[FG.gray]} == '%F{7}' && ${kz[FG.darkgray]} == '%F{8}' \
+   && ${kz[FG.white]} == '%F{15}' ]] || {
+  print -u2 -r -- "ANSI neutral palette names are not mapped to 7/8/15"
+  return 1
+}
+unset KZ_PROMPT_PALETTE_{NEUTRAL,MUTED,BRIGHT,KRONUZBLUE,GREY,DARKGREY,LIGHTGREY}
 (( ! ${+_kz_sem[added]} )) || {
   print -u2 -r -- "added: retired semantic color survived re-source"
   return 1

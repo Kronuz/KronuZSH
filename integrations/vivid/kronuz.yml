@@ -6,10 +6,11 @@
 #   vivid generate kronuz > integrations/vivid/ls_colors
 # (lib/colors.zsh loads integrations/vivid/ls_colors, so no runtime vivid dependency.)
 #
-# Design: filekinds match eza's theme.yml (dir/link blue, exec green, pipe/socket
-# neutral, devices orange, broken red). Content categories use hues NO common filekind
-# uses, so a file's kind is never ambiguous. Source code is split into a few groups:
-# general/systems = gold, scripting = purple, functional = teal.
+# Design: ordinary filekinds match eza's theme.yml and use terminal ANSI slots:
+# directory blue, symlink cyan, hard link light cyan, exec green, pipe/socket dark gray,
+# devices light yellow, broken red. Content categories use distinct hues so a file's kind
+# stays unambiguous. Source code is split into a few groups: general/systems = gold,
+# scripting = purple, functional = teal.
 
 colors:
   bg:          "383838"
@@ -17,9 +18,14 @@ colors:
   fg_dim:      "7a7775"
   soft:        "9a9794"
   comment:     "95815e"
-  blue:        "6e9cbe"   # constLang  -> directories
-  turquoise:   "70c2ba"   # (shell-only) -> symlinks (distinct from dir blue + functional teal)
-  hardlink:    "4fa8b0"   # (shell-only) -> hard links (deeper teal; link-family, distinct from dir + symlink)
+  ansi_red:    "ansi:red"          # slot 1  target #da4939 -> broken links
+  ansi_green:  "ansi:green"        # slot 2  target #a5c261 -> executables
+  ansi_blue:   "ansi:blue"         # slot 4  target #6e9cbe -> directories
+  ansi_cyan:   "ansi:cyan"         # slot 6  target #70c2ba -> symlinks
+  ansi_normal: "ansi:white"        # slot 7  target #c8c6c5 -> regular files
+  ansi_gray:   "ansi:bright_black" # slot 8  target #7a7775 -> pipes/sockets
+  ansi_orange: "ansi:bright_yellow" # slot 11 target #cc7833 -> devices
+  ansi_teal:   "ansi:bright_cyan"  # slot 14 target #4fa8b0 -> hard links
   blue_link:   "6089b4"   # link       -> sticky-dir background
   green:       "a5c261"   # string     -> executables
   lime:        "c7d87b"   # regexp     -> office
@@ -36,31 +42,31 @@ colors:
   white:       "e8e6e5"   # vari       -> special-perm foregrounds
 
 core:
-  normal_text: {}
-  regular_file: {}
+  normal_text:              {foreground: ansi_normal}
+  regular_file:             {foreground: ansi_normal}
   reset_to_normal: {}
 
-  directory:               {foreground: blue}
-  symlink:                 {foreground: turquoise}
-  multi_hard_link:         {foreground: hardlink}
+  directory:               {foreground: ansi_blue}
+  symlink:                 {foreground: ansi_cyan}
+  multi_hard_link:         {foreground: ansi_teal}
 
-  fifo:                    {foreground: fg_dim}
-  socket:                  {foreground: fg_dim}
-  door:                    {foreground: fg_dim}
-  block_device:            {foreground: orange}
-  character_device:        {foreground: orange}
+  fifo:                    {foreground: ansi_gray}
+  socket:                  {foreground: ansi_gray}
+  door:                    {foreground: ansi_gray}
+  block_device:            {foreground: ansi_orange}
+  character_device:        {foreground: ansi_orange}
 
-  broken_symlink:          {foreground: red, font-style: bold}
-  missing_symlink_target:  {foreground: red, font-style: bold}
+  broken_symlink:          {foreground: ansi_red}
+  missing_symlink_target:  {foreground: ansi_red}
 
   setuid:                  {foreground: white, background: red}
   setgid:                  {foreground: bg, background: gold}
   file_with_capability:    {foreground: heading, font-style: bold}
   sticky_other_writable:   {foreground: bg, background: green}
-  other_writable:          {foreground: blue, font-style: underline}
+  other_writable:          {foreground: ansi_blue, font-style: underline}
   sticky:                  {foreground: white, background: blue_link}
 
-  executable_file:         {foreground: green, font-style: bold}
+  executable_file:         {foreground: ansi_green}
 
 text:
   special:        {foreground: heading, font-style: bold}   # README, CHANGELOG

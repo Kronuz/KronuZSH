@@ -170,9 +170,9 @@ A few one-liners, each a `KZ_PROMPT_PREPROMPT=...` you can drop in `~/.zshrc.loc
 `$kz[NL]` is a newline for a multi-line preprompt.
 
 ```zsh
-# A full-width rule above every command: muted normally, red when the last one failed.
+# A full-width rule above every command: dark gray normally, red when the last one failed.
 # Separates commands in scrollback and makes failures easy to spot. (skins/preprompt-rule.zsh)
-KZ_PROMPT_PREPROMPT='${${kz[status]:+${kz[FG.red]}}:-${kz[FG.muted]}}${(pl:$COLUMNS::─:)}${kz[RESET]}'
+KZ_PROMPT_PREPROMPT='${${kz[status]:+${kz[FG.red]}}:-${kz[FG.darkgray]}}${(pl:$COLUMNS::─:)}${kz[RESET]}'
 
 # A red rule ONLY when a command failed (nothing otherwise) — minimal failure marker.
 KZ_PROMPT_PREPROMPT='${kz[status]:+${kz[FG.red]}${(pl:$COLUMNS::─:)}${kz[RESET]}}'
@@ -183,8 +183,8 @@ KZ_PROMPT_PREPROMPT='${kz[FG.gray]}%~${kz[RESET]}'
 # A blank line above each prompt, for breathing room.
 KZ_PROMPT_PREPROMPT=' '
 
-# Keep the status, and add a muted rule under it.
-KZ_PROMPT_PREPROMPT='${kz[status]:+$kz[status]${kz[NL]}}${kz[FG.muted]}${(pl:$COLUMNS::─:)}${kz[RESET]}'
+# Keep the status, and add a dark gray rule under it.
+KZ_PROMPT_PREPROMPT='${kz[status]:+$kz[status]${kz[NL]}}${kz[FG.darkgray]}${(pl:$COLUMNS::─:)}${kz[RESET]}'
 ```
 
 Anything a prompt string can hold works, including `$(...)` command substitution (run each

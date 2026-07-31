@@ -32,7 +32,7 @@ function _kz_test_context_colors {
     return 1
   }
 }
-_kz_test_context_colors '' '' blue aqua
+_kz_test_context_colors '' '' blue blue
 _kz_test_context_colors 1 '' green mediumspringgreen
 _kz_test_context_colors '' 1 purple violet
 _kz_test_context_colors 1 1 purple violet
@@ -45,7 +45,7 @@ source skins/kronuz.zsh
   print -u2 -r -- "kronuz skin layout drifted from the built-in prompt"
   return 1
 }
-_kz_test_context_colors '' '' blue aqua
+_kz_test_context_colors '' '' blue blue
 _kz_test_context_colors 1 '' green mediumspringgreen
 _kz_test_context_colors '' 1 purple violet
 _kz_test_context_colors 1 1 purple violet

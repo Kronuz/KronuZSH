@@ -119,9 +119,20 @@ symlinks the theme into vivid's config dir (when vivid is installed) so you can.
 
 ### The colour scheme (the rules behind it)
 
-- **Filekinds match eza** and are the structural layer: directory blue `#6e9cbe`, symlink
-  turquoise `#70c2ba`, hard link teal `#4fa8b0` (the three were all blue and indistinct
-  until split), exec green, pipe/socket neutral, devices orange, broken red (bold).
+- **Filekinds match eza** and are the structural layer. Their ANSI slots let the terminal
+  own the final RGB while preserving distinct kinds. The RGB column records the future
+  iTerm palette target; until that palette is updated, the terminal's current colors win:
+
+  | Slot | Target RGB | Filekind / prompt use |
+  | --- | --- | --- |
+  | red (1) | `#da4939` | broken links, prompt errors |
+  | green (2) | `#a5c261` | executables, prompt success |
+  | blue (4) | `#6e9cbe` | directories, local host and pwd |
+  | cyan (6) | `#70c2ba` | symlinks |
+  | gray / ANSI white (7) | `#c8c6c5` | ordinary files |
+  | dark gray (8) | `#7a7775` | pipes, sockets, subdued prompt text |
+  | light yellow (11) | `#cc7833` | block and character devices |
+  | light cyan (14) | `#4fa8b0` | hard links (`mh`; eza's link-count column) |
 - **Content categories avoid the filekind hues**, so a file's kind is never ambiguous.
   Source code is split into a few groups (general/systems **gold**, scripting **purple**,
   functional **teal**); markup pink, config amber, the three media types distinct, office
@@ -159,15 +170,14 @@ presentation keys in `$kz`:
   `red='1'` and `darkorange='#d75f00'` (no `%F` / `%K`). The ANSI 0..15 colors stay indexes so they
   track the terminal's theme; the 16..255 colors are **hex** `#RRGGBB` so they render at
   full 24-bit on a truecolor terminal. `KZ_PROMPT_PALETTE_<NAME>` defines or
-  overrides any hue, not just the 16 ANSI basics, and feeds both display and `dimmed`'s RGB
+  overrides any non-retired hue, not just the 16 ANSI basics, and feeds both display and `dimmed`'s RGB
   (see the transient section). The engine publishes each hue as `$kz[FG.<name>]` and
   `$kz[BG.<name>]` for prompt text, plus `$kz[HL.<name>]` as zsh's native
   `region_highlight` foreground spec for ZLE buffers; the mutable raw-code palette is
   function-local and never exposed.
-  Theme-relative neutral colors use semantic names: `neutral` (ANSI 7), `muted` (ANSI 8),
-  and `bright` (ANSI 15). Fixed truecolor neutrals support both spellings as exact aliases:
-  `gray` (`#878787`), `darkgray` (`#afafaf`), and `lightgray` (`#c6c6c6`);
-  their `grey` spellings remain compatibility aliases. `dimgray` is not published; use `black`.
+  Theme-relative neutral colors use conventional ANSI names: `gray` (7), `darkgray` (8),
+  and `white` (15). `lightgray` remains the fixed `#c6c6c6`; no `grey` or `dimgray`
+  aliases are published.
 - **Semantic palette (`$_kz_sem`)**: a local defaults table maps each role to a full style
   expression (`branch '%B$kz[FG.white]'`, with `host` and `pwd` selected from the
   public session-context keys), then one loop
@@ -207,10 +217,11 @@ An explicit
 set (PUA would be tofu). The keymap arrow is seeded in setup so a prompt char shows
 even where ZLE is off (Emacs `M-x shell`), where `zle-line-init` never fires.
 
-The **host** and **pwd** colors encode the fixed session context: blue/aqua locally,
-green/mediumspringgreen over SSH, and purple/violet in a container (which wins when
-both flags are set); root keeps the pwd tomato. The Eternal Terminal cue is the
-separate **etctl** segment (`$ETCTL_SESSION`), not a host-color change. (The old
+The **host** and **pwd** colors encode the fixed session context: blue locally,
+green/mediumspringgreen over SSH, and purple/violet in a
+container (which wins when both flags are set); root keeps the pwd tomato. The Eternal
+Terminal cue is the separate **etctl** segment (`$ETCTL_SESSION`), not a host-color
+change. (The old
 prezto theme tinted the host by `$ET_VERSION`; that wasn't ported.)
 
 ### Glyphs (Nerd Font, with a plain fallback)
@@ -355,7 +366,7 @@ overrides win on top (never cached; if all 16 are set the query is skipped) — 
 back to xterm defaults. The same overrides feed the private live palette and the
 `$kz[FG.*]` / `$kz[BG.*]` / `$kz[HL.*]` forms in `kz_prompt_colors`, so prompt display,
 flat ZLE styling, and dim stay in sync),
-any palette hue as a flat style (`muted`/ANSI 8, `neutral`/ANSI 7, `pink`, or a custom
+any palette hue as a flat style (`darkgray`/ANSI 8, `gray`/ANSI 7, `pink`, or a custom
 name), or `original` (the default). Unknown values are reported once and fall back to
 `original`.
 Flat styles consume the same
@@ -470,7 +481,7 @@ non-`DEFAULT_` ones from `~/.zshrc.local` (sourced after `kz_prompt_setup`, so i
 takes effect at the next render). It composes the unified `$kz` array:
 
 - **UPPERCASE keys are presentation**: `$kz[FG.red]`, `$kz[BG.blue]`,
-  `$kz[HL.neutral]` (native ZLE `region_highlight` syntax), `$kz[BOLD]`,
+  `$kz[HL.gray]` (native ZLE `region_highlight` syntax), `$kz[BOLD]`,
   `$kz[UNDERLINE]`, `$kz[STANDOUT]`, `$kz[RESET]`, `$kz[NL]`, and glyphs like
   `$kz[GLYPH.caret]`.
 - **lowercase keys are content**: bare segment handles such as `$kz[git]`, `$kz[pwd]`,

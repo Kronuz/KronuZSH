@@ -19,8 +19,9 @@
 # each get a distinct hue, so a file's type is never ambiguous.
 # IMPORTANT: eza reads $LS_COLORS and it OVERRIDES eza's theme.yml filekinds for the
 # *filename* colour (precedence: $EZA_COLORS > $LS_COLORS > theme.yml > built-in). The
-# theme's filekinds (di/ln blue, ex green, pipe/socket neutral, devices orange, broken
-# red) are kept in lock-step with integrations/eza/theme.yml — change one, change both.
+# theme's filekinds (normal gray, directory blue, symlink cyan, hard link light cyan,
+# executable green, pipe/socket dark gray, devices light yellow, broken red) are kept in
+# lock-step with integrations/eza/theme.yml — change one, change both.
 export LS_COLORS="${LS_COLORS:-$(< "$KRONUZSH/integrations/vivid/ls_colors")}"
 
 # --- BSD / macOS native `ls` (used when eza is absent) -------------------------------

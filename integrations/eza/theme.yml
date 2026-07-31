@@ -14,14 +14,14 @@
 colourful: true
 
 filekinds:
-  normal: {foreground: '#c8c6c5'}
-  directory: {foreground: "#6e9cbe"}
-  symlink: {foreground: '#70c2ba'}        # turquoise (distinct from dir blue)
-  executable: {foreground: '#a5c261'}     # green
-  pipe: {foreground: '#7a7775'}
-  block_device: {foreground: '#cc7833'}
-  char_device: {foreground: '#cc7833'}
-  socket: {foreground: '#7a7775'}
+  normal: {foreground: White, is_bold: false}          # slot 7
+  directory: {foreground: Blue, is_bold: false}       # slot 4
+  symlink: {foreground: Cyan, is_bold: false}         # slot 6
+  executable: {foreground: Green, is_bold: false}     # slot 2
+  pipe: {foreground: DarkGray, is_bold: false}        # slot 8
+  block_device: {foreground: LightYellow, is_bold: false} # slot 11
+  char_device: {foreground: LightYellow, is_bold: false}  # slot 11
+  socket: {foreground: DarkGray, is_bold: false}      # slot 8
   special: {foreground: '#caa473'}
   mount_point: {foreground: '#6089b4'}
 
@@ -64,7 +64,8 @@ users:
 
 links:
   normal: {foreground: '#7ea4cc'}
-  multi_link_file: {foreground: '#4fa8b0'}
+  # eza applies this to the --links count; LS_COLORS `mh` colors filenames where supported.
+  multi_link_file: {foreground: LightCyan, background: Default, is_bold: false} # slot 14
 
 git:
   new: {foreground: '#219186'}            # teal
@@ -84,5 +85,5 @@ octal: {foreground: '#7a7775'}
 flags: {foreground: '#7a7775'}
 symlink_path: {foreground: '#676867'}
 control_char: {foreground: '#da4939'}
-broken_symlink: {foreground: '#dc322f'}
+broken_symlink: {foreground: Red, is_bold: false}     # slot 1
 broken_path_overlay: {foreground: '#676867'}
