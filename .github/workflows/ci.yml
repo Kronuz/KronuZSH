@@ -58,6 +58,16 @@ jobs:
       - name: Check integration structure
         run: bash dev/check-integrations.sh
 
+      - name: Check installer dry run
+        env:
+          HOME: ${{ runner.temp }}/kronuzsh-home
+          XDG_CACHE_HOME: ${{ runner.temp }}/kronuzsh-cache
+          XDG_CONFIG_HOME: ${{ runner.temp }}/kronuzsh-config
+          XDG_STATE_HOME: ${{ runner.temp }}/kronuzsh-state
+        run: |
+          mkdir -p "$HOME" "$XDG_CACHE_HOME" "$XDG_CONFIG_HOME" "$XDG_STATE_HOME"
+          bash ./install.sh --dry-run </dev/null
+
       - name: Check zcompile cache lifecycle
         run: zsh dev/check-zcompile.zsh
 

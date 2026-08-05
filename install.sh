@@ -102,9 +102,11 @@ compile_zsh_sources() {
       continue
     fi
     seen=
-    for existing in "${sources[@]}"; do
-      if [ "$existing" = "$source" ]; then seen=1; break; fi
-    done
+    if ((${#sources[@]})); then
+      for existing in "${sources[@]}"; do
+        if [ "$existing" = "$source" ]; then seen=1; break; fi
+      done
+    fi
     [ -z "$seen" ] && sources+=("$source")
   done
 
@@ -114,9 +116,11 @@ compile_zsh_sources() {
     return 0
   fi
 
-  if result="$(zsh "$here/zcompile.zsh" "${sources[@]}")"; then
+  if ((${#sources[@]})) && result="$(zsh "$here/zcompile.zsh" "${sources[@]}")"; then
     read -r compiled current failed <<< "$result"
     kz_ok "zsh wordcode" "${#sources[@]} files ready ($compiled refreshed, $current current)"
+  elif ((${#sources[@]} == 0)); then
+    kz_skip "zsh wordcode" "no readable source files found"
   else
     read -r compiled current failed <<< "${result:-0 0 1}"
     kz_skip "zsh wordcode" "$failed files could not be compiled; text fallback remains active"
