@@ -1198,7 +1198,14 @@ function _kz_transient_accept {
   _kz_transient_prompt
   local tp=$REPLY
   if (( ! ${_kz_dumb:-0} )) && [[ -n "$tp" ]]; then
-    _kz_prompt_full=$PROMPT _kz_rprompt_full=$RPROMPT
+    # Idempotent capture: if a second accept-line fires before precmd's restore runs
+    # (scripted/batched input submitting faster than the shell cycles), do not
+    # overwrite an already-saved pristine prompt with an already-collapsed one. A
+    # naive unconditional capture here permanently latches the collapsed form, since
+    # restore only ever copies this snapshot back and precmd's own fresh render gets
+    # clobbered by it every cycle after.
+    [[ -n "$_kz_prompt_full" ]] || _kz_prompt_full=$PROMPT
+    [[ -n "$_kz_rprompt_full" ]] || _kz_rprompt_full=$RPROMPT
     _kz_dim_string "$tp"; tp="$REPLY"     # restyle the whole line
     _kz_transient_rprompt; local rp=$REPLY
     [[ -n "$rp" ]] && { _kz_dim_string "$rp"; rp=$REPLY }   # restyle the right side the same way
