@@ -240,10 +240,11 @@ function _kz_load_palette {
 typeset -gA _kz_sem
 typeset -g _kz_colors_sig=''
 function kz_prompt_colors {
-  # Change-detection: colours are fully determined by $_kz_nocolor and the
+  # Change-detection: colours are fully determined by $_kz_nocolor, context.cwd_missing
+  # (the one context flag that varies per-prompt rather than once per shell), and the
   # $KZ_PROMPT_{COLOR,PALETTE}_* overrides, so skip the rebuild (base palette from
   # source, then semantics) when none of those changed since the last prompt.
-  local _sig="${_kz_nocolor:-0}" _k
+  local _sig="${_kz_nocolor:-0}:${kz[context.cwd_missing]:-0}" _k
   for _k in ${(k)parameters[(I)KZ_PROMPT_(COLOR|PALETTE)_*]}; do _sig+=$'\x1f'"$_k=${(P)_k}"; done
   [[ "$_sig" == "$_kz_colors_sig" ]] && return
   _kz_colors_sig="$_sig"
@@ -299,6 +300,7 @@ function kz_prompt_colors {
     status_duration '$kz[FG.goldenrod]'
     ssh        '$kz[FG.mediumpurple]'
     container  '$kz[FG.deepskyblue]'
+    cwd_missing '%B$kz[FG.red]'
     caret_past '%B$kz[FG.gray]'
     action     '$kz[FG.darkorange]'
     fallback   '$kz[FG.gold]'
@@ -320,7 +322,7 @@ function kz_prompt_colors {
     ip         '$kz[FG.darkgray]'
     time       '$kz[FG.darkgray]'
     host       '${${kz[context.container]:+${kz[FG.purple]}}:-${${kz[context.ssh]:+${kz[FG.green]}}:-${kz[FG.blue]}}}'
-    pwd        '%(!.${kz[FG.tomato]}.${${kz[context.container]:+${kz[FG.violet]}}:-${${kz[context.ssh]:+${kz[FG.mediumspringgreen]}}:-${kz[FG.blue]}}})'
+    pwd        '${${kz[context.cwd_missing]:+%B$kz[FG.red]}:-%(!.${kz[FG.tomato]}.${${kz[context.container]:+${kz[FG.violet]}}:-${${kz[context.ssh]:+${kz[FG.mediumspringgreen]}}:-${kz[FG.blue]}}})}'
     user       '%(!.%B$kz[FG.tomato].%B$kz[FG.white])'
   )
   local name ov raw def
@@ -398,6 +400,7 @@ function kz_prompt_glyphs {
       duration       ''         # no glyph; the formatted time stands alone
       ssh            'ssh'      # inside an SSH session
       container      'box'      # inside a container
+      cwd_missing    '!cwd'     # $PWD no longer exists on disk
     )
   else
     g=(
@@ -434,6 +437,7 @@ function kz_prompt_glyphs {
       duration       $'\uf017'   # nf-fa-clock_o          last command duration
       ssh            $'\ueb3a'   # nf-cod-remote          inside an SSH session
       container      $'\uf4b7'   # nf-oct-container       inside a container
+      cwd_missing    $'\uf071'   # nf-fa-exclamation_tri  $PWD no longer exists on disk
     )
   fi
   # Mode-independent marks: plain BMP, identical in both sets (still overridable).
@@ -712,6 +716,19 @@ function _kz_git_segment {
         _kz_prompt_git="${_kz_git_last} ${(e)_kz_sem[loading]}${kz[GLYPH.loading]}${_kz_glyph_pad[loading]}${(e)kz[RESET]}"
         ;;
   esac
+}
+
+# ---- cwd health ----
+# Unlike context.ssh/context.container (fixed for the shell's life, below), this is
+# re-checked every prompt: a shell can wander into this state (its own cwd removed
+# out from under it, e.g. an `rm -rf .` or a sibling process deleting the directory)
+# and later `cd` back out of it, so it cannot be a one-time flag.
+function _kz_cwd_segment {
+  if [[ -d $PWD ]]; then
+    kz[context.cwd_missing]=''
+  else
+    kz[context.cwd_missing]=1
+  fi
 }
 
 # ---- venv ----
@@ -1247,6 +1264,10 @@ function kz_prompt_precmd {
   [[ -z "$TERM" || "$TERM" == (dumb|unknown) ]] && _kz_dumb=1
   _kz_nocolor=$_kz_dumb
   [[ -n "${NO_COLOR-}" ]] && _kz_nocolor=1
+  # Must run before kz_prompt_colors, which bakes kz[context.cwd_missing] into the
+  # pwd color via an eager (e) expansion -- computing it any later would leave the
+  # color one prompt cycle stale.
+  _kz_cwd_segment
   kz_prompt_colors
   kz_prompt_glyphs
   # Resolve the initial/primary caret here, after ~/.zshrc.local has loaded. ZLE's
@@ -1396,7 +1417,7 @@ function kz_prompt_setup {
   # Per-segment defaults. Each is a deferred string; dynamic ones read the
   # $_kz_prompt_* / state vars the precmd computes.
   DEFAULT_KZ_PROMPT_OS='${kz[GLYPH.os]:+"${_kz_sem[host]}${kz[GLYPH.os]}${kz[RESET]} "}'
-  DEFAULT_KZ_PROMPT_CONTEXT='${kz[context.container]:+" ${_kz_sem[container]}${kz[GLYPH.container]}${kz[RESET]}"}${kz[context.ssh]:+" ${_kz_sem[ssh]}${kz[GLYPH.ssh]}${kz[RESET]}"}'
+  DEFAULT_KZ_PROMPT_CONTEXT='${kz[context.cwd_missing]:+" ${_kz_sem[cwd_missing]}${kz[GLYPH.cwd_missing]}${kz[RESET]}"}${kz[context.container]:+" ${_kz_sem[container]}${kz[GLYPH.container]}${kz[RESET]}"}${kz[context.ssh]:+" ${_kz_sem[ssh]}${kz[GLYPH.ssh]}${kz[RESET]}"}'
   DEFAULT_KZ_PROMPT_STATUS_DOT='%(?.${_kz_sem[status_success]}${kz[GLYPH.status_dot]}${kz[RESET]}.${_kz_sem[status_failure]}${kz[GLYPH.status_dot]}${kz[RESET]})'
   DEFAULT_KZ_PROMPT_STATUS_EXIT='${kz[GLYPH.exit]} ${_kz_prompt_last_exit}'
   DEFAULT_KZ_PROMPT_VIM='${VIM:+" ${_kz_sem[vim]}${kz[GLYPH.vim]}${kz[RESET]}"}'
