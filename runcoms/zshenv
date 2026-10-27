@@ -21,6 +21,12 @@ if (( $#commands[(i)lesspipe(|.sh)] )); then
   export LESSOPEN="| /usr/bin/env $commands[(i)lesspipe(|.sh)] %s 2>&-"
 fi
 
+# A remote command over ssh (`ssh host cmd`, et's etterminal launch) runs neither
+# login nor interactive, so load the machine env that zprofile would.
+if [[ -n "$SSH_CONNECTION" && ! -o login && ! -o interactive && -r "$HOME/.profile" ]]; then
+  source "$HOME/.profile"
+fi
+
 # Keep path-like arrays unique (no duplicate entries).
 typeset -gU cdpath fpath mailpath path
 
