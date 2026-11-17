@@ -9,11 +9,16 @@ _kz_bat=''
 (( $+commands[bat] ))    && _kz_bat=bat
 (( $+commands[batcat] )) && [[ -z $_kz_bat ]] && _kz_bat=batcat
 if [[ -n $_kz_bat ]]; then
-  # Use the bundled Kronuz theme, but only once setup.sh has built bat's cache
-  # (themes are read at cache-build time, not live). Guard on the cache file so we
-  # never trip bat's "unknown theme" warning on a box where it wasn't built.
-  [[ -f ${BAT_CACHE_PATH:-$HOME/.cache/bat}/themes.bin ]] && \
-    export BAT_THEME="${BAT_THEME:-Kronuz}"
+  # Use the bundled Kronuz theme, but only once bat's cache has it (themes are read
+  # at cache-build time, not live). setup.sh builds this cache at install time; if
+  # it's gone (e.g. `rm -rf ~/.cache`), rebuild it here so the theme self-heals
+  # instead of silently falling back to bat's own default on every new shell.
+  _kz_bat_cache="${BAT_CACHE_PATH:-$HOME/.cache/bat}"
+  if [[ ! -f $_kz_bat_cache/themes.bin && -n $KRONUZSH ]]; then
+    BAT_CONFIG_DIR="$KRONUZSH/integrations" "$_kz_bat" cache --build &>/dev/null
+  fi
+  [[ -f $_kz_bat_cache/themes.bin ]] && export BAT_THEME="${BAT_THEME:-Kronuz}"
+  unset _kz_bat_cache
   export MANPAGER="sh -c 'col -bx | $_kz_bat -l man -p --paging=always'"
   export MANROFFOPT='-c'
 
