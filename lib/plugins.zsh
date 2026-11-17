@@ -48,6 +48,14 @@ bindkey '^N'   history-substring-search-down
 # fast-syntax-highlighting: MUST be sourced last (it wraps ZLE widgets).
 source "$KRONUZSH/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
 
+# integrations/fast-syntax-highlighting/setup.sh applies the Kronuz theme into
+# $FAST_WORK_DIR/current_theme.zsh at install time; the plugin above already fell
+# back to its own built-in default highlighting if that cache is gone (e.g. after
+# `rm -rf ~/.cache`). Re-apply live so this session (and future ones) self-heal
+# instead of silently keeping the wrong colors.
+[[ -r $FAST_WORK_DIR/current_theme.zsh ]] || \
+  fast-theme "$KRONUZSH/integrations/fast-syntax-highlighting/Kronuz.ini" -q
+
 # Finalize the asynchronous gitstatus start begun at the top of this file. The daemon
 # warmed up while the plugins above loaded, so this only completes the handshake (a few
 # ms) instead of blocking on the spawn -- and leaves it ready for the very first prompt.
